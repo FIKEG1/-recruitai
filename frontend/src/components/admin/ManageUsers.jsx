@@ -23,15 +23,11 @@ const ManageUsers = () => {
 
     const fetchUsers = async () => {
         try {
-            // This endpoint doesn't exist yet - you need to add it
-            // For now, we'll use mock data
-            setUsers([
-                { _id: '1', name: 'John Doe', email: 'john@example.com', role: 'jobseeker', createdAt: new Date() },
-                { _id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'employer', createdAt: new Date() },
-                { _id: '3', name: 'Admin User', email: 'admin@example.com', role: 'admin', createdAt: new Date() }
-            ]);
+            const response = await api.get('/admin/users');
+            setUsers(response.data.users || []);
         } catch (error) {
-            setError('Failed to load users');
+            console.error('Fetch users error:', error);
+            setError(error.response?.data?.message || 'Failed to load users');
         } finally {
             setLoading(false);
         }
@@ -50,24 +46,42 @@ const ManageUsers = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         try {
-            // Update user endpoint needed
-            toast.success('User updated successfully');
+            if (editingUser) {
+                await api.put(`/admin/users/${editingUser._id}`, {
+                    name: formData.name,
+                    email: formData.email,
+                    role: formData.role
+                });
+                toast.success('User updated successfully');
+            } else {
+                await api.post('/admin/users', {
+                    name: formData.name,
+                    email: formData.email,
+                    role: formData.role,
+                    password: formData.password
+                });
+                toast.success('User created successfully');
+            }
+
             setShowModal(false);
             fetchUsers();
         } catch (error) {
-            toast.error('Failed to update user');
+            console.error('Manage user submit error:', error);
+            toast.error(error.response?.data?.message || 'Failed to save user');
         }
     };
 
     const handleDelete = async (userId) => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
         try {
-            // Delete user endpoint needed
+            await api.delete(`/admin/users/${userId}`);
             toast.success('User deleted successfully');
             fetchUsers();
         } catch (error) {
-            toast.error('Failed to delete user');
+            console.error('Delete user error:', error);
+            toast.error(error.response?.data?.message || 'Failed to delete user');
         }
     };
 

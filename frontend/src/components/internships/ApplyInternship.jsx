@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Form, Button, Spinner, Alert, Badge } from '
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaArrowLeft, FaCheckCircle, FaGraduationCap, FaMoneyBillWave, FaClock } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 
@@ -10,6 +11,7 @@ const ApplyInternship = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [internship, setInternship] = useState(null);
@@ -44,7 +46,7 @@ const ApplyInternship = () => {
             }
         } catch (error) {
             console.error('Error fetching data:', error);
-            setError('Failed to load internship details');
+            setError(t('internships.load_error'));
         } finally {
             setLoading(false);
         }
@@ -53,7 +55,7 @@ const ApplyInternship = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedResume) {
-            setError('Please select a resume');
+            setError(t('internships.please_select_resume'));
             return;
         }
         setSubmitting(true);
@@ -69,7 +71,7 @@ const ApplyInternship = () => {
             toast.success('Internship application submitted successfully!');
             setTimeout(() => navigate('/internships'), 2000);
         } catch (error) {
-            const msg = error.response?.data?.message || 'Failed to submit application';
+            const msg = error.response?.data?.message || t('internships.submit_error');
             setError(msg);
             toast.error(msg);
         } finally {
@@ -85,7 +87,7 @@ const ApplyInternship = () => {
         return (
             <Container className="py-5 text-center">
                 <Spinner animation="border" variant="primary" />
-                <p className="mt-3">Loading internship details...</p>
+                <p className="mt-3">{t('internships.loading_details')}</p>
             </Container>
         );
     }
@@ -93,8 +95,8 @@ const ApplyInternship = () => {
     if (!internship) {
         return (
             <Container className="py-5 text-center">
-                <h4>Internship not found</h4>
-                <Link to="/internships" className="text-decoration-none">Back to internships</Link>
+                <h4>{t('internships.not_found')}</h4>
+                <Link to="/internships" className="text-decoration-none">{t('internships.back_to_internships')}</Link>
             </Container>
         );
     }
@@ -105,11 +107,11 @@ const ApplyInternship = () => {
                 <Card className="text-center py-5">
                     <Card.Body>
                         <div style={{ fontSize: '4rem' }} className="mb-3">🎉</div>
-                        <h4 className="fw-bold">Internship Application Submitted!</h4>
-                        <p className="text-muted">Your application for <strong>{internship.title}</strong> has been submitted successfully.</p>
-                        <p className="text-muted">The employer will review your application and contact you if shortlisted.</p>
+                        <h4 className="fw-bold">{t('internships.application_submitted_title')}</h4>
+                        <p className="text-muted">{t('internships.application_submitted_desc', { title: internship.title })}</p>
+                        <p className="text-muted">{t('internships.application_review_desc')}</p>
                         <Button as={Link} to="/internships" variant="primary-gradient" className="mt-3">
-                            Browse More Internships
+                            {t('internships.browse_more_internships')}
                         </Button>
                     </Card.Body>
                 </Card>
@@ -125,25 +127,25 @@ const ApplyInternship = () => {
                     className="text-decoration-none mb-3 d-inline-flex align-items-center gap-2"
                     onClick={() => navigate(-1)}
                 >
-                    <FaArrowLeft /> Back
+                    <FaArrowLeft /> {t('common.back')}
                 </Button>
 
                 <Row>
                     <Col lg={8} className="mx-auto">
                         <Card className="shadow-sm">
                             <Card.Body className="p-4 p-md-5">
-                                <h3 className="fw-bold mb-4">Apply for {internship.title}</h3>
+                                <h3 className="fw-bold mb-4">{t('internships.apply_for_title', { title: internship.title })}</h3>
                                 
                                 {/* Internship Summary */}
                                 <Card className="bg-light mb-4">
                                     <Card.Body>
                                         <Row>
                                             <Col md={6}>
-                                                <div className="small text-muted">Department</div>
+                                                <div className="small text-muted">{t('internships.department')}</div>
                                                 <div className="fw-semibold">{internship.department}</div>
                                             </Col>
                                             <Col md={6}>
-                                                <div className="small text-muted">Type</div>
+                                                <div className="small text-muted">{t('internships.type')}</div>
                                                 <div className="fw-semibold">
                                                     <Badge bg={internship.internshipType === 'Paid' ? 'success' : 'secondary'}>
                                                         {internship.internshipType || 'Unpaid'}
@@ -151,19 +153,19 @@ const ApplyInternship = () => {
                                                 </div>
                                             </Col>
                                             <Col md={6} className="mt-2">
-                                                <div className="small text-muted">Duration</div>
-                                                <div className="fw-semibold">{internship.internshipDuration || '6 Months'}</div>
+                                                <div className="small text-muted">{t('internships.duration')}</div>
+                                                <div className="fw-semibold">{internship.internshipDuration || t('internships.months_6')}</div>
                                             </Col>
                                             <Col md={6} className="mt-2">
-                                                <div className="small text-muted">Location</div>
+                                                <div className="small text-muted">{t('internships.location')}</div>
                                                 <div className="fw-semibold">{internship.location}</div>
                                             </Col>
                                             <Col md={6} className="mt-2">
-                                                <div className="small text-muted">Positions</div>
+                                                <div className="small text-muted">{t('internships.positions')}</div>
                                                 <div className="fw-semibold">{internship.numberOfPositions || 1}</div>
                                             </Col>
                                             <Col md={6} className="mt-2">
-                                                <div className="small text-muted">Deadline</div>
+                                                <div className="small text-muted">{t('internships.deadline')}</div>
                                                 <div className="fw-semibold">{new Date(internship.applicationDeadline).toLocaleDateString()}</div>
                                             </Col>
                                         </Row>
@@ -171,7 +173,7 @@ const ApplyInternship = () => {
                                         {/* Academic Requirements */}
                                         {internship.academicRequirements && (
                                             <div className="mt-3 pt-2 border-top">
-                                                <small className="text-muted">Academic Requirements</small>
+                                                <small className="text-muted">{t('internships.academic_requirements')}</small>
                                                 <div className="d-flex flex-wrap gap-2 mt-1">
                                                     {internship.academicRequirements.fieldOfStudy?.length > 0 && (
                                                         <Badge bg="info">
@@ -223,9 +225,9 @@ const ApplyInternship = () => {
                                         </Form.Label>
                                         {resumes.length === 0 ? (
                                             <div className="text-center py-3 border rounded bg-light">
-                                                <p className="mb-2 text-muted">No resumes uploaded yet</p>
+                                                <p className="mb-2 text-muted">{t('internships.no_resumes')}</p>
                                                 <Button as={Link} to="/jobseeker/profile" variant="primary-gradient" size="sm">
-                                                    Upload Resume
+                                                    {t('internships.upload_resume')}
                                                 </Button>
                                             </div>
                                         ) : (
@@ -253,7 +255,7 @@ const ApplyInternship = () => {
                                     </Form.Group>
 
                                     <Form.Group className="mb-4">
-                                        <Form.Label className="fw-semibold">Academic Information</Form.Label>
+                                        <Form.Label className="fw-semibold">{t('internships.academic_information')}</Form.Label>
                                         <Row>
                                             <Col md={6} className="mb-2">
                                                 <Form.Control
@@ -304,16 +306,16 @@ const ApplyInternship = () => {
                                     </Form.Group>
 
                                     <Form.Group className="mb-4">
-                                        <Form.Label className="fw-semibold">Cover Letter</Form.Label>
+                                        <Form.Label className="fw-semibold">{t('internships.cover_letter')}</Form.Label>
                                         <Form.Control
                                             as="textarea"
                                             rows={6}
-                                            placeholder="Write a brief cover letter explaining why you're interested in this internship, what skills you bring, and what you hope to learn..."
+                                            placeholder={t('internships.cover_letter_placeholder')}
                                             value={coverLetter}
                                             onChange={(e) => setCoverLetter(e.target.value)}
                                             className="form-control-custom"
                                         />
-                                        <small className="text-muted">Optional but recommended</small>
+                                        <small className="text-muted">{t('internships.optional_but_recommended')}</small>
                                     </Form.Group>
 
                                     <div className="d-flex gap-3">
@@ -326,21 +328,21 @@ const ApplyInternship = () => {
                                             {submitting ? (
                                                 <>
                                                     <Spinner animation="border" size="sm" className="me-2" />
-                                                    Submitting...
+                                                    {t('internships.submitting')}
                                                 </>
                                             ) : (
                                                 <>
                                                     <FaCheckCircle className="me-2" />
-                                                    Submit Application
+                                                    {t('internships.submit_application')}
                                                 </>
                                             )}
                                         </Button>
                                         <Button variant="outline-secondary" onClick={() => navigate(-1)}>
-                                            Cancel
+                                            {t('common.cancel')}
                                         </Button>
                                     </div>
                                     {resumes.length === 0 && (
-                                        <p className="text-danger small mt-2">Please upload a resume before applying</p>
+                                        <p className="text-danger small mt-2">{t('internships.upload_resume_before_applying')}</p>
                                     )}
                                 </Form>
                             </Card.Body>

@@ -120,12 +120,47 @@
 }
 
 @media (max-width: 991px) {
+    .custom-navbar {
+        padding: 8px 0;
+    }
+
     .custom-navbar .nav-link-custom {
         padding: 10px 16px !important;
     }
-    
+
+    .navbar-collapse {
+        padding-top: 10px;
+    }
+
     .btn-primary-gradient {
         width: 100%;
         margin-top: 8px;
+        margin-left: 0 !important;
+    }
+
+    .dropdown-menu-custom {
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .brand {
+        font-size: 1.25rem;
+        gap: 8px;
+    }
+
+    .brand-icon {
+        font-size: 1.45rem;
+        padding: 5px 8px;
+    }
+
+    .avatar-wrapper {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .role-badge {
+        display: none;
     }
 }

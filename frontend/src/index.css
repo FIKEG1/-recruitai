@@ -20,6 +20,11 @@ body {
     background-color: var(--light-bg);
     color: var(--text-secondary);
     min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#root {
+    min-height: 100vh;
 }
 
 /* Custom Scrollbar */

@@ -15,6 +15,7 @@ const applicationRoutes = require('./routes/applications');
 const resumeRoutes = require('./routes/resumes');
 const reportRoutes = require('./routes/reports');
 const uploadRoutes = require('./routes/upload');
+const adminRoutes = require('./routes/admin');
 const internshipRoutes = require('./routes/internships');  // ← NEW
 
 const app = express();
@@ -39,7 +40,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Static files for uploads
-app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -48,6 +49,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/internships', internshipRoutes);  // ← NEW
 
 // Health check

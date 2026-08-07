@@ -55,6 +55,58 @@ exports.getSummaryReport = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(10);
 
+        // Top jobs by volume
+        const topJobs = await Application.aggregate([
+            { $match: query },
+            { $group: { _id: '$job', applicationCount: { $sum: 1 }, averageMatchScore: { $avg: '$matchScore' } } },
+            { $sort: { applicationCount: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'jobs',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'job'
+                }
+            },
+            { $unwind: { path: '$job', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    jobId: '$_id',
+                    title: '$job.title',
+                    department: '$job.department',
+                    applicationCount: 1,
+                    averageMatchScore: { $round: ['$averageMatchScore', 0] }
+                }
+            }
+        ]);
+
+        // Top candidates by average match score and total applications
+        const topCandidates = await Application.aggregate([
+            { $match: query },
+            { $group: { _id: '$applicant', applicationCount: { $sum: 1 }, averageMatchScore: { $avg: '$matchScore' } } },
+            { $sort: { averageMatchScore: -1, applicationCount: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    applicantId: '$_id',
+                    name: '$user.name',
+                    email: '$user.email',
+                    applicationCount: 1,
+                    averageMatchScore: { $round: ['$averageMatchScore', 0] }
+                }
+            }
+        ]);
+
         res.status(200).json({
             success: true,
             data: {
@@ -72,7 +124,9 @@ exports.getSummaryReport = async (req, res) => {
                 statusBreakdown: statusStats,
                 jobsByDepartment,
                 monthlyApplications,
-                recentApplications
+                recentApplications,
+                topJobs,
+                topCandidates
             }
         });
     } catch (error) {

@@ -51,7 +51,7 @@ const InternshipList = () => {
             });
         } catch (error) {
             console.error('Error fetching internships:', error);
-            setError('Failed to load internships. Please try again.');
+            setError(t('internships.load_error'));
         } finally {
             setLoading(false);
         }
@@ -263,21 +263,21 @@ const InternshipList = () => {
                                             </Badge>
                                         </div>
                                         <p className="company-name text-muted">
-                                            {internship.employer?.name || 'Sidama Innovation and Technology Agency'}
+                                            {internship.employer?.name || t('home.default_company')}
                                         </p>
                                         
                                         <div className="job-meta small text-muted">
-                                            <div><FaMapMarkerAlt className="me-1" /> {internship.location || 'Hawassa'}</div>
-                                            <div><FaGraduationCap className="me-1" /> {internship.academicRequirements?.yearOfStudy || 'Any Year'}</div>
+                                            <div><FaMapMarkerAlt className="me-1" /> {internship.location || t('home.default_location')}</div>
+                                            <div><FaGraduationCap className="me-1" /> {internship.academicRequirements?.yearOfStudy || t('internships.year_any')}</div>
                                         </div>
 
                                         <div className="mt-2">
                                             <Badge bg={getDurationBadge(internship.internshipDuration)} className="me-1">
-                                                <FaClock className="me-1" /> {internship.internshipDuration || '6 Months'}
+                                                <FaClock className="me-1" /> {internship.internshipDuration || t('internships.months_6')}
                                             </Badge>
                                             {internship.internshipType === 'Paid' && (
                                                 <Badge bg="success" className="me-1">
-                                                    <FaMoneyBillWave className="me-1" /> Paid
+                                                    <FaMoneyBillWave className="me-1" /> {t('internships.paid')}
                                                 </Badge>
                                             )}
                                             {internship.numberOfPositions && (
@@ -320,7 +320,7 @@ const InternshipList = () => {
                                         {/* Benefits */}
                                         {internship.benefits?.length > 0 && (
                                             <div className="mt-2">
-                                                <small className="text-muted">Benefits:</small>
+                                                <small className="text-muted">{t('internships.benefits')}</small>
                                                 <div className="d-flex flex-wrap gap-1 mt-1">
                                                     {internship.benefits.slice(0, 2).map((benefit, idx) => (
                                                         <span key={idx} className="badge bg-light text-dark border">

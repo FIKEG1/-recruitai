@@ -340,34 +340,152 @@
     transform: translateY(-2px);
 }
 
+@media (max-width: 991px) {
+    .hero-section {
+        padding: 64px 0 48px;
+    }
+
+    .hero-content {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .hero-subtitle {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .hero-buttons > * {
+        flex: 1 1 220px;
+        max-width: 260px;
+    }
+
+    .hero-image-placeholder {
+        max-width: 360px;
+        min-height: 320px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .cta-section .text-lg-end {
+        text-align: center !important;
+    }
+}
+
 @media (max-width: 768px) {
+    .hero-section {
+        padding: 56px 0 40px;
+    }
+
     .hero-title {
         font-size: 2.2rem;
     }
-    
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
     .hero-image-placeholder {
         max-width: 300px;
         padding: 20px;
+        min-height: 280px;
     }
-    
+
     .floating-card {
         padding: 8px 14px;
         font-size: 0.75rem;
     }
-    
+
     .card-1 { top: 5%; left: -5%; }
     .card-2 { top: 55%; right: -5%; }
     .card-3 { bottom: 5%; left: 10%; }
-    
+
     .stats-section {
-        padding: 24px;
+        padding: 24px 16px;
     }
-    
+
     .stat-number {
         font-size: 2rem;
     }
-    
+
+    .feature-card,
+    .job-card,
+    .step-card {
+        margin-bottom: 12px;
+    }
+
+    .job-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .job-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+
     .cta-title {
         font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .hero-badge {
+        font-size: 0.8rem;
+        padding: 6px 14px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hero-buttons > * {
+        width: 100%;
+        max-width: none;
+    }
+
+    .hero-image-placeholder {
+        max-width: 100%;
+        padding: 18px;
+    }
+
+    .floating-card {
+        position: static;
+        display: inline-flex;
+        margin: 6px 0;
+    }
+
+    .hero-image-wrapper {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .section-header h2 {
+        font-size: 1.7rem;
+    }
+
+    .stats-section {
+        padding: 18px 12px;
+    }
+
+    .stat-item {
+        margin-bottom: 14px;
+    }
+
+    .cta-section {
+        padding: 56px 0;
     }
 }
