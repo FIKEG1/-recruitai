@@ -38,7 +38,7 @@ const ApplyInternship = () => {
                 api.get(`/internships/${id}`),
                 api.get('/resumes')
             ]);
-            setInternship(internshipRes.data.internship);
+            setInternship(internshipRes.data.internship || null);
             setResumes(resumeRes.data.resumes || []);
             if (resumeRes.data.resumes?.length > 0) {
                 const defaultResume = resumeRes.data.resumes.find(r => r.isDefault);
@@ -46,7 +46,9 @@ const ApplyInternship = () => {
             }
         } catch (error) {
             console.error('Error fetching data:', error);
-            setError(t('internships.load_error'));
+            const message = error.response?.data?.message || t('internships.load_error');
+            setError(message);
+            setInternship(null);
         } finally {
             setLoading(false);
         }
@@ -96,6 +98,7 @@ const ApplyInternship = () => {
         return (
             <Container className="py-5 text-center">
                 <h4>{t('internships.not_found')}</h4>
+                {error && <p className="text-danger mt-2">{error}</p>}
                 <Link to="/internships" className="text-decoration-none">{t('internships.back_to_internships')}</Link>
             </Container>
         );

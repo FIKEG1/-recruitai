@@ -7,7 +7,7 @@ import {
     FaLanguage, FaPhone, FaMapMarkerAlt, FaInfoCircle 
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import { toast } from 'react-toastify';
 
 const Applications = () => {
@@ -185,7 +185,7 @@ const Applications = () => {
                                                         {/* Candidate Photo */}
                                                         {app.applicant?.profile?.profilePhoto ? (
                                                             <Image 
-                                                                src={`http://localhost:5000/${app.applicant.profile.profilePhoto}`} 
+                                                                src={getImageUrl(app.applicant.profile.profilePhoto)} 
                                                                 roundedCircle 
                                                                 style={{ 
                                                                     width: '40px', 
@@ -387,7 +387,7 @@ const Applications = () => {
                                 <div className="text-center mb-4">
                                     {selectedCandidate.profile?.profilePhoto ? (
                                         <Image 
-                                            src={`http://localhost:5000/${selectedCandidate.profile.profilePhoto}`} 
+                                            src={getImageUrl(selectedCandidate.profile.profilePhoto)} 
                                             roundedCircle 
                                             style={{ 
                                                 width: '120px', 

@@ -1,12 +1,41 @@
 :root {
-    --primary-color: #2c3e8f;
-    --secondary-color: #1a237e;
-    --accent-color: #4CAF50;
-    --light-bg: #f0f2f5;
-    --text-primary: #1a237e;
-    --text-secondary: #333;
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    --gradient: linear-gradient(135deg, #2c3e8f 0%, #1a237e 100%);
+    --primary-color: #00c853; /* apple green */
+    --primary-strong: #007a33;
+    --secondary-color: #00e676;
+    --accent-color: #ffb74d;
+    --shadow: 0 6px 30px rgba(16, 24, 20, 0.08);
+    --header-bg: var(--primary-strong);
+    --footer-bg: #053927;
+    --container-bg: #f9faf9; /* subtle off-white for cards/sections */
+}
+
+/* Light theme variables */
+.theme-light {
+    --body-bg: #ffffff; /* main page background: white */
+    --surface: #ffffff; /* cards and content panels */
+    --container-bg: #fbfdfb; /* slight contrast for some containers */
+    --text-primary: #07251b; /* dark green text */
+    --text-secondary: #264d3f; /* muted dark green */
+    --muted: #6b7f72;
+    --gradient: linear-gradient(135deg, #00c853 0%, #00b54a 100%);
+    --header-bg: #07251b; /* darker header */
+    --footer-bg: #062917; /* darker footer */
+}
+
+/* Dark theme variables inspired by uploaded CSS */
+.theme-dark {
+    /* Darker green palette (still green-forward, not black) */
+    --body-bg: linear-gradient(180deg, #0a2e23 0%, #07251b 45%, #041b15 100%);
+    --surface: #07251b;
+    --container-bg: #062917;
+    --text-primary: #e8f7ef;
+    --text-secondary: #cfeee0;
+    --muted: #9fcfb6;
+    --primary-color: #00e676; /* bright green */
+    --secondary-color: #00c853;
+    --gradient: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+    --header-bg: #041b15;
+    --footer-bg: #031611;
 }
 
 * {
@@ -17,10 +46,11 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--light-bg);
+    background: var(--body-bg);
     color: var(--text-secondary);
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background-color 0.28s ease, color 0.28s ease;
 }
 
 #root {
@@ -69,7 +99,7 @@ body {
 
 .btn-primary-gradient:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(44, 62, 143, 0.35);
+    box-shadow: 0 8px 30px rgba(0, 200, 120, 0.12);
     color: white;
 }
 
@@ -123,7 +153,7 @@ body {
 
 /* Stats Section */
 .stats-section {
-    background: white;
+    background: var(--container-bg);
     border-radius: 16px;
     padding: 40px;
     box-shadow: var(--shadow);
@@ -144,14 +174,14 @@ body {
 }
 
 .stat-label {
-    color: #666;
+    color: var(--muted);
     font-size: 0.95rem;
     font-weight: 500;
 }
 
 /* Dashboard Cards */
 .dashboard-card {
-    background: white;
+    background: var(--container-bg);
     border-radius: 16px;
     padding: 24px;
     box-shadow: var(--shadow);
@@ -176,18 +206,18 @@ body {
 }
 
 .dashboard-card .label {
-    color: #666;
+    color: var(--muted);
     font-size: 0.9rem;
 }
 
 /* Job Card */
 .job-card {
-    background: white;
+    background: var(--container-bg);
     border-radius: 16px;
     padding: 24px;
     box-shadow: var(--shadow);
     transition: all 0.3s ease;
-    border: 1px solid #eee;
+    border: 1px solid rgba(0,0,0,0.06);
 }
 
 .job-card:hover {
@@ -202,7 +232,7 @@ body {
 }
 
 .job-card .company-name {
-    color: #666;
+    color: var(--muted);
     font-weight: 500;
 }
 

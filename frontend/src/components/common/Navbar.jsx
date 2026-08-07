@@ -11,15 +11,19 @@ import {
     FaBuilding, 
     FaUserCog,
     FaUsers,
-    FaGraduationCap  // ← ADDED
+    FaGraduationCap,  // ← ADDED
+    FaMoon,
+    FaSun
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useTheme } from '../../context/ThemeContext';
 
 const CustomNavbar = () => {
     const { user, logout, isAuthenticated, isJobSeeker, isEmployer, isAdmin } = useAuth();
     const { t, language } = useLanguage();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -53,8 +57,8 @@ const CustomNavbar = () => {
             className="custom-navbar" 
             sticky="top" 
             style={{ 
-                background: '#ffffff', 
-                boxShadow: '0 2px 20px rgba(0,0,0,0.06)', 
+                background: 'var(--surface)', 
+                boxShadow: 'var(--shadow)', 
                 padding: '12px 0' 
             }}
         >
@@ -73,7 +77,7 @@ const CustomNavbar = () => {
                 >
                     <span style={{ 
                         fontSize: '1.8rem', 
-                        background: 'linear-gradient(135deg, #2c3e8f, #1a237e)', 
+                        background: 'var(--gradient)', 
                         padding: '6px 10px', 
                         borderRadius: '10px', 
                         color: 'white',
@@ -82,7 +86,7 @@ const CustomNavbar = () => {
                         🤖
                     </span>
                     <span style={{ 
-                        background: 'linear-gradient(135deg, #2c3e8f, #1a237e)', 
+                        background: 'var(--gradient)', 
                         WebkitBackgroundClip: 'text', 
                         WebkitTextFillColor: 'transparent', 
                         backgroundClip: 'text',
@@ -101,7 +105,7 @@ const CustomNavbar = () => {
                             to="/" 
                             className="nav-link-custom" 
                             style={{ 
-                                color: '#555', 
+                                color: 'var(--muted)', 
                                 fontWeight: 500, 
                                 padding: '8px 16px', 
                                 borderRadius: '8px',
@@ -116,7 +120,7 @@ const CustomNavbar = () => {
                             to="/jobs" 
                             className="nav-link-custom" 
                             style={{ 
-                                color: '#555', 
+                                color: 'var(--muted)', 
                                 fontWeight: 500, 
                                 padding: '8px 16px', 
                                 borderRadius: '8px',
@@ -132,7 +136,7 @@ const CustomNavbar = () => {
                             to="/internships" 
                             className="nav-link-custom" 
                             style={{ 
-                                color: '#555', 
+                                color: 'var(--muted)', 
                                 fontWeight: 500, 
                                 padding: '8px 16px', 
                                 borderRadius: '8px',
@@ -145,6 +149,25 @@ const CustomNavbar = () => {
                         {/* Language Switcher */}
                         <LanguageSwitcher />
 
+                        {/* Theme Toggle */}
+                        <div className="ms-2 d-flex align-items-center">
+                            <Button 
+                                variant="outline-secondary" 
+                                onClick={toggleTheme}
+                                title={theme === 'light' ? t('nav.dark_mode') || 'Toggle theme' : t('nav.light_mode') || 'Toggle theme'}
+                                style={{
+                                    borderRadius: '8px',
+                                    padding: '6px 10px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginLeft: '8px'
+                                }}
+                            >
+                                {theme === 'light' ? <FaMoon /> : <FaSun />}
+                            </Button>
+                        </div>
+
                         {!isAuthenticated ? (
                             <>
                                 <Nav.Link 
@@ -152,7 +175,7 @@ const CustomNavbar = () => {
                                     to="/login" 
                                     className="nav-link-custom"
                                     style={{ 
-                                        color: '#555', 
+                                        color: 'var(--muted)', 
                                         fontWeight: 500, 
                                         padding: '8px 16px', 
                                         borderRadius: '8px',
@@ -167,7 +190,6 @@ const CustomNavbar = () => {
                                     to="/register" 
                                     className="btn-primary-gradient" 
                                     style={{ 
-                                        background: 'linear-gradient(135deg, #2c3e8f, #1a237e)', 
                                         border: 'none', 
                                         color: 'white', 
                                         padding: '8px 20px', 
@@ -186,11 +208,11 @@ const CustomNavbar = () => {
                                     variant="light" 
                                     className="d-flex align-items-center" 
                                     style={{ 
-                                        background: 'transparent', 
-                                        border: 'none', 
-                                        padding: '4px 8px', 
-                                        borderRadius: '10px',
-                                        transition: 'all 0.3s ease'
+                                            background: 'transparent', 
+                                            border: 'none', 
+                                            padding: '4px 8px', 
+                                            borderRadius: '10px',
+                                            transition: 'all 0.3s ease'
                                     }}
                                 >
                                     {/* User Avatar */}
@@ -198,7 +220,7 @@ const CustomNavbar = () => {
                                         width: '36px', 
                                         height: '36px', 
                                         borderRadius: '50%', 
-                                        background: 'linear-gradient(135deg, #2c3e8f, #1a237e)', 
+                                        background: 'var(--gradient)', 
                                         display: 'flex', 
                                         alignItems: 'center', 
                                         justifyContent: 'center', 
@@ -215,7 +237,7 @@ const CustomNavbar = () => {
                                     </span>
                                     
                                     {/* Role Badge */}
-                                    <Badge 
+                                        <Badge 
                                         bg="light" 
                                         text="dark" 
                                         className="ms-2 d-flex align-items-center gap-1" 
@@ -223,8 +245,8 @@ const CustomNavbar = () => {
                                             fontSize: '0.65rem', 
                                             padding: '2px 10px', 
                                             borderRadius: '20px', 
-                                            background: '#e8f5e9', 
-                                            color: '#2e7d32', 
+                                            background: 'rgba(232,245,233,0.06)', 
+                                            color: 'var(--primary-color)', 
                                             textTransform: 'capitalize' 
                                         }}
                                     >

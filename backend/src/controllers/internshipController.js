@@ -121,6 +121,10 @@ exports.getInternships = async (req, res) => {
 // @access  Public
 exports.getInternship = async (req, res) => {
     try {
+        const mongoose = require('mongoose');
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).json({ success: false, message: 'Internship not found' });
+        }
         const internship = await Job.findOne({
             _id: req.params.id,
             isInternship: true
@@ -154,6 +158,10 @@ exports.getInternship = async (req, res) => {
 // @access  Private (Employer)
 exports.updateInternship = async (req, res) => {
     try {
+        const mongoose = require('mongoose');
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).json({ success: false, message: 'Internship not found' });
+        }
         let internship = await Job.findOne({
             _id: req.params.id,
             isInternship: true
@@ -196,6 +204,10 @@ exports.updateInternship = async (req, res) => {
 // @access  Private (Employer)
 exports.deleteInternship = async (req, res) => {
     try {
+        const mongoose = require('mongoose');
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).json({ success: false, message: 'Internship not found' });
+        }
         const internship = await Job.findOne({
             _id: req.params.id,
             isInternship: true
@@ -235,6 +247,10 @@ exports.deleteInternship = async (req, res) => {
 // @access  Private (Job Seeker)
 exports.applyInternship = async (req, res) => {
     try {
+        const mongoose = require('mongoose');
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).json({ success: false, message: 'Internship not found or not accepting applications' });
+        }
         const { resumeId, coverLetter, academicInfo } = req.body;
         
         const internship = await Job.findOne({

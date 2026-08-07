@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaBriefcase, FaFileAlt, FaClock, FaCheckCircle, FaTimesCircle, FaUserPlus, FaEnvelope, FaCalendar, FaMapMarkerAlt, FaInfoCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import { toast } from 'react-toastify';
 
 const Dashboard = () => {
@@ -107,7 +107,7 @@ const Dashboard = () => {
                 <div className="welcome-section mb-4 d-flex align-items-center">
                     {user?.profile?.profilePhoto ? (
                         <Image 
-                            src={`http://localhost:5000/${user.profile.profilePhoto}`} 
+                            src={getImageUrl(user.profile.profilePhoto)} 
                             roundedCircle 
                             style={{ 
                                 width: '60px', 

@@ -24,7 +24,6 @@ const AIChat = () => {
     const isAuthenticated = !!user;
 
     useEffect(() => {
-        // Welcome message with personalized greeting
         const userName = user?.name || 'there';
         const welcomeMessage = userType === 'employer' 
             ? `Hello ${userName}! 👋 I'm your RecruitAI Employer Assistant. I can help you with:\n📋 Job postings\n🔍 Candidate screening\n🗣️ Interview questions\n💼 Hiring strategies\n\nWhat would you like to know?`
@@ -228,8 +227,8 @@ const AIChat = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 4px 25px rgba(44, 62, 143, 0.4)',
-                    background: 'linear-gradient(135deg, #2c3e8f, #1a237e)',
+                    boxShadow: '0 4px 25px rgba(0, 200, 83, 0.18)',
+                    background: 'var(--gradient)',
                     border: 'none',
                     transition: 'all 0.3s ease'
                 }}
@@ -240,7 +239,7 @@ const AIChat = () => {
                     position: 'absolute',
                     top: '-5px',
                     right: '-5px',
-                    background: '#4CAF50',
+                    background: 'var(--primary-color)',
                     borderRadius: '50%',
                     width: '18px',
                     height: '18px',
@@ -280,7 +279,7 @@ const AIChat = () => {
                 {/* Header */}
                 <Card.Header
                     style={{
-                        background: 'linear-gradient(135deg, #2c3e8f, #1a237e)',
+                        background: 'var(--gradient)',
                         color: 'white',
                         padding: '12px 16px',
                         borderBottom: 'none',
@@ -316,7 +315,7 @@ const AIChat = () => {
                                         width: '6px',
                                         height: '6px',
                                         borderRadius: '50%',
-                                        backgroundColor: '#4CAF50',
+                                        backgroundColor: 'var(--primary-color)',
                                         marginRight: '4px',
                                         animation: 'pulse 1.5s infinite'
                                     }}></span>
@@ -350,7 +349,7 @@ const AIChat = () => {
                                 flex: 1,
                                 overflowY: 'auto',
                                 padding: '16px',
-                                background: '#f8f9fa'
+                                background: 'var(--container-bg)'
                             }}
                         >
                             {messages.map((msg, idx) => (
@@ -371,9 +370,9 @@ const AIChat = () => {
                                                 ? '18px 18px 4px 18px' 
                                                 : '18px 18px 18px 4px',
                                             background: msg.role === 'user' 
-                                                ? 'linear-gradient(135deg, #2c3e8f, #1a237e)' 
-                                                : msg.error ? '#fce4ec' : 'white',
-                                            color: msg.role === 'user' ? 'white' : '#333',
+                                                ? 'var(--gradient)' 
+                                                : msg.error ? '#fce4ec' : 'var(--container-bg)',
+                                            color: msg.role === 'user' ? 'white' : 'var(--text-secondary)',
                                             boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                                             border: msg.role === 'assistant' ? '1px solid #e0e0e0' : 'none'
                                         }}
@@ -400,7 +399,7 @@ const AIChat = () => {
                                         style={{
                                             padding: '10px 16px',
                                             borderRadius: '18px 18px 18px 4px',
-                                            background: 'white',
+                                            background: 'var(--container-bg)',
                                             boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                                             border: '1px solid #e0e0e0',
                                             display: 'flex',
@@ -417,7 +416,7 @@ const AIChat = () => {
                         </div>
 
                         {/* Quick Actions */}
-                        <div style={{ padding: '8px 12px', background: '#f8f9fa', borderTop: '1px solid #eee', flexShrink: 0 }}>
+                        <div style={{ padding: '8px 12px', background: 'var(--container-bg)', borderTop: '1px solid rgba(0,0,0,0.06)', flexShrink: 0 }}>
                             <div className="d-flex flex-wrap gap-1">
                                 {getQuickActions().map((action, idx) => (
                                     <Button
@@ -429,7 +428,7 @@ const AIChat = () => {
                                             fontSize: '0.7rem',
                                             borderRadius: '20px',
                                             padding: '4px 12px',
-                                            borderColor: '#ddd',
+                                            borderColor: 'rgba(0,0,0,0.08)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '4px'
@@ -444,7 +443,7 @@ const AIChat = () => {
 
                         {/* Suggested Questions */}
                         {suggestions.length > 0 && messages.length < 5 && (
-                            <div style={{ padding: '8px 12px', background: '#f8f9fa', borderTop: '1px solid #eee', flexShrink: 0 }}>
+                            <div style={{ padding: '8px 12px', background: 'var(--container-bg)', borderTop: '1px solid rgba(0,0,0,0.06)', flexShrink: 0 }}>
                                 <small className="text-muted d-flex align-items-center gap-1">
                                     <FaLightbulb size={12} className="text-warning" />
                                     Suggested questions:
@@ -460,7 +459,7 @@ const AIChat = () => {
                                                 fontSize: '0.7rem',
                                                 borderRadius: '20px',
                                                 padding: '2px 10px',
-                                                borderColor: '#2c3e8f33'
+                                                borderColor: 'rgba(0,200,83,0.2)'
                                             }}
                                         >
                                             {suggestion}
@@ -473,9 +472,9 @@ const AIChat = () => {
                         {/* Input */}
                         <Card.Footer
                             style={{
-                                background: 'white',
+                                background: 'var(--container-bg)',
                                 padding: '8px 12px',
-                                borderTop: '1px solid #eee',
+                                borderTop: '1px solid rgba(0,0,0,0.06)',
                                 flexShrink: 0
                             }}
                         >
@@ -506,14 +505,14 @@ const AIChat = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        background: 'linear-gradient(135deg, #2c3e8f, #1a237e)',
+                                        background: 'var(--gradient)',
                                         border: 'none'
                                     }}
                                 >
                                     <FaPaperPlane size={14} />
                                 </Button>
                             </Form.Group>
-                            <div style={{ fontSize: '0.6rem', textAlign: 'center', color: '#aaa', marginTop: '4px' }}>
+                            <div style={{ fontSize: '0.6rem', textAlign: 'center', color: 'var(--muted)', marginTop: '4px' }}>
                                 {conversationCount > 0 && `${conversationCount} messages · `}
                                 Powered by RecruitAI
                             </div>
@@ -534,7 +533,7 @@ const AIChat = () => {
                     }
                     .chat-toggle-btn:hover {
                         transform: scale(1.05);
-                        box-shadow: 0 6px 30px rgba(44, 62, 143, 0.5);
+                        box-shadow: 0 6px 30px rgba(0,200,83,0.38);
                     }
                     .badge-dot {
                         animation: pulse 1.5s infinite;

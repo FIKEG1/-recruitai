@@ -16,7 +16,7 @@ const resumeRoutes = require('./routes/resumes');
 const reportRoutes = require('./routes/reports');
 const uploadRoutes = require('./routes/upload');
 const adminRoutes = require('./routes/admin');
-const internshipRoutes = require('./routes/internships');  // ← NEW
+const internshipRoutes = require('./routes/internships');
 
 const app = express();
 
@@ -39,8 +39,12 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// Static files for uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// ============================================
+// STATIC FILES FOR UPLOADS - CORRECTED PATH
+// ============================================
+// The uploads folder is at the root of the project
+// backend/src/app.js -> ../../uploads (goes up 2 levels to reach uploads)
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -50,7 +54,7 @@ app.use('/api/resumes', resumeRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/internships', internshipRoutes);  // ← NEW
+app.use('/api/internships', internshipRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -66,16 +70,22 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Create uploads directory and subdirectories
+// ============================================
+// CREATE UPLOADS DIRECTORY - CORRECTED PATH
+// ============================================
 const fs = require('fs');
 const uploadDir = path.join(__dirname, '../../uploads');
 const profileDir = path.join(__dirname, '../../uploads/profiles');
+const resumeDir = path.join(__dirname, '../../uploads/resumes');
 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 if (!fs.existsSync(profileDir)) {
     fs.mkdirSync(profileDir, { recursive: true });
+}
+if (!fs.existsSync(resumeDir)) {
+    fs.mkdirSync(resumeDir, { recursive: true });
 }
 
 const PORT = process.env.PORT || 5000;

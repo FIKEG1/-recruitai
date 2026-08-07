@@ -1,6 +1,6 @@
 .footer {
-    background: #1a1a2e;
-    color: #f0f0f0;
+    background: var(--footer-bg);
+    color: rgba(255,255,255,0.95);
     margin-top: 60px;
 }
 
@@ -8,6 +8,7 @@
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 12px;
+    color: white;
 }
 
 .footer-brand .brand-icon {
@@ -16,7 +17,7 @@
 }
 
 .footer-text {
-    color: #aaa;
+    color: rgba(255,255,255,0.85);
     font-size: 0.9rem;
     line-height: 1.6;
 }
@@ -45,8 +46,11 @@
     transition: color 0.3s ease;
 }
 
+.footer-links a {
+    color: rgba(255,255,255,0.85);
+}
 .footer-links a:hover {
-    color: #4CAF50;
+    color: var(--primary-color);
 }
 
 .social-icons {
@@ -63,15 +67,15 @@
     height: 38px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.06);
-    color: #aaa;
+    color: rgba(255,255,255,0.9);
     text-decoration: none;
     transition: all 0.3s ease;
     font-size: 1.1rem;
 }
 
 .social-link:hover {
-    background: #4CAF50;
-    color: #fff;
+    background: var(--primary-color);
+    color: var(--footer-bg);
     transform: translateY(-3px);
 }
 

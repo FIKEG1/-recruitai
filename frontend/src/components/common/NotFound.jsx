@@ -8,7 +8,7 @@ const NotFound = () => {
         <Container className="py-5">
             <Row className="justify-content-center">
                 <Col md={6} className="text-center">
-                    <div style={{ fontSize: '6rem', fontWeight: 'bold', color: '#2c3e8f' }} className="mb-3">404</div>
+                    <div style={{ fontSize: '6rem', fontWeight: 'bold', color: 'var(--primary-color)' }} className="mb-3">404</div>
                     <h2 className="fw-bold">Page Not Found</h2>
                     <p className="text-muted mb-4">
                         The page you are looking for might have been removed, had its name changed, 

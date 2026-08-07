@@ -1,5 +1,5 @@
 .hero-section {
-    background: linear-gradient(135deg, #2c3e8f 0%, #1a237e 100%);
+    background: var(--gradient);
     padding: 80px 0 60px;
     position: relative;
     overflow: hidden;
@@ -218,7 +218,7 @@
     width: 60px;
     height: 60px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #2c3e8f, #1a237e);
+    background: var(--gradient);
     color: #fff;
     display: flex;
     align-items: center;
@@ -282,7 +282,7 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2c3e8f, #1a237e);
+    background: var(--gradient);
     color: #fff;
     display: flex;
     align-items: center;
@@ -293,7 +293,7 @@
 }
 
 .cta-section {
-    background: linear-gradient(135deg, #2c3e8f, #1a237e);
+    background: var(--gradient);
     padding: 70px 0;
     color: #fff;
 }

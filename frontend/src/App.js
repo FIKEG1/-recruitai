@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
@@ -28,13 +29,15 @@ import ApplyInternship from './components/internships/ApplyInternship';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
+import { useTheme } from './context/ThemeContext';
 
 function App() {
+    const { theme } = useTheme();
     return (
         <AuthProvider>
             <LanguageProvider>
                 <Router>
-                    <div className="d-flex flex-column min-vh-100">
+                <div className="d-flex flex-column min-vh-100">
                         <Navbar />
                         <main className="flex-grow-1">
                             <Routes>
@@ -121,7 +124,7 @@ function App() {
                             pauseOnFocusLoss
                             draggable
                             pauseOnHover
-                            theme="light"
+                            theme={theme === 'dark' ? 'dark' : 'light'}
                         />
                     </div>
                 </Router>

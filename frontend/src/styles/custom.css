@@ -19,7 +19,7 @@
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2c3e8f, #1a237e);
+    background: var(--gradient);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -62,27 +62,27 @@
 }
 
 .role-radio:hover {
-    border-color: #2c3e8f;
-    background: rgba(44, 62, 143, 0.04);
+    border-color: var(--primary-color);
+    background: rgba(0, 200, 83, 0.06);
 }
 
 .role-radio .form-check-input:checked + .form-check-label {
-    border-color: #2c3e8f;
+    border-color: var(--primary-color);
 }
 
 .role-radio .form-check-input:checked ~ .form-check-label {
-    border-color: #2c3e8f;
+    border-color: var(--primary-color);
 }
 
 /* Dashboard */
 .welcome-section h2 {
-    color: #1a1a2e;
+    color: var(--text-primary);
 }
 
 .dashboard-card {
     border: none;
     border-radius: 16px;
-    background: white;
+    background: var(--surface);
     padding: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     transition: all 0.3s ease;
@@ -100,13 +100,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(44, 62, 143, 0.08);
+    background: rgba(0, 200, 83, 0.06);
 }
 
 .dashboard-card .number {
     font-size: 2rem;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--text-primary);
 }
 
 .dashboard-card .label {
@@ -169,10 +169,10 @@
     font-size: 0.85rem;
 }
 
-.match-high {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
+    .resume-option:hover {
+        border-color: var(--primary-color);
+        background: rgba(0, 200, 83, 0.06);
+    }
 
 .match-medium {
     background: #fff3e0;
@@ -249,7 +249,7 @@
 
 /* Button Variants */
 .btn-primary-gradient {
-    background: linear-gradient(135deg, #2c3e8f, #1a237e);
+    background: var(--gradient);
     border: none;
     color: white;
     padding: 10px 28px;
@@ -260,7 +260,7 @@
 
 .btn-primary-gradient:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(44, 62, 143, 0.35);
+    box-shadow: 0 8px 30px rgba(0, 200, 83, 0.12);
     color: white;
 }
 
@@ -327,12 +327,12 @@ select.form-control-custom {
 }
 
 .form-check-input:checked {
-    background-color: #2c3e8f;
-    border-color: #2c3e8f;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .form-check-input:focus {
-    box-shadow: 0 0 0 3px rgba(44, 62, 143, 0.15);
+    box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.12);
 }
 
 .form-check-input[type="radio"] {
@@ -351,12 +351,12 @@ select.form-control-custom {
 }
 
 .pagination .page-link:hover {
-    background: rgba(44, 62, 143, 0.08);
-    color: #2c3e8f;
+    background: rgba(0, 200, 83, 0.06);
+    color: var(--primary-color);
 }
 
 .pagination .page-item.active .page-link {
-    background: #2c3e8f;
+    background: var(--primary-color);
     color: white;
 }
 

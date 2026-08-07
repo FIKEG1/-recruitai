@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
 const api = axios.create({
     baseURL: API_URL,
@@ -37,5 +38,11 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+export const getImageUrl = (path) => {
+    if (!path) return null;
+    if (/^https?:\/\//i.test(path)) return path;
+    return `${BASE_URL}/${path.replace(/^\/+/, '')}`;
+};
 
 export default api;

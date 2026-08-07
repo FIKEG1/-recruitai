@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Form, Button, Spinner, Alert, Badge, Tab, Na
 import { FaUser, FaUpload, FaTrash, FaStar, FaCheck, FaPlus, FaTimes, FaGraduationCap, FaBriefcase, FaCertificate, FaLanguage, FaEdit, FaSave, FaCamera } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import { toast } from 'react-toastify';
 
 const Profile = () => {
@@ -14,6 +14,7 @@ const Profile = () => {
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [resumes, setResumes] = useState([]);
     const [profilePhoto, setProfilePhoto] = useState(user?.profile?.profilePhoto || null);
+    const [previewPhoto, setPreviewPhoto] = useState(null);
     const [formData, setFormData] = useState({
         name: user?.name || '',
         profile: {
@@ -109,17 +110,22 @@ const Profile = () => {
         const formData = new FormData();
         formData.append('photo', file);
 
+        const localPreview = URL.createObjectURL(file);
+        setPreviewPhoto(localPreview);
         setUploadingPhoto(true);
         try {
             const response = await api.post('/upload/profile-photo', formData);
-            setProfilePhoto(response.data.data.profilePhoto);
+            const uploadedPhoto = response.data.data.profilePhoto;
+            setProfilePhoto(uploadedPhoto);
+            setPreviewPhoto(null);
             toast.success('Profile photo updated successfully!');
             
             // Update user context
             await updateProfile({
-                profile: { profilePhoto: response.data.data.profilePhoto }
+                profile: { profilePhoto: uploadedPhoto }
             });
         } catch (error) {
+            setPreviewPhoto(null);
             toast.error(error.response?.data?.message || 'Failed to upload photo');
         } finally {
             setUploadingPhoto(false);
@@ -343,16 +349,21 @@ const Profile = () => {
                         <Card className="shadow-sm mb-4 text-center">
                             <Card.Body className="p-4">
                                 <div className="position-relative d-inline-block">
-                                    {profilePhoto ? (
+                                    {profilePhoto || previewPhoto ? (
                                         <Image 
-                                            src={`http://localhost:5000/${profilePhoto}`} 
+                                            key={profilePhoto || previewPhoto}
+                                            src={previewPhoto || getImageUrl(profilePhoto)}
                                             roundedCircle 
                                             style={{ 
                                                 width: '150px', 
                                                 height: '150px', 
                                                 objectFit: 'cover',
                                                 border: '4px solid #2c3e8f'
-                                            }} 
+                                            }}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling && (e.target.nextSibling.style.display = 'flex');
+                                            }}
                                         />
                                     ) : (
                                         <div 
@@ -373,6 +384,25 @@ const Profile = () => {
                                             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                                         </div>
                                     )}
+                                    {profilePhoto || previewPhoto ? (
+                                        <div 
+                                            style={{
+                                                width: '150px',
+                                                height: '150px',
+                                                borderRadius: '50%',
+                                                background: 'linear-gradient(135deg, #2c3e8f, #1a237e)',
+                                                display: 'none',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white',
+                                                fontSize: '4rem',
+                                                margin: '0 auto',
+                                                border: '4px solid #2c3e8f'
+                                            }}
+                                        >
+                                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                        </div>
+                                    ) : null}
                                     <div className="position-absolute bottom-0 end-0">
                                         <label 
                                             htmlFor="photo-upload" 
@@ -392,6 +422,7 @@ const Profile = () => {
                                             id="photo-upload"
                                             type="file"
                                             accept="image/*"
+                                            capture="user"
                                             onChange={handlePhotoUpload}
                                             style={{ display: 'none' }}
                                             disabled={uploadingPhoto}
