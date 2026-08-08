@@ -1,41 +1,42 @@
 :root {
-    --primary-color: #00c853; /* apple green */
-    --primary-strong: #007a33;
-    --secondary-color: #00e676;
-    --accent-color: #ffb74d;
-    --shadow: 0 6px 30px rgba(16, 24, 20, 0.08);
-    --header-bg: var(--primary-strong);
-    --footer-bg: #053927;
-    --container-bg: #f9faf9; /* subtle off-white for cards/sections */
+    --primary-color: #ff6b35; /* Vibrant coral orange inspired by Afriwork */
+    --primary-strong: #e83e8c; /* Hot pink magenta */
+    --secondary-color: #7b2cbf; /* Deep royal purple */
+    --accent-color: #ff9f1c; /* Warm amber accent */
+    --shadow: 0 8px 32px rgba(123, 44, 191, 0.08);
+    --header-bg: #ffffff;
+    --footer-bg: #120e1d;
+    --container-bg: #ffffff;
+    --gradient: linear-gradient(135deg, #ff6b35 0%, #e83e8c 100%);
+    --gradient-purple: linear-gradient(135deg, #7b2cbf 0%, #9c27b0 100%);
 }
 
-/* Light theme variables */
+/* Light theme variables - Afriwork style clean warm canvas */
 .theme-light {
-    --body-bg: #ffffff; /* main page background: white */
+    --body-bg: #faf9fb; /* Clean off-white background */
     --surface: #ffffff; /* cards and content panels */
-    --container-bg: #fbfdfb; /* slight contrast for some containers */
-    --text-primary: #07251b; /* dark green text */
-    --text-secondary: #264d3f; /* muted dark green */
-    --muted: #6b7f72;
-    --gradient: linear-gradient(135deg, #00c853 0%, #00b54a 100%);
-    --header-bg: #07251b; /* darker header */
-    --footer-bg: #062917; /* darker footer */
+    --container-bg: #ffffff; 
+    --text-primary: #1e1b2e; /* Dark slate text (no dark green) */
+    --text-secondary: #4a4659; /* Muted slate text */
+    --muted: #767185;
+    --gradient: linear-gradient(135deg, #ff6b35 0%, #e83e8c 100%);
+    --header-bg: #ffffff; 
+    --footer-bg: #120e1d;
 }
 
-/* Dark theme variables inspired by uploaded CSS */
+/* Dark theme variables - Midnight Purple Slate (NO Green) */
 .theme-dark {
-    /* Darker green palette (still green-forward, not black) */
-    --body-bg: linear-gradient(180deg, #0a2e23 0%, #07251b 45%, #041b15 100%);
-    --surface: #07251b;
-    --container-bg: #062917;
-    --text-primary: #e8f7ef;
-    --text-secondary: #cfeee0;
-    --muted: #9fcfb6;
-    --primary-color: #00e676; /* bright green */
-    --secondary-color: #00c853;
-    --gradient: linear-gradient(135deg, #00e676 0%, #00c853 100%);
-    --header-bg: #041b15;
-    --footer-bg: #031611;
+    --body-bg: linear-gradient(180deg, #120e1d 0%, #1a1528 50%, #0d0a14 100%);
+    --surface: #1c172b;
+    --container-bg: #181424;
+    --text-primary: #f4f3f8;
+    --text-secondary: #cfcce0;
+    --muted: #9791b0;
+    --primary-color: #ff7e33;
+    --secondary-color: #e83e8c;
+    --gradient: linear-gradient(135deg, #ff7e33 0%, #e83e8c 100%);
+    --header-bg: #120e1d;
+    --footer-bg: #0b0812;
 }
 
 * {
@@ -51,6 +52,15 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     transition: background-color 0.28s ease, color 0.28s ease;
+}
+
+/* Force Amharic font for Amharic language - Using body class with universal selector */
+body.lang-am {
+    font-family: 'Noto Sans Ethiopic', 'Abyssinica SIL', sans-serif !important;
+}
+
+body.lang-am * {
+    font-family: 'Noto Sans Ethiopic', 'Abyssinica SIL', sans-serif !important;
 }
 
 #root {
@@ -99,7 +109,7 @@ body {
 
 .btn-primary-gradient:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0, 200, 120, 0.12);
+    box-shadow: 0 8px 30px rgba(255, 107, 53, 0.3);
     color: white;
 }
 
@@ -212,7 +222,7 @@ body {
 
 /* Job Card */
 .job-card {
-    background: var(--container-bg);
+    background: var(--surface);
     border-radius: 16px;
     padding: 24px;
     box-shadow: var(--shadow);
@@ -229,6 +239,14 @@ body {
     font-size: 1.2rem;
     font-weight: 600;
     color: var(--text-primary);
+}
+
+.job-search-section {
+    background: var(--body-bg);
+}
+
+.internship-section {
+    background: var(--body-bg);
 }
 
 .job-card .company-name {
@@ -262,8 +280,8 @@ body {
 }
 
 .job-tag-internship {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: #f3e5f5;
+    color: #7b2cbf;
 }
 
 /* Status Badges */
@@ -285,18 +303,18 @@ body {
 }
 
 .status-shortlisted {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: #f3e5f5;
+    color: #7b2cbf;
 }
 
 .status-interviewed {
-    background: #f3e5f5;
-    color: #7b1fa2;
+    background: #ede7f6;
+    color: #512da8;
 }
 
 .status-offered {
-    background: #e8f5e9;
-    color: #1b5e20;
+    background: #fff0f5;
+    color: #d81b60;
 }
 
 .status-rejected {
@@ -317,8 +335,8 @@ body {
 }
 
 .match-high {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: #fff0f5;
+    color: #e83e8c;
 }
 
 .match-medium {
@@ -345,9 +363,9 @@ body {
 }
 
 .match-score-circle.success {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 3px solid #4caf50;
+    background: #fff0f5;
+    color: #e83e8c;
+    border: 3px solid #e83e8c;
 }
 
 .match-score-circle.warning {

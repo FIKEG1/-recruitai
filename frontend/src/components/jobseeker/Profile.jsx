@@ -13,7 +13,20 @@ const Profile = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [resumes, setResumes] = useState([]);
-    const [profilePhoto, setProfilePhoto] = useState(user?.profile?.profilePhoto || null);
+    const [profilePhoto, setProfilePhoto] = useState(null);
+
+    useEffect(() => {
+        console.log('Profile component - User data:', user);
+        console.log('Profile component - Profile photo from user:', user?.profile?.profilePhoto);
+        if (user?.profile?.profilePhoto) {
+            setProfilePhoto(user.profile.profilePhoto);
+            const photoUrl = getImageUrl(user.profile.profilePhoto);
+            console.log('Setting profile photo path:', user.profile.profilePhoto);
+            console.log('Generated photo URL:', photoUrl);
+        } else {
+            console.log('No profile photo found in user data');
+        }
+    }, [user]);
     const [previewPhoto, setPreviewPhoto] = useState(null);
     const [formData, setFormData] = useState({
         name: user?.name || '',
@@ -115,21 +128,35 @@ const Profile = () => {
         setUploadingPhoto(true);
         try {
             const response = await api.post('/upload/profile-photo', formData);
+            console.log('Upload response:', response.data);
             const uploadedPhoto = response.data.data.profilePhoto;
+            console.log('Uploaded photo path:', uploadedPhoto);
             setProfilePhoto(uploadedPhoto);
             setPreviewPhoto(null);
             toast.success('Profile photo updated successfully!');
             
-            // Update user context
-            await updateProfile({
-                profile: { profilePhoto: uploadedPhoto }
-            });
+            // Reload user data to get updated profile
+            await loadUser();
         } catch (error) {
+            console.error('Upload error:', error);
             setPreviewPhoto(null);
             toast.error(error.response?.data?.message || 'Failed to upload photo');
         } finally {
             setUploadingPhoto(false);
             e.target.value = '';
+        }
+    };
+
+    const loadUser = async () => {
+        try {
+            const response = await api.get('/auth/me');
+            const updatedUser = response.data.user;
+            if (updatedUser?.profile?.profilePhoto) {
+                console.log('Loaded user with photo:', updatedUser.profile.profilePhoto);
+                setProfilePhoto(updatedUser.profile.profilePhoto);
+            }
+        } catch (error) {
+            console.error('Error loading user:', error);
         }
     };
 
@@ -350,21 +377,60 @@ const Profile = () => {
                             <Card.Body className="p-4">
                                 <div className="position-relative d-inline-block">
                                     {profilePhoto || previewPhoto ? (
-                                        <Image 
-                                            key={profilePhoto || previewPhoto}
-                                            src={previewPhoto || getImageUrl(profilePhoto)}
-                                            roundedCircle 
-                                            style={{ 
-                                                width: '150px', 
-                                                height: '150px', 
-                                                objectFit: 'cover',
-                                                border: '4px solid #2c3e8f'
-                                            }}
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                                e.target.nextSibling && (e.target.nextSibling.style.display = 'flex');
-                                            }}
-                                        />
+                                        <>
+                                            <img 
+                                                key={profilePhoto || previewPhoto}
+                                                src={previewPhoto || getImageUrl(profilePhoto)}
+                                                alt="Profile"
+                                                style={{ 
+                                                    width: '150px', 
+                                                    height: '150px', 
+                                                    objectFit: 'cover',
+                                                    border: '4px solid #2c3e8f',
+                                                    borderRadius: '50%',
+                                                    display: 'block'
+                                                }}
+                                                onError={(e) => {
+                                                    console.error('=== IMAGE LOAD ERROR ===');
+                                                    console.error('Image src:', e.target.src);
+                                                    console.error('Profile photo path:', profilePhoto);
+                                                    console.error('Preview photo:', previewPhoto);
+                                                    console.error('Generated URL:', getImageUrl(profilePhoto));
+                                                    e.target.style.display = 'none';
+                                                    const fallback = e.target.parentElement.querySelector('.fallback-avatar');
+                                                    if (fallback) {
+                                                        console.log('Showing fallback avatar');
+                                                        fallback.style.display = 'flex';
+                                                    }
+                                                }}
+                                                onLoad={(e) => {
+                                                    console.log('=== IMAGE LOADED SUCCESSFULLY ===');
+                                                    console.log('Image src:', e.target.src);
+                                                    const fallback = e.target.parentElement.querySelector('.fallback-avatar');
+                                                    if (fallback) fallback.style.display = 'none';
+                                                }}
+                                            />
+                                            <div 
+                                                className="fallback-avatar"
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '150px',
+                                                    height: '150px',
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #2c3e8f, #1a237e)',
+                                                    display: 'none',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: 'white',
+                                                    fontSize: '4rem',
+                                                    border: '4px solid #2c3e8f'
+                                                }}
+                                            >
+                                                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                            </div>
+                                        </>
                                     ) : (
                                         <div 
                                             style={{ 
@@ -384,25 +450,6 @@ const Profile = () => {
                                             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                                         </div>
                                     )}
-                                    {profilePhoto || previewPhoto ? (
-                                        <div 
-                                            style={{
-                                                width: '150px',
-                                                height: '150px',
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #2c3e8f, #1a237e)',
-                                                display: 'none',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'white',
-                                                fontSize: '4rem',
-                                                margin: '0 auto',
-                                                border: '4px solid #2c3e8f'
-                                            }}
-                                        >
-                                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                        </div>
-                                    ) : null}
                                     <div className="position-absolute bottom-0 end-0">
                                         <label 
                                             htmlFor="photo-upload" 

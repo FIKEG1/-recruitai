@@ -12,6 +12,7 @@ const Dashboard = () => {
     const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [applications, setApplications] = useState([]);
+    const [attendance, setAttendance] = useState({ today: { checkedIn: false, checkedOut: false } });
     const [showInterviewModal, setShowInterviewModal] = useState(false);
     const [selectedApplication, setSelectedApplication] = useState(null);
     const [stats, setStats] = useState({
@@ -25,6 +26,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         fetchApplications();
+        fetchAttendance();
     }, []);
 
     const fetchApplications = async () => {
@@ -50,13 +52,22 @@ const Dashboard = () => {
         }
     };
 
+    const fetchAttendance = async () => {
+        try {
+            const response = await api.get('/attendance/me');
+            setAttendance(response.data || { today: { checkedIn: false, checkedOut: false } });
+        } catch (error) {
+            console.error('Error fetching attendance:', error);
+        }
+    };
+
     const getStatusBadge = (status) => {
         const statusMap = {
             pending: 'warning',
             reviewed: 'info',
-            shortlisted: 'success',
-            interviewed: 'primary',
-            offered: 'success',
+            shortlisted: 'primary',
+            interviewed: 'dark',
+            offered: 'primary',
             rejected: 'danger'
         };
         return statusMap[status] || 'secondary';
@@ -232,6 +243,40 @@ const Dashboard = () => {
                                 <div className="label" style={{ fontSize: '0.7rem', wordBreak: 'break-word' }}>
                                     {t('dashboard.rejected')}
                                 </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+
+                {/* ============================================
+                    ATTENDANCE CARD - ADDED!
+                ============================================ */}
+                <Row className="g-3 mb-4">
+                    <Col xs={12} sm={6} md={3}>
+                        <Card className="dashboard-card text-center" style={{ borderLeftColor: '#17a2b8' }}>
+                            <Card.Body className="p-2 p-md-3">
+                                <div className="icon text-info">
+                                    <FaClock size={24} />
+                                </div>
+                                <div className="number" style={{ fontSize: '1.5rem' }}>
+                                    {attendance.today?.checkedIn ? 
+                                        (attendance.today?.checkedOut ? '✅' : '⏳') : 
+                                        '❌'}
+                                </div>
+                                <div className="label" style={{ fontSize: '0.7rem', wordBreak: 'break-word' }}>
+                                    {attendance.today?.checkedIn ? 
+                                        (attendance.today?.checkedOut ? 'Completed' : 'Working...') : 
+                                        'Not Checked In'}
+                                </div>
+                                <Button 
+                                    as={Link} 
+                                    to="/jobseeker/attendance" 
+                                    variant="outline-info" 
+                                    size="sm" 
+                                    className="mt-2 w-100"
+                                >
+                                    View Attendance
+                                </Button>
                             </Card.Body>
                         </Card>
                     </Col>

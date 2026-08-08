@@ -300,8 +300,8 @@ const InternshipList = () => {
                                         <div className="mt-2">
                                             {internship.requirements?.skills?.slice(0, 3).map((skill, idx) => (
                                                 <span key={idx} className="job-tag" style={{
-                                                    background: '#e8f5e9',
-                                                    color: '#2e7d32',
+                                                    background: 'rgba(123, 44, 191, 0.1)',
+                                                    color: '#7b2cbf',
                                                     padding: '2px 10px',
                                                     borderRadius: '12px',
                                                     fontSize: '0.7rem',

@@ -23,9 +23,22 @@ import ManageUsers from './components/admin/ManageUsers';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import AIChat from './components/common/AIChat';
-// NEW: Internship Imports
+
+// Internship Imports
 import InternshipList from './components/internships/InternshipList';
 import ApplyInternship from './components/internships/ApplyInternship';
+
+// ============================================
+// NEW: HRM ADMIN IMPORTS
+// ============================================
+import ConfigManager from './components/admin/ConfigManager';
+import EmployeeManager from './components/admin/EmployeeManager';
+import LeaveManager from './components/admin/LeaveManager';
+import AttendanceManager from './components/admin/AttendanceManager';
+import TrainingManager from './components/admin/TrainingManager';
+import ComplaintManager from './components/admin/ComplaintManager';
+import DelegationManager from './components/admin/DelegationManager';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
@@ -33,15 +46,18 @@ import { useTheme } from './context/ThemeContext';
 
 function App() {
     const { theme } = useTheme();
+    
     return (
         <AuthProvider>
             <LanguageProvider>
                 <Router>
-                <div className="d-flex flex-column min-vh-100">
+                    <div className="d-flex flex-column min-vh-100">
                         <Navbar />
                         <main className="flex-grow-1">
                             <Routes>
-                                {/* Public Routes */}
+                                {/* ============================================
+                                    PUBLIC ROUTES
+                                ============================================ */}
                                 <Route path="/" element={<Home />} />
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/register" element={<Register />} />
@@ -50,7 +66,9 @@ function App() {
                                 <Route path="/privacy" element={<PrivacyPolicy />} />
                                 <Route path="/terms" element={<TermsOfService />} />
 
-                                {/* Job Seeker Routes */}
+                                {/* ============================================
+                                    JOB SEEKER ROUTES
+                                ============================================ */}
                                 <Route path="/jobseeker/dashboard" element={
                                     <ProtectedRoute allowedRoles={['jobseeker']}>
                                         <Dashboard />
@@ -67,7 +85,9 @@ function App() {
                                     </ProtectedRoute>
                                 } />
 
-                                {/* Employer Routes */}
+                                {/* ============================================
+                                    EMPLOYER ROUTES
+                                ============================================ */}
                                 <Route path="/employer/jobs" element={
                                     <ProtectedRoute allowedRoles={['employer']}>
                                         <JobList />
@@ -89,7 +109,10 @@ function App() {
                                     </ProtectedRoute>
                                 } />
 
-                                {/* Admin Routes */}
+                                {/* ============================================
+                                    ADMIN ROUTES
+                                ============================================ */}
+                                {/* Core Admin */}
                                 <Route path="/admin/dashboard" element={
                                     <ProtectedRoute allowedRoles={['admin']}>
                                         <AdminDashboard />
@@ -101,14 +124,70 @@ function App() {
                                     </ProtectedRoute>
                                 } />
 
-                                {/* Internship Routes */}
+                                {/* ============================================
+                                    NEW: HRM ADMIN ROUTES
+                                ============================================ */}
+                                {/* Configuration Module */}
+                                <Route path="/admin/config" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <ConfigManager />
+                                    </ProtectedRoute>
+                                } />
+
+                                {/* Employee Management */}
+                                <Route path="/admin/employees" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <EmployeeManager />
+                                    </ProtectedRoute>
+                                } />
+
+                                {/* Leave Management */}
+                                <Route path="/admin/leaves" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <LeaveManager />
+                                    </ProtectedRoute>
+                                } />
+
+                                {/* Attendance Management */}
+                                <Route path="/admin/attendance" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <AttendanceManager />
+                                    </ProtectedRoute>
+                                } />
+
+                                {/* Training Management */}
+                                <Route path="/admin/training" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <TrainingManager />
+                                    </ProtectedRoute>
+                                } />
+
+                                {/* Complaint Management */}
+                                <Route path="/admin/complaints" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <ComplaintManager />
+                                    </ProtectedRoute>
+                                } />
+
+                                {/* Delegation Management */}
+                                <Route path="/admin/delegations" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <DelegationManager />
+                                    </ProtectedRoute>
+                                } />
+
+                                {/* ============================================
+                                    INTERNSHIP ROUTES
+                                ============================================ */}
                                 <Route path="/internships/apply/:id" element={
                                     <ProtectedRoute allowedRoles={['jobseeker']}>
                                         <ApplyInternship />
                                     </ProtectedRoute>
                                 } />
 
-                                {/* 404 Not Found */}
+                                {/* ============================================
+                                    404 NOT FOUND
+                                ============================================ */}
                                 <Route path="*" element={<Navigate to="/" />} />
                             </Routes>
                         </main>

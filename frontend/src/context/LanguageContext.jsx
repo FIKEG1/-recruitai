@@ -33,6 +33,12 @@ export const LanguageProvider = ({ children }) => {
         document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
         document.documentElement.lang = lang;
         
+        // Add language class to body for CSS targeting
+        document.body.classList.remove('lang-en', 'lang-am');
+        document.body.classList.add(`lang-${lang}`);
+        
+        console.log('Language updated:', lang, 'HTML lang:', document.documentElement.lang, 'Body classes:', document.body.className);
+        
         // Also update body class for additional RTL styling if needed
         if (isRTL) {
             document.body.classList.add('rtl');

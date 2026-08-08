@@ -42,7 +42,12 @@ api.interceptors.response.use(
 export const getImageUrl = (path) => {
     if (!path) return null;
     if (/^https?:\/\//i.test(path)) return path;
-    return `${BASE_URL}/${path.replace(/^\/+/, '')}`;
+    const cleanPath = path.replace(/^\/+/, '');
+    // The backend saves path as 'uploads/profiles/filename.jpg'
+    // We need to access it via BASE_URL/uploads/profiles/filename.jpg
+    const url = `${BASE_URL}/${cleanPath}`;
+    console.log('getImageUrl - Path:', path, 'Clean:', cleanPath, 'URL:', url);
+    return url;
 };
 
 export default api;

@@ -114,16 +114,16 @@ const JobSearch = () => {
 
     const getEmploymentTypeBadge = (type) => {
         const typeMap = {
-            'Full-Time': 'success',
+            'Full-Time': 'primary',
             'Part-Time': 'warning',
             'Contract': 'info',
-            'Internship': 'primary'
+            'Internship': 'dark'
         };
         return typeMap[type] || 'secondary';
     };
 
     const getScoreColor = (score) => {
-        if (score >= 70) return 'success';
+        if (score >= 70) return 'primary';
         if (score >= 40) return 'warning';
         return 'danger';
     };
@@ -345,15 +345,16 @@ const JobSearch = () => {
                                                             key={idx} 
                                                             className="job-tag" 
                                                             style={{
-                                                                background: isMatched ? '#e8f5e9' : '#f5f5f5',
-                                                                color: isMatched ? '#2e7d32' : '#666',
-                                                                padding: '2px 10px',
-                                                                borderRadius: '12px',
-                                                                fontSize: '0.7rem',
-                                                                marginRight: '4px',
-                                                                marginBottom: '4px',
+                                                                background: isMatched ? 'rgba(123, 44, 191, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                                                                color: isMatched ? '#7b2cbf' : 'var(--text-secondary)',
+                                                                padding: '4px 12px',
+                                                                borderRadius: '20px',
+                                                                fontSize: '0.75rem',
+                                                                marginRight: '6px',
+                                                                marginBottom: '6px',
                                                                 display: 'inline-block',
-                                                                border: isMatched ? '1px solid #4caf50' : '1px solid #e0e0e0'
+                                                                border: isMatched ? '1px solid rgba(123, 44, 191, 0.3)' : '1px solid rgba(0, 0, 0, 0.08)',
+                                                                fontWeight: isMatched ? '600' : 'normal'
                                                             }}
                                                         >
                                                             {skill}

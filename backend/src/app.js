@@ -8,7 +8,10 @@ require('dotenv').config();
 
 const connectDB = require('./config/database');
 
-// Route imports
+// ============================================
+// ROUTE IMPORTS
+// ============================================
+// Core Routes
 const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
 const applicationRoutes = require('./routes/applications');
@@ -18,12 +21,25 @@ const uploadRoutes = require('./routes/upload');
 const adminRoutes = require('./routes/admin');
 const internshipRoutes = require('./routes/internships');
 
+// ============================================
+// NEW HRM MODULE ROUTES
+// ============================================
+const configRoutes = require('./routes/config');
+const employeeRoutes = require('./routes/employees');
+const leaveRoutes = require('./routes/leaves');
+const attendanceRoutes = require('./routes/attendance');
+const trainingRoutes = require('./routes/training');
+const complaintRoutes = require('./routes/complaints');
+const delegationRoutes = require('./routes/delegations');
+
 const app = express();
 
 // Connect to database
 connectDB();
 
-// Middleware
+// ============================================
+// MIDDLEWARE
+// ============================================
 app.use(helmet());
 app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:3001'],
@@ -40,13 +56,16 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // ============================================
-// STATIC FILES FOR UPLOADS - CORRECTED PATH
+// STATIC FILES FOR UPLOADS
 // ============================================
-// The uploads folder is at the root of the project
-// backend/src/app.js -> ../../uploads (goes up 2 levels to reach uploads)
-app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+const uploadsPath = path.join(__dirname, '../../uploads');
+console.log('📁 Serving static files from:', uploadsPath);
+app.use('/uploads', express.static(uploadsPath));
 
-// Routes
+// ============================================
+// API ROUTES
+// ============================================
+// Core Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
@@ -56,14 +75,36 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/internships', internshipRoutes);
 
-// Health check
+// ============================================
+// HRM MODULE ROUTES
+// ============================================
+app.use('/api/config', configRoutes);           // Configuration Module
+app.use('/api/employees', employeeRoutes);      // Employee Module
+app.use('/api/leaves', leaveRoutes);            // Leave Module
+app.use('/api/attendance', attendanceRoutes);   // Attendance Module
+app.use('/api/training', trainingRoutes);       // Training Module
+app.use('/api/complaints', complaintRoutes);    // Complaint Module
+app.use('/api/delegations', delegationRoutes);  // Delegation Module
+
+// ============================================
+// HEALTH CHECK
+// ============================================
 app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'OK', message: 'Server is running' });
+    res.status(200).json({ 
+        status: 'OK', 
+        message: 'Server is running',
+        modules: {
+            core: ['auth', 'jobs', 'applications', 'resumes', 'reports', 'upload', 'admin', 'internships'],
+            hrm: ['config', 'employees', 'leaves', 'attendance', 'training', 'complaints', 'delegations']
+        }
+    });
 });
 
-// Error handling
+// ============================================
+// ERROR HANDLING
+// ============================================
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('❌ Error:', err.stack);
     res.status(500).json({
         success: false,
         message: err.message || 'Something went wrong!'
@@ -71,12 +112,13 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================
-// CREATE UPLOADS DIRECTORY - CORRECTED PATH
+// CREATE UPLOADS DIRECTORY
 // ============================================
 const fs = require('fs');
 const uploadDir = path.join(__dirname, '../../uploads');
 const profileDir = path.join(__dirname, '../../uploads/profiles');
 const resumeDir = path.join(__dirname, '../../uploads/resumes');
+const documentDir = path.join(__dirname, '../../uploads/documents');
 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -87,12 +129,37 @@ if (!fs.existsSync(profileDir)) {
 if (!fs.existsSync(resumeDir)) {
     fs.mkdirSync(resumeDir, { recursive: true });
 }
+if (!fs.existsSync(documentDir)) {
+    fs.mkdirSync(documentDir, { recursive: true });
+}
 
+// ============================================
+// START SERVER
+// ============================================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`\n🚀 Server running on port ${PORT}`);
     console.log(`📡 API URL: http://localhost:${PORT}/api`);
     console.log(`📁 Uploads directory: ${uploadDir}`);
+    
+    console.log(`\n📋 Core Modules:`);
+    console.log(`   ✅ Authentication: /api/auth`);
+    console.log(`   ✅ Jobs: /api/jobs`);
+    console.log(`   ✅ Applications: /api/applications`);
+    console.log(`   ✅ Resumes: /api/resumes`);
+    console.log(`   ✅ Reports: /api/reports`);
+    console.log(`   ✅ Upload: /api/upload`);
+    console.log(`   ✅ Admin: /api/admin`);
+    console.log(`   ✅ Internships: /api/internships`);
+    
+    console.log(`\n📋 HRM Modules:`);
+    console.log(`   ✅ Configuration: /api/config`);
+    console.log(`   ✅ Employees: /api/employees`);
+    console.log(`   ✅ Leave Management: /api/leaves`);
+    console.log(`   ✅ Attendance: /api/attendance`);
+    console.log(`   ✅ Training: /api/training`);
+    console.log(`   ✅ Complaints: /api/complaints`);
+    console.log(`   ✅ Delegations: /api/delegations`);
 });
 
 module.exports = app;

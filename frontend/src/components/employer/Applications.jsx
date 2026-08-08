@@ -90,9 +90,9 @@ const Applications = () => {
         const statusMap = {
             pending: 'warning',
             reviewed: 'info',
-            shortlisted: 'success',
-            interviewed: 'primary',
-            offered: 'success',
+            shortlisted: 'primary',
+            interviewed: 'dark',
+            offered: 'primary',
             rejected: 'danger'
         };
         return statusMap[status] || 'secondary';

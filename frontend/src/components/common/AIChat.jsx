@@ -459,7 +459,7 @@ const AIChat = () => {
                                                 fontSize: '0.7rem',
                                                 borderRadius: '20px',
                                                 padding: '2px 10px',
-                                                borderColor: 'rgba(0,200,83,0.2)'
+                                                borderColor: 'rgba(255,107,53,0.25)'
                                             }}
                                         >
                                             {suggestion}
@@ -533,7 +533,7 @@ const AIChat = () => {
                     }
                     .chat-toggle-btn:hover {
                         transform: scale(1.05);
-                        box-shadow: 0 6px 30px rgba(0,200,83,0.38);
+                        box-shadow: 0 6px 30px rgba(255,107,53,0.38);
                     }
                     .badge-dot {
                         animation: pulse 1.5s infinite;

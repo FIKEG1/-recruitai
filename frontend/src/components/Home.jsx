@@ -107,10 +107,10 @@ const Home = () => {
                                     <FaRobot className="me-2" /> {t('home.hero_badge')}
                                 </div>
                                 <h1 className="hero-title">
-                                    {t('home.hero_title')}
+                                    The Talent Your Work Deserves. All in <span className="highlight">One Platform.</span>
                                 </h1>
                                 <p className="hero-subtitle">
-                                    {t('home.hero_subtitle')}
+                                    Connect with skilled professionals ready to deliver. From quick tasks to complex projects, find the right people to move your business forward.
                                 </p>
                                 <div className="hero-buttons">
                                     {isAuthenticated ? (

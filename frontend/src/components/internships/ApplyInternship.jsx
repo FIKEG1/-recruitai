@@ -38,7 +38,8 @@ const ApplyInternship = () => {
                 api.get(`/internships/${id}`),
                 api.get('/resumes')
             ]);
-            setInternship(internshipRes.data.internship || null);
+            const internshipData = internshipRes.data.internship || internshipRes.data;
+            setInternship(internshipData);
             setResumes(resumeRes.data.resumes || []);
             if (resumeRes.data.resumes?.length > 0) {
                 const defaultResume = resumeRes.data.resumes.find(r => r.isDefault);
