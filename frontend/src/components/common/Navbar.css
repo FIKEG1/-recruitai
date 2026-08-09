@@ -49,7 +49,7 @@
     background: var(--gradient);
     padding: 6px 12px;
     border-radius: 12px;
-    color: white;
+    color: var(--surface);
     box-shadow: 0 4px 14px rgba(255, 107, 53, 0.3);
 }
 
@@ -83,18 +83,16 @@
 .btn-primary-gradient {
     background: var(--gradient) !important;
     border: none !important;
-    color: white !important;
+    color: var(--surface) !important;
     padding: 10px 24px !important;
     border-radius: 50px !important;
     font-weight: 700 !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.28) !important;
 }
 
 .btn-primary-gradient:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 28px rgba(255, 107, 53, 0.38) !important;
-    color: white !important;
+    color: var(--surface) !important;
 }
 
 .btn-user-dropdown {

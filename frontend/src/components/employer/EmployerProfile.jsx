@@ -166,7 +166,7 @@ const EmployerProfile = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                color: 'white',
+                                                color: 'var(--surface)',
                                                 fontSize: '4rem',
                                                 margin: '0 auto',
                                                 border: '4px solid #2c3e8f'
@@ -185,7 +185,7 @@ const EmployerProfile = () => {
                                                 display: 'none',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                color: 'white',
+                                                color: 'var(--surface)',
                                                 fontSize: '4rem',
                                                 margin: '0 auto',
                                                 border: '4px solid #2c3e8f'
@@ -200,11 +200,11 @@ const EmployerProfile = () => {
                                             style={{ 
                                                 cursor: 'pointer',
                                                 background: '#2c3e8f',
-                                                color: 'white',
+                                                color: 'var(--surface)',
                                                 borderRadius: '50%',
                                                 padding: '10px',
                                                 display: 'inline-block',
-                                                border: '2px solid white'
+                                                border: '2px solid var(--surface)'
                                             }}
                                         >
                                             <FaCamera size={16} />

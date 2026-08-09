@@ -6,24 +6,50 @@ const Employee = require('../models/Employee');
 // @access  Private
 exports.createComplaint = async (req, res) => {
     try {
-        const employee = await Employee.findOne({ user: req.user.id });
+        console.log('=== Create Complaint Debug ===');
+        console.log('User ID:', req.user.id);
+        console.log('Request body:', req.body);
+        
+        let employee = await Employee.findOne({ user: req.user.id });
+        
         if (!employee) {
-            return res.status(404).json({ success: false, message: 'Employee not found' });
+            console.log('Employee not found, creating new employee record');
+            employee = await Employee.create({
+                user: req.user.id,
+                personalInfo: {
+                    firstName: req.user.name || 'Unknown',
+                    lastName: ''
+                },
+                employmentInfo: {
+                    employmentStatus: 'active',
+                    hireDate: new Date()
+                }
+            });
+            console.log('Employee record created:', employee._id);
         }
-
-        const complaint = await Complaint.create({
-            ...req.body,
+        
+        // Map frontend field names to backend schema
+        const complaintData = {
             employee: employee._id,
+            title: req.body.title,
+            type: req.body.category || req.body.type, // frontend sends 'category', backend expects 'type'
+            description: req.body.description,
+            priority: req.body.priority || 'medium',
             history: [{
                 action: 'created',
                 note: 'Complaint submitted',
                 user: req.user.id
             }]
-        });
+        };
+        
+        console.log('Complaint data:', complaintData);
+        
+        const complaint = await Complaint.create(complaintData);
+        console.log('Complaint created:', complaint._id);
 
         res.status(201).json({ success: true, data: complaint });
     } catch (error) {
-        console.error(error);
+        console.error('Create Complaint Error:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
@@ -51,15 +77,21 @@ exports.getComplaints = async (req, res) => {
 // @access  Private
 exports.getMyComplaints = async (req, res) => {
     try {
+        console.log('=== Get My Complaints Debug ===');
+        console.log('User ID:', req.user.id);
+        
         const employee = await Employee.findOne({ user: req.user.id });
         if (!employee) {
-            return res.status(404).json({ success: false, message: 'Employee not found' });
+            console.log('Employee not found, returning empty array');
+            return res.status(200).json({ success: true, data: [] });
         }
 
         const complaints = await Complaint.find({ employee: employee._id });
+        console.log('Found complaints:', complaints.length);
+        
         res.status(200).json({ success: true, data: complaints });
     } catch (error) {
-        console.error(error);
+        console.error('Get My Complaints Error:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

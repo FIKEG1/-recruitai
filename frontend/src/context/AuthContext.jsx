@@ -43,7 +43,14 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
+            console.log('=== Frontend Login Debug ===');
+            console.log('Email:', email);
+            console.log('Password provided:', password ? 'Yes' : 'No');
+            
             const response = await api.post('/auth/login', { email, password });
+            
+            console.log('Login response:', response.data);
+            
             const { token, user } = response.data;
             localStorage.setItem('token', token);
             setToken(token);
@@ -52,6 +59,11 @@ export const AuthProvider = ({ children }) => {
             toast.success('Login successful!');
             return { success: true, user };
         } catch (error) {
+            console.error('=== Frontend Login Error ===');
+            console.error('Error:', error);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            
             const message = error.response?.data?.message || 'Login failed. Please try again.';
             toast.error(message);
             return { success: false, message };

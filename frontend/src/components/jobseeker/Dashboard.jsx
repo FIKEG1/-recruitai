@@ -141,7 +141,7 @@ const Dashboard = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: 'white',
+                                color: 'var(--surface)',
                                 fontSize: '1.8rem',
                                 fontWeight: 'bold',
                                 marginRight: '15px'

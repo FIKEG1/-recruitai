@@ -63,7 +63,7 @@ const Register = () => {
                                         <span style={{ fontSize: '3rem' }}>🚀</span>
                                     </div>
                                     <h3 className="fw-bold">Create Account</h3>
-                                    <p className="text-muted">Join RecruitAI and find your perfect job</p>
+                                    <p className="text-muted">Join the platform and find your perfect job</p>
                                 </div>
 
                                 {error && (

@@ -127,18 +127,28 @@ const Profile = () => {
         setPreviewPhoto(localPreview);
         setUploadingPhoto(true);
         try {
+            console.log('=== Starting photo upload ===');
+            console.log('File:', file.name, file.type, file.size);
             const response = await api.post('/upload/profile-photo', formData);
             console.log('Upload response:', response.data);
             const uploadedPhoto = response.data.data.profilePhoto;
             console.log('Uploaded photo path:', uploadedPhoto);
+            
+            // Update state immediately
             setProfilePhoto(uploadedPhoto);
             setPreviewPhoto(null);
-            toast.success('Profile photo updated successfully!');
             
-            // Reload user data to get updated profile
-            await loadUser();
+            // Update user context
+            await updateProfile({
+                profile: { profilePhoto: uploadedPhoto }
+            });
+            
+            toast.success('Profile photo updated successfully!');
+            console.log('=== Photo upload completed ===');
         } catch (error) {
-            console.error('Upload error:', error);
+            console.error('=== Upload error ===');
+            console.error('Error:', error);
+            console.error('Response:', error.response?.data);
             setPreviewPhoto(null);
             toast.error(error.response?.data?.message || 'Failed to upload photo');
         } finally {
@@ -423,7 +433,7 @@ const Profile = () => {
                                                     display: 'none',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    color: 'white',
+                                                    color: 'var(--surface)',
                                                     fontSize: '4rem',
                                                     border: '4px solid #2c3e8f'
                                                 }}
@@ -441,7 +451,7 @@ const Profile = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                color: 'white',
+                                                color: 'var(--surface)',
                                                 fontSize: '4rem',
                                                 margin: '0 auto',
                                                 border: '4px solid #2c3e8f'
@@ -452,28 +462,27 @@ const Profile = () => {
                                     )}
                                     <div className="position-absolute bottom-0 end-0">
                                         <label 
-                                            htmlFor="photo-upload" 
                                             style={{ 
                                                 cursor: 'pointer',
                                                 background: '#2c3e8f',
-                                                color: 'white',
+                                                color: 'var(--surface)',
                                                 borderRadius: '50%',
                                                 padding: '10px',
                                                 display: 'inline-block',
-                                                border: '2px solid white'
+                                                transition: 'all 0.3s ease'
                                             }}
                                         >
-                                            <FaCamera size={16} />
+                                            <FaCamera />
+                                            <input 
+                                                id="photo-upload"
+                                                type="file"
+                                                accept="image/*"
+                                                capture="user"
+                                                onChange={handlePhotoUpload}
+                                                style={{ display: 'none' }}
+                                                disabled={uploadingPhoto}
+                                            />
                                         </label>
-                                        <input
-                                            id="photo-upload"
-                                            type="file"
-                                            accept="image/*"
-                                            capture="user"
-                                            onChange={handlePhotoUpload}
-                                            style={{ display: 'none' }}
-                                            disabled={uploadingPhoto}
-                                        />
                                     </div>
                                 </div>
                                 <h5 className="mt-3">{user?.name}</h5>

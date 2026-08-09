@@ -73,8 +73,12 @@ exports.register = async (req, res) => {
 // @access  Public
 exports.login = async (req, res) => {
     try {
+        console.log('=== Login Debug ===');
+        console.log('Email:', req.body.email);
+        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.log('Validation errors:', errors.array());
             return res.status(400).json({
                 success: false,
                 errors: errors.array()
@@ -83,18 +87,31 @@ exports.login = async (req, res) => {
 
         const { email, password } = req.body;
 
+        // Normalize email to lowercase
+        const normalizedEmail = email.toLowerCase().trim();
+        
         // Check for user
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne({ email: normalizedEmail }).select('+password');
+        console.log('User found:', user ? 'Yes' : 'No');
+        
         if (!user) {
+            console.log('User not found in database');
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
             });
         }
 
+        console.log('User ID:', user._id);
+        console.log('User email:', user.email);
+        console.log('User role:', user.role);
+
         // Check password
         const isMatch = await user.matchPassword(password);
+        console.log('Password match:', isMatch ? 'Yes' : 'No');
+        
         if (!isMatch) {
+            console.log('Password does not match');
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'

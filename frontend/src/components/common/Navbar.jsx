@@ -20,7 +20,10 @@ import {
     FaClock,         // NEW
     FaBook,          // NEW
     FaFlag,          // NEW
-    FaExchangeAlt    // NEW
+    FaExchangeAlt,   // NEW
+    FaUserCheck,     // NEW - for attendance
+    FaExclamationTriangle,  // NEW - for complaints
+    FaCalendarAlt    // NEW - for leave management
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -78,25 +81,16 @@ const CustomNavbar = () => {
                             alignItems: 'center'
                         }}
                     >
-                        <span style={{ 
-                            fontSize: '1.8rem', 
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                            padding: '6px 10px', 
-                            borderRadius: '10px', 
-                            color: 'white',
+                        <span style={{
+                            fontSize: '1.5rem',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            padding: '6px 10px',
+                            borderRadius: '10px',
+                            color: 'var(--surface)',
                             display: 'inline-block',
                             boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
                         }}>
-                            🤖
-                        </span>
-                        <span style={{ 
-                            background: 'var(--gradient)', 
-                            WebkitBackgroundClip: 'text', 
-                            WebkitTextFillColor: 'transparent', 
-                            backgroundClip: 'text',
-                            marginLeft: '10px' 
-                        }}>
-                            RecruitAI
+                            Intelligent Job Matching
                         </span>
                     </Navbar.Brand>
                     
@@ -198,7 +192,7 @@ const CustomNavbar = () => {
                                         style={{ 
                                             background: 'linear-gradient(135deg, #2c3e8f 0%, #1a237e 100%)',
                                             border: 'none', 
-                                            color: 'white', 
+                                            color: 'var(--surface)', 
                                             padding: '8px 20px', 
                                             borderRadius: '8px', 
                                             fontWeight: 600, 
@@ -231,7 +225,7 @@ const CustomNavbar = () => {
                                             display: 'flex', 
                                             alignItems: 'center', 
                                             justifyContent: 'center', 
-                                            color: 'white', 
+                                            color: 'var(--surface)', 
                                             fontWeight: 600,
                                             fontSize: '0.9rem'
                                         }}>
@@ -285,6 +279,27 @@ const CustomNavbar = () => {
                                                 >
                                                     <FaUserCog className="me-2" /> {t('nav.profile')}
                                                 </Dropdown.Item>
+                                                <Dropdown.Item 
+                                                    as={Link} 
+                                                    to="/jobseeker/attendance"
+                                                    className="dropdown-item-custom"
+                                                >
+                                                    <FaUserCheck className="me-2" /> Attendance
+                                                </Dropdown.Item>
+                                                <Dropdown.Item 
+                                                    as={Link} 
+                                                    to="/jobseeker/leave"
+                                                    className="dropdown-item-custom"
+                                                >
+                                                    <FaCalendar className="me-2" /> Leave Requests
+                                                </Dropdown.Item>
+                                                <Dropdown.Item 
+                                                    as={Link} 
+                                                    to="/jobseeker/complaints"
+                                                    className="dropdown-item-custom"
+                                                >
+                                                    <FaExclamationTriangle className="me-2" /> Complaints
+                                                </Dropdown.Item>
                                                 <Dropdown.Divider />
                                             </>
                                         )}
@@ -312,6 +327,13 @@ const CustomNavbar = () => {
                                                 >
                                                     <FaBuilding className="me-2" /> Company Profile
                                                 </Dropdown.Item>
+                                                <Dropdown.Item 
+                                                    as={Link} 
+                                                    to="/employer/attendance"
+                                                    className="dropdown-item-custom"
+                                                >
+                                                    <FaUserCheck className="me-2" /> Attendance
+                                                </Dropdown.Item>
                                                 <Dropdown.Divider />
                                             </>
                                         )}
@@ -327,6 +349,21 @@ const CustomNavbar = () => {
                                                     className="dropdown-item-custom"
                                                 >
                                                     <FaChartBar className="me-2" /> Dashboard
+                                                </Dropdown.Item>
+                                                
+                                                <Dropdown.Item 
+                                                    as={Link} 
+                                                    to="/admin/attendance"
+                                                    className="dropdown-item-custom"
+                                                >
+                                                    <FaUserCheck className="me-2" /> Job Seeker Attendance
+                                                </Dropdown.Item>
+                                                <Dropdown.Item 
+                                                    as={Link} 
+                                                    to="/admin/leaves"
+                                                    className="dropdown-item-custom"
+                                                >
+                                                    <FaCalendarAlt className="me-2" /> Leave Management
                                                 </Dropdown.Item>
                                                 
                                                 <Dropdown.Divider />

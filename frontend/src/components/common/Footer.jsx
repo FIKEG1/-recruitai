@@ -56,7 +56,7 @@ const Footer = () => {
                 <Row>
                     <Col className="text-center py-3">
                         <p className="footer-copyright">
-                            &copy; {new Date().getFullYear()} RecruitAI. {t('footer.rights')} | Sidama Innovation and Technology Agency
+                            &copy; {new Date().getFullYear()} Intelligent Job Matching. {t('footer.rights')} | Sidama Innovation and Technology Agency
                         </p>
                     </Col>
                 </Row>

@@ -141,6 +141,56 @@ RESPONSE GUIDELINES:
 - Offer structured responses with clear steps
 """
 
+# Amharic System Prompts
+JOB_SEEKER_SYSTEM_AM = f"""እንኳን ደህና መጡ! እኔ የሪክሩትአይ ረዳት ነኝ። ለስራ ፈላጊዎች ስራ ምክር እሰጥዎታለሁ።
+
+{PLATFORM_INFO}
+
+የእኔ ሚናገሪዎች:
+1. ትክክለኛ ስራ መፈለግ
+2. መገለጫ መሙሉ እና ማሻሻል
+3. የረጅም ጊዜ መግለጫ መስቀል
+4. የአይ ማጣጣሚያ ነጥብ መረዳት
+5. ስራ መመልከት
+6. የመመልከቻ ሁኔታ መከታተር
+7. ለቃለ መጠይቅ አሰራር
+8. የስራ ምክር እና የችሎታ ልምምድ
+9. የኢትዮጵያ የስራ ገበያ መረጃ
+10. የሙያ ልምምድ ምክሮች
+
+የምላሽ መመሪያዎች:
+- ወደ አይነት እንዲሻል ቀላሽ እና አስተማማኝ ይስጡ
+- ጥበብ ያለ እና ሊተገበር የሚሆን ምክር ይስጡ
+- ወደ ትክክለኛ ባህሪያዎች ይመራከሩ
+- ከተፈለገ ሲሆን ትክክለኛ URL ያካትቱ
+- ተከታይ ጥያቄዎች ይጠይቁ ወደ የተጠቃሚ ፍላጎች ለማረጋገጥ
+- ምላሾችን አጭር ነገር ግን መረጃ ያለ (2-4 አንቀጽ)
+"""
+
+EMPLOYER_SYSTEM_AM = f"""እንኳን ደህና መጡ! እኔ የሪክሩትአይ ረዳት ነኝ። ለአሰሪዎች የመመልመያ ምክር እሰጥዎታለሁ።
+
+{PLATFORM_INFO}
+
+የእኔ ሚናገሪዎች:
+1. ውጤል ያለ የስራ መግለጫ መጻፍ
+2. ስራዎችን በመድረክ ማስቀመጥ
+3. እጩዎችን መመልከት እና መረጋገጥ
+4. የአይ ማጣጣሚያ ነጥብ መረዳት
+5. እጩዎችን በአጭር ዝርዝር ማስገባት
+6. የቃለ መጠይቅ አሰራር
+7. የቅጥር ውሳኔዎች መውሰድ
+8. የመመልመያ ምርጥ ልምምድ
+9. በኢትዮጵያ የስራ ገበያ መቅጠር
+10. የአሰሪ ስም ማሻሻል
+
+የምላሽ መመሪያዎች:
+- ቀጣይ እና ስትራቴጂካዊ ይሁኑ
+- ጥበብ ያለ እና ሊተገበር የሚሆን ምክር ይስጡ
+- አሰሪዎችን ወደ ትክክለኛ ባህሪያዎች ይመራከሩ
+- ከተፈለገ ሲሆን ትክክለኛ URL ያካትቱ
+- በግልጽልጓዊ አሰራር ያሉ ምላሾችን ይስጡ
+"""
+
 # ============================================
 # USER CONTEXT MANAGEMENT
 # ============================================
@@ -223,8 +273,91 @@ def get_ai_response_local(message, user_context=None):
     is_authenticated = user_context.get('isAuthenticated', False) if user_context else False
     user_skills = user_context.get('skills', []) if user_context else []
     user_location = user_context.get('location', '') if user_context else ''
+    language = user_context.get('language', 'en') if user_context else 'en'
     
     # ============================================
+    # AMHARIC RESPONSES
+    # ============================================
+    
+    if language == 'am':
+        # Amharic responses for common queries
+        if any(phrase in message_lower for phrase in ['ሰላም', 'እንኳን', 'እንደምን', 'እንዴት', 'ስለ', 'ለምን', 'ምንድን']):
+            if is_authenticated and user_name:
+                return f"👋 ሰላም {user_name}! እኔ የሪክሩትአይ ረዳት ነኝ። እንዴት ልረዳዎት? ስለ ስራ ፍለግ፣ መመልከቻ፣ ወይም ሌሎች ጉዳዮች ማንኛውንም ጥያቄ ሊያቀርቡ ይችላሉ! 😊"
+            else:
+                return "👋 ሰላም! እኔ የሪክሩትአይ ረዳት ነኝ። ስለ ስራ ፍለግ፣ መመልከቻ፣ እና መመልመያ ልረዳዎት ልትል። ለውጥ አስተዳደሪ ለማግኘት መጀመር ወይም ተመዝገቡ! 🚀"
+        
+        if any(phrase in message_lower for phrase in ['ስራ', 'ስራ ፍለግ', 'ስራ እፈልጋ', 'ስራ እንዴት እፈልጋ', 'ክፍት ያለ ስራ']):
+            return f"""🔍 **በሪክሩትአይ ትክክለኛ ስራ እንዴት እፈልጋ**
+
+📍 **እርምግ 1: ሁሉም ስራዎችን ይመልከቱ**
+ወደ **ስራዎች ገጽ** በ http://localhost:3000/jobs ይሂዱ
+
+🔎 **እርምግ 2: ፈልጎት ይጠቀሙ**
+- ቁልፍ ቃሎችን ይጠቀሙ (ለምሳሌ: "ሶፍትዌር ዴቨሎፐር")
+- ቦታ ይምረጡ (ለምሳሌ: "ሀዋሳ")
+- የስራ ዓይነት ይምረጡ (ሙሉ ጊዜ፣ ክፍል ጊዜ፣ ውል)
+
+📋 **እርምግ 3: የስራ ዝርዝሮችን ይመለከቱ**
+- ሙሉ የስራ መግለጫ
+- የተፈለጉ ክህሎቶች
+- የአይ ማጣጣሚያ ነጥብ
+
+📝 **እርምግ 4: አሁን ይመመልክቱ**
+ስራውን ካገኙት በኋላ "አሁን ይመመልክቱ" ይጫኑ
+
+💡 **ምክሮች:**
+- መገለጫዎን ይሙሉ ለዝርዝር ነጥብ
+- የረጅም ጊዜ መግለጫ ያስቀሙ
+- የአይ ነጥብ 70% ከላይ ያለ ስራዎችን ይመመልክቱ
+
+🔗 **ፈጣን አገናኝ**: http://localhost:3000/jobs"""
+        
+        if any(phrase in message_lower for phrase in ['መመልከቻ', 'እንዴት እመመልክት', 'መመልክት ሂደት']):
+            return f"""📝 **የስራ መመልከቻ ሂደት**
+
+📋 **እርምም እርምግ:**
+
+1️⃣ **ስራ ያግኙ**
+   - ወደ http://localhost:3000/jobs ይሂዱ
+   - ክፍት ያሉ ስራዎችን ይመለከቱ
+
+2️⃣ **"አሁን ይመመልክቱ" ይጫኑ**
+   - የሚፈልጉትን ስራ ይምረጡ
+   - የመመልክት አዝማሚያን ይጫኑ
+
+3️⃣ **የረጅም ጊዜ መግለጫዎን ይምረጡ**
+   - ከያስቀሙት መግለጫዎች ይምረጡ
+   - ለስራው ተስማሚ ይምረጡ
+
+4️⃣ **የማስታወሻ ደብዳቤ ይጻፉ (አማራጭ)**
+   - ራስዎን ያስተውሉ
+   - ለስራው ምንም ነው የሚስማሙት
+
+5️⃣ **መመልክት ይስጡ**
+   - መመልክትዎን ይመረጝ
+   - "አስገባ" ይጫኑ
+
+✅ **ከመመልክት በኋይ:**
+- ✅ መመልክት ተቀብሷል
+- 📊 የአይ ነጥብ ተሰልፏል
+- 📋 ሁኔታ "በመጠባበቅ ላይ" ይደርጋል
+
+📱 **መመልክትዎን ለማከታተር:**
+- ወደ ዳሽቦርድ: http://localhost:3000/jobseeker/dashboard
+
+💡 **ለስኬል መመልክት ምክሮች:**
+- መገለጫዎን ለእያኛው ስራ ይሙሉ
+- ከየስራ መግለጫ ቁልፍ ቃሎችን ይጠቀሙ
+- መገለጫዎን ሙሉ ይሙሉ"""
+        
+        # Default Amharic response
+        return f"👋 ሰላም! እኔ የሪክሩትአይ ረዳት ነእ። ስለ ስራ ፍለግ፣ መመልከቻ፣ ወይም ሌሎች ጉዳዮች ማንኛውንም ጥያቄ ሊያቀርቡ ይችላሉ! 😊"
+    
+    # ============================================
+    # ENGLISH RESPONSES
+    # ============================================
+    
     # PERSONALIZED RESPONSES
     # ============================================
     
@@ -1371,6 +1504,7 @@ def chat():
         user_type = data.get('user_type', 'jobseeker')
         user_id = data.get('user_id', 'default_user')
         context = data.get('context', {})
+        language = context.get('language', 'en')  # Get language from context
         
         if not message:
             return jsonify({'success': False, 'error': 'No message provided'}), 400
@@ -1378,8 +1512,11 @@ def chat():
         # Get user session
         session = get_user_session(user_id)
         
-        # Build system prompt
-        system_prompt = JOB_SEEKER_SYSTEM if user_type == 'jobseeker' else EMPLOYER_SYSTEM
+        # Build system prompt based on language
+        if language == 'am':
+            system_prompt = JOB_SEEKER_SYSTEM_AM if user_type == 'jobseeker' else EMPLOYER_SYSTEM_AM
+        else:
+            system_prompt = JOB_SEEKER_SYSTEM if user_type == 'jobseeker' else EMPLOYER_SYSTEM
         
         # Build messages for AI
         messages = [
@@ -1397,6 +1534,7 @@ def chat():
         user_context = {
             'name': context.get('name', ''),
             'email': context.get('email', ''),
+            'language': language,  # Pass language to local responses
             'role': context.get('role', ''),
             'skills': context.get('skills', []),
             'location': context.get('location', ''),

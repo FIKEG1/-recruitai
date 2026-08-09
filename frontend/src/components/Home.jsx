@@ -9,7 +9,7 @@ import './Home.css';
 
 const Home = () => {
     const { isAuthenticated } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [stats, setStats] = useState({
         jobs: 0,
         candidates: 0,
@@ -107,10 +107,18 @@ const Home = () => {
                                     <FaRobot className="me-2" /> {t('home.hero_badge')}
                                 </div>
                                 <h1 className="hero-title">
-                                    The Talent Your Work Deserves. All in <span className="highlight">One Platform.</span>
+                                    {language === 'am' ? (
+                                        <>
+                                            ለእርስዎ <span className="highlight">ንጹህ ሰራተኛ</span> ያግኙ
+                                        </>
+                                    ) : (
+                                        <>
+                                            Find the <span className="highlight">Perfect Talent</span> for Your Business
+                                        </>
+                                    )}
                                 </h1>
                                 <p className="hero-subtitle">
-                                    Connect with skilled professionals ready to deliver. From quick tasks to complex projects, find the right people to move your business forward.
+                                    {t('home.employer_hero_subtitle')}
                                 </p>
                                 <div className="hero-buttons">
                                     {isAuthenticated ? (

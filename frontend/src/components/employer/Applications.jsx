@@ -207,7 +207,7 @@ const Applications = () => {
                                                                     display: 'flex',
                                                                     alignItems: 'center',
                                                                     justifyContent: 'center',
-                                                                    color: 'white',
+                                                                    color: 'var(--surface)',
                                                                     fontWeight: 'bold',
                                                                     fontSize: '1rem'
                                                                 }}
@@ -406,7 +406,7 @@ const Applications = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                color: 'white',
+                                                color: 'var(--surface)',
                                                 fontSize: '3rem',
                                                 margin: '0 auto',
                                                 border: '4px solid #2c3e8f'
