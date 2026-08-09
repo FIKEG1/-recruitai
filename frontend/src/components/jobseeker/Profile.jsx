@@ -138,10 +138,8 @@ const Profile = () => {
             setProfilePhoto(uploadedPhoto);
             setPreviewPhoto(null);
             
-            // Update user context
-            await updateProfile({
-                profile: { profilePhoto: uploadedPhoto }
-            });
+            // Force reload user data to get updated profile
+            await loadUser();
             
             toast.success('Profile photo updated successfully!');
             console.log('=== Photo upload completed ===');

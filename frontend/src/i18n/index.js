@@ -39,7 +39,7 @@ const enTranslations = {
     },
     "home": {
         "hero_title": "Find the Perfect Talent or Job",
-        "hero_subtitle": "Intelligent job matching and recruitment automation platform for the Sidama Innovation and Technology Agency.",
+        "hero_subtitle": "Ketari - Intelligent job matching and recruitment automation platform for the Sidama Innovation and Technology Agency.",
         "employer_hero_title": "Find the Perfect Talent for Your Business",
         "employer_hero_subtitle": "Connect with skilled professionals ready to deliver. From quick tasks to complex projects, find the right people to move your business forward.",
         "get_started": "Get Started",

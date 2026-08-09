@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('token');
             setToken(null);
             delete api.defaults.headers.common['Authorization'];
-            toast.error('Session expired. Please login again.');
+            // Don't show toast error on initial load - user might just not be logged in
         } finally {
             setLoading(false);
         }

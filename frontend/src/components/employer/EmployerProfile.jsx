@@ -96,15 +96,30 @@ const EmployerProfile = () => {
         setPreviewPhoto(localPreview);
         setUploadingPhoto(true);
         try {
+            console.log('=== Starting photo upload ===');
+            console.log('File:', file.name, file.type, file.size);
             const response = await api.post('/upload/profile-photo', formData);
+            console.log('Upload response:', response.data);
             const uploadedPhoto = response.data.data.profilePhoto;
+            console.log('Uploaded photo path:', uploadedPhoto);
+            
             setProfilePhoto(uploadedPhoto);
             setPreviewPhoto(null);
+            
+            // Force reload user data to get updated profile
+            const userResponse = await api.get('/auth/me');
+            const updatedUser = userResponse.data.user;
+            if (updatedUser?.profile?.profilePhoto) {
+                console.log('Loaded user with photo:', updatedUser.profile.profilePhoto);
+                setProfilePhoto(updatedUser.profile.profilePhoto);
+            }
+            
             toast.success('Profile photo updated successfully!');
-            await updateProfile({
-                profile: { profilePhoto: uploadedPhoto }
-            });
+            console.log('=== Photo upload completed ===');
         } catch (error) {
+            console.error('=== Upload error ===');
+            console.error('Error:', error);
+            console.error('Response:', error.response?.data);
             setPreviewPhoto(null);
             toast.error(error.response?.data?.message || 'Failed to upload photo');
         } finally {

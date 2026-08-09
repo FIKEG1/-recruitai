@@ -12,7 +12,7 @@ const Footer = () => {
                 <Row className="py-4">
                     <Col md={4} className="mb-3 mb-md-0">
                         <h5 className="footer-brand">
-                            <span className="brand-icon">🤖</span> RecruitAI
+                            <span className="brand-icon">🤖</span> Ketari
                         </h5>
                         <p className="footer-text">
                             {t('footer.description')}
@@ -56,7 +56,7 @@ const Footer = () => {
                 <Row>
                     <Col className="text-center py-3">
                         <p className="footer-copyright">
-                            &copy; {new Date().getFullYear()} Intelligent Job Matching. {t('footer.rights')} | Sidama Innovation and Technology Agency
+                            &copy; {new Date().getFullYear()} Ketari. {t('footer.rights')} | Sidama Innovation and Technology Agency
                         </p>
                     </Col>
                 </Row>

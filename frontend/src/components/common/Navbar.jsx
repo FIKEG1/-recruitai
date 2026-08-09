@@ -90,17 +90,17 @@ const CustomNavbar = () => {
                             display: 'inline-block',
                             boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
                         }}>
-                            Intelligent Job Matching
+                            Ketari
                         </span>
                     </Navbar.Brand>
                     
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     
                     <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="ms-auto align-items-lg-center">
+                        <Nav className="mx-auto align-items-center">
                             <Nav.Link 
                                 as={Link} 
-                                to="/" 
+                                to={isAuthenticated ? (isJobSeeker ? '/jobseeker/dashboard' : isEmployer ? '/employer/jobs' : '/admin/dashboard') : '/'}
                                 className="nav-link-custom" 
                                 style={{ 
                                     color: 'var(--muted)', 
@@ -144,11 +144,16 @@ const CustomNavbar = () => {
                                 <FaGraduationCap className="me-1" /> {t('nav.internships')}
                             </Nav.Link>
 
-                            {/* Language Switcher */}
-                            <LanguageSwitcher />
+                            {/* Language Switcher - Merged with main nav */}
+                            <div className="ms-2">
+                                <LanguageSwitcher />
+                            </div>
+                        </Nav>
 
+                        {/* Right Side Items */}
+                        <Nav className="align-items-center">
                             {/* Theme Toggle */}
-                            <div className="ms-2 d-flex align-items-center">
+                            <div className="d-flex align-items-center">
                                 <Button 
                                     variant="outline-secondary" 
                                     onClick={toggleTheme}
@@ -159,7 +164,6 @@ const CustomNavbar = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        marginLeft: '8px',
                                         borderColor: 'var(--muted)',
                                         color: 'var(--text-primary)'
                                     }}
@@ -173,7 +177,7 @@ const CustomNavbar = () => {
                                     <Nav.Link 
                                         as={Link} 
                                         to="/login" 
-                                        className="nav-link-custom"
+                                        className="nav-link-custom ms-2"
                                         style={{ 
                                             color: 'var(--muted)', 
                                             fontWeight: 500, 
@@ -188,15 +192,14 @@ const CustomNavbar = () => {
                                     <Button 
                                         as={Link} 
                                         to="/register" 
-                                        className="btn-primary-gradient" 
+                                        className="btn-primary-gradient ms-2" 
                                         style={{ 
                                             background: 'linear-gradient(135deg, #2c3e8f 0%, #1a237e 100%)',
                                             border: 'none', 
                                             color: 'var(--surface)', 
                                             padding: '8px 20px', 
                                             borderRadius: '8px', 
-                                            fontWeight: 600, 
-                                            marginLeft: '8px',
+                                            fontWeight: 600,
                                             transition: 'all 0.3s ease'
                                         }}
                                     >
@@ -236,24 +239,6 @@ const CustomNavbar = () => {
                                         <span className="ms-2 d-none d-md-inline" style={{ fontWeight: 500 }}>
                                             {user?.name}
                                         </span>
-                                        
-                                        {/* Role Badge */}
-                                        <Badge 
-                                            bg="light" 
-                                            text="dark" 
-                                            className="ms-2 d-flex align-items-center gap-1" 
-                                            style={{ 
-                                                fontSize: '0.65rem', 
-                                                padding: '2px 10px', 
-                                                borderRadius: '20px', 
-                                                background: 'rgba(232,245,233,0.06)', 
-                                                color: 'var(--primary-color)', 
-                                                textTransform: 'capitalize' 
-                                            }}
-                                        >
-                                            {getRoleIcon(user?.role)}
-                                            {getRoleDisplay(user?.role)}
-                                        </Badge>
                                     </Dropdown.Toggle>
                                     
                                     <Dropdown.Menu style={{ 
