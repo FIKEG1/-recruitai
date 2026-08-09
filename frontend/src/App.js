@@ -14,6 +14,9 @@ import JobSearch from './components/jobseeker/JobSearch';
 import Dashboard from './components/jobseeker/Dashboard';
 import ApplyJob from './components/jobseeker/ApplyJob';
 import Profile from './components/jobseeker/Profile';
+import Attendance from './components/jobseeker/Attendance';
+import Complaints from './components/jobseeker/Complaints';
+import LeaveRequests from './components/jobseeker/LeaveRequests';
 import JobList from './components/employer/JobList';
 import PostJob from './components/employer/PostJob';
 import Applications from './components/employer/Applications';
@@ -21,6 +24,8 @@ import EmployerProfile from './components/employer/EmployerProfile';
 import CandidateList from './components/employer/CandidateList';
 import AdminDashboard from './components/admin/AdminDashboard';
 import ManageUsers from './components/admin/ManageUsers';
+import JobSeekerAttendance from './components/admin/JobSeekerAttendance';
+import LeaveManagement from './components/admin/LeaveManagement';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import AIChat from './components/common/AIChat';
@@ -91,6 +96,21 @@ function App() {
                                         <ApplyJob />
                                     </ProtectedRoute>
                                 } />
+                                <Route path="/jobseeker/attendance" element={
+                                    <ProtectedRoute allowedRoles={['jobseeker']}>
+                                        <Attendance />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/jobseeker/leave" element={
+                                    <ProtectedRoute allowedRoles={['jobseeker']}>
+                                        <LeaveRequests />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/jobseeker/complaints" element={
+                                    <ProtectedRoute allowedRoles={['jobseeker']}>
+                                        <Complaints />
+                                    </ProtectedRoute>
+                                } />
 
                                 {/* ============================================
                                     EMPLOYER ROUTES
@@ -115,6 +135,11 @@ function App() {
                                         <EmployerProfile />
                                     </ProtectedRoute>
                                 } />
+                                <Route path="/employer/attendance" element={
+                                    <ProtectedRoute allowedRoles={['employer']}>
+                                        <EmployerAttendance />
+                                    </ProtectedRoute>
+                                } />
 
                                 {/* ============================================
                                     ADMIN ROUTES
@@ -128,6 +153,16 @@ function App() {
                                 <Route path="/admin/users" element={
                                     <ProtectedRoute allowedRoles={['admin']}>
                                         <ManageUsers />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/admin/attendance" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <JobSeekerAttendance />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/admin/leaves" element={
+                                    <ProtectedRoute allowedRoles={['admin']}>
+                                        <LeaveManagement />
                                     </ProtectedRoute>
                                 } />
 

@@ -174,13 +174,14 @@ const Profile = () => {
                 }
             }));
             setPreviewPhoto(null);
-            toast.success('Profile photo updated successfully!');
             
             if (reloadUser) {
                 await reloadUser();
             }
         } catch (error) {
-            console.error('Upload error:', error);
+            console.error('=== Upload error ===');
+            console.error('Error:', error);
+            console.error('Response:', error.response?.data);
             setPreviewPhoto(null);
             toast.error(error.response?.data?.message || 'Failed to upload photo');
         } finally {

@@ -48,23 +48,33 @@ router.post('/profile-photo', protect, upload.single('photo'), async (req, res) 
             });
         }
 
+        console.log('=== Photo Upload Debug ===');
+        console.log('File uploaded:', req.file);
+        console.log('File path:', req.file.path);
+        console.log('File filename:', req.file.filename);
+
         const user = await User.findById(req.user.id);
         
         // Delete old photo if exists
         if (user.profile?.profilePhoto) {
             const oldPath = path.join(__dirname, '../../', user.profile.profilePhoto);
+            console.log('Old photo path to delete:', oldPath);
             if (fs.existsSync(oldPath)) {
                 fs.unlinkSync(oldPath);
+                console.log('Old photo deleted');
             }
         }
 
         // Update user with new photo path relative to uploads folder
         const photoPath = `uploads/profiles/${req.file.filename}`;
+        console.log('New photo path to save:', photoPath);
+        
         user.profile = { 
             ...user.profile, 
             profilePhoto: photoPath 
         };
         await user.save();
+        console.log('User updated with new photo');
 
         res.status(200).json({
             success: true,
@@ -81,6 +91,7 @@ router.post('/profile-photo', protect, upload.single('photo'), async (req, res) 
             }
         });
     } catch (error) {
+        console.error('=== Photo Upload Error ===');
         console.error(error);
         res.status(500).json({
             success: false,

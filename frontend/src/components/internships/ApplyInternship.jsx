@@ -34,10 +34,17 @@ const ApplyInternship = () => {
 
     const fetchInternshipAndResumes = async () => {
         try {
+            console.log('=== Fetching Internship Details ===');
+            console.log('Internship ID:', id);
+            
             const [internshipRes, resumeRes] = await Promise.all([
                 api.get(`/internships/${id}`),
                 api.get('/resumes')
             ]);
+            
+            console.log('Internship response:', internshipRes.data);
+            console.log('Resumes response:', resumeRes.data);
+            
             const internshipData = internshipRes.data.internship || internshipRes.data;
             setInternship(internshipData);
             setResumes(resumeRes.data.resumes || []);
@@ -46,10 +53,22 @@ const ApplyInternship = () => {
                 setSelectedResume(defaultResume?._id || resumeRes.data.resumes[0]._id);
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('=== Error fetching internship data ===');
+            console.error('Error:', error);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
             const message = error.response?.data?.message || t('internships.load_error');
             setError(message);
             setInternship(null);
+            
+            // Show toast with more details
+            if (error.response?.status === 404) {
+                toast.error('Internship not found. It may have been deleted or the ID is invalid.');
+            } else if (error.response?.status === 500) {
+                toast.error('Server error. Please try again later.');
+            } else {
+                toast.error(message);
+            }
         } finally {
             setLoading(false);
         }

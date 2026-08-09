@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('token');
             setToken(null);
             delete api.defaults.headers.common['Authorization'];
-            toast.error('Session expired. Please login again.');
+            // Don't show toast error on initial load - user might just not be logged in
         } finally {
             setLoading(false);
         }
@@ -43,7 +43,14 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
+            console.log('=== Frontend Login Debug ===');
+            console.log('Email:', email);
+            console.log('Password provided:', password ? 'Yes' : 'No');
+            
             const response = await api.post('/auth/login', { email, password });
+            
+            console.log('Login response:', response.data);
+            
             const { token, user } = response.data;
             localStorage.setItem('token', token);
             setToken(token);

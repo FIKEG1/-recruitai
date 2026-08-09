@@ -122,30 +122,50 @@ exports.getInternships = async (req, res) => {
 exports.getInternship = async (req, res) => {
     try {
         const mongoose = require('mongoose');
+        console.log('=== Get Internship Debug ===');
+        console.log('Internship ID:', req.params.id);
+        console.log('Is valid ID:', mongoose.Types.ObjectId.isValid(req.params.id));
+        
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            console.log('Invalid internship ID');
             return res.status(404).json({ success: false, message: 'Internship not found' });
         }
+        
         const internship = await Job.findOne({
             _id: req.params.id,
             isInternship: true
         }).populate('employer', 'name email company');
 
+        console.log('Found internship:', internship ? 'Yes' : 'No');
+        if (internship) {
+            console.log('Internship details:', {
+                id: internship._id,
+                title: internship.title,
+                isInternship: internship.isInternship,
+                status: internship.status
+            });
+        }
+
         if (!internship) {
+            console.log('Internship not found in database');
+            console.log('Query used:', { _id: req.params.id, isInternship: true });
             return res.status(404).json({
                 success: false,
-                message: 'Internship not found'
+                message: 'Internship not found. Please check if the internship exists or if the ID is correct.'
             });
         }
 
         internship.viewCount += 1;
         await internship.save();
 
+        console.log('Returning internship data');
         res.status(200).json({
             success: true,
             internship
         });
     } catch (error) {
-        console.error(error);
+        console.error('=== Get Internship Error ===');
+        console.error('Error:', error);
         res.status(500).json({
             success: false,
             message: 'Server Error'
@@ -248,7 +268,14 @@ exports.deleteInternship = async (req, res) => {
 exports.applyInternship = async (req, res) => {
     try {
         const mongoose = require('mongoose');
+        console.log('=== Internship Application Debug ===');
+        console.log('Internship ID:', req.params.id);
+        console.log('Is valid ID:', mongoose.Types.ObjectId.isValid(req.params.id));
+        console.log('User ID:', req.user.id);
+        console.log('Request body:', req.body);
+        
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            console.log('Invalid internship ID');
             return res.status(404).json({ success: false, message: 'Internship not found or not accepting applications' });
         }
         const { resumeId, coverLetter, academicInfo } = req.body;
@@ -259,7 +286,18 @@ exports.applyInternship = async (req, res) => {
             status: 'open'
         });
 
+        console.log('Found internship:', internship ? 'Yes' : 'No');
+        if (internship) {
+            console.log('Internship details:', {
+                id: internship._id,
+                title: internship.title,
+                isInternship: internship.isInternship,
+                status: internship.status
+            });
+        }
+
         if (!internship) {
+            console.log('Internship not found');
             return res.status(404).json({
                 success: false,
                 message: 'Internship not found or not accepting applications'
@@ -279,13 +317,16 @@ exports.applyInternship = async (req, res) => {
             });
         }
 
+        // Calculate match score for internship
+        const matchScore = calculateInternshipMatch(internship, req.user, academicInfo);
+
         // Create application with internship-specific data
         const application = await Application.create({
             job: internship._id,
             applicant: req.user.id,
             resume: resumeId,
             coverLetter,
-            matchScore: calculateInternshipMatch(internship, req.user, academicInfo),
+            matchScore: matchScore,
             status: 'pending',
             statusHistory: [{
                 status: 'pending',

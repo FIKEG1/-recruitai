@@ -6,9 +6,12 @@ import {
     FaRedo, FaSmile, FaFileAlt, FaQuestionCircle, FaStar
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import api from '../../services/api';
 
 const AIChat = () => {
     const { user } = useAuth();
+    const { language, t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -16,6 +19,7 @@ const AIChat = () => {
     const [conversationCount, setConversationCount] = useState(0);
     const [isMinimized, setIsMinimized] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
+    const [contextData, setContextData] = useState({});
     const messagesEndRef = useRef(null);
     const chatContainerRef = useRef(null);
 
@@ -39,19 +43,19 @@ const AIChat = () => {
         
         setSuggestions([
             userType === 'employer' 
-                ? 'How to write a job description?' 
-                : 'How do I find the right job?',
+                ? (language === 'am' ? 'የስራ መግለጫ እንዴት እመጻፍ?' : 'How to write a job description?')
+                : (language === 'am' ? 'ትክክለኛ ስራ እንዴት እፈልጋ?' : 'How do I find the right job?'),
             userType === 'employer'
-                ? 'Best interview questions to ask'
-                : 'Help me improve my resume',
+                ? (language === 'am' ? 'ምርጥ የቃለ መጠይቅ ጥያቄዎች' : 'Best interview questions to ask')
+                : (language === 'am' ? 'የረጅም ጊዜ መግለጫዎን ይርዱኝ' : 'Help me improve my resume'),
             userType === 'employer'
-                ? 'How to screen candidates effectively?'
-                : 'What skills should I learn?',
+                ? (language === 'am' ? 'እጩዎችን እንዴት እመረጋገጫለሁ?' : 'How to screen candidates effectively?')
+                : (language === 'am' ? 'ምን ክህሎች መማ� RSVP ይጠበቅ?' : 'What skills should I learn?'),
             userType === 'employer'
                 ? 'Hiring best practices'
                 : 'How to prepare for interviews?'
         ]);
-    }, [user]);
+    }, [user, userType, language]);
 
     useEffect(() => {
         scrollToBottom();
@@ -61,39 +65,43 @@ const AIChat = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const sendMessage = async (message) => {
-        if (!message.trim()) return;
+    const sendMessage = async () => {
+        if (!input.trim() || loading) return;
 
-        const userMessage = { 
-            role: 'user', 
-            content: message,
+        const userMessage = {
+            role: 'user',
+            content: input,
             timestamp: new Date()
         };
+
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setLoading(true);
-        setSuggestions([]);
 
         try {
+            // Prepare context data to send to AI
+            const contextToSend = {
+                user: {
+                    name: user?.name,
+                    email: user?.email,
+                    role: userType,
+                    id: userId
+                },
+                attendance: contextData.attendance,
+                leaves: contextData.leaves,
+                complaints: contextData.complaints,
+                conversationCount,
+                language: language // Send current language to AI
+            };
+
             const response = await fetch('http://localhost:5002/api/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
-                    message: message,
-                    user_type: userType,
-                    user_id: userId,
-                    context: {
-                        name: user?.name || 'Guest',
-                        email: user?.email || 'Not provided',
-                        role: user?.role || 'guest',
-                        skills: user?.profile?.skills || [],
-                        location: user?.profile?.location || '',
-                        profilePhoto: user?.profile?.profilePhoto || null,
-                        phone: user?.profile?.phone || '',
-                        bio: user?.profile?.bio || '',
-                        company: user?.company?.name || '',
-                        isAuthenticated: isAuthenticated
-                    }
+                    message: input,
+                    context: contextToSend
                 })
             });
 
@@ -110,7 +118,7 @@ const AIChat = () => {
             } else {
                 setMessages(prev => [...prev, {
                     role: 'assistant',
-                    content: "I'm having trouble connecting. Please try again or refresh the page.",
+                    content: language === 'am' ? "ታዲያ! ከአይ አገልግሎት ጋር መገናኘት ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።" : "I'm having trouble connecting. Please try again or refresh the page.",
                     timestamp: new Date(),
                     error: true
                 }]);
@@ -119,7 +127,7 @@ const AIChat = () => {
             console.error('Chat error:', error);
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: "Network error. Please check your connection and try again.",
+                content: language === 'am' ? "ታዲያ! ኔትወርክ ስህተት ተፈጥሯል። ኔትወርክዎን ይመረጝ እና እንደገና ይሞክሩ።" : "Network error. Please check your connection and try again.",
                 timestamp: new Date(),
                 error: true
             }]);

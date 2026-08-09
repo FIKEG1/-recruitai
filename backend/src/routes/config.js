@@ -7,6 +7,21 @@ const {
     addPosition,
     addLeaveType,
     addSkill,
+    addJobTitle,
+    addLanguage,
+    addLicense,
+    addReligion,
+    addEmploymentStatus,
+    addEducationLevel,
+    addMaritalStatus,
+    addTrainingType,
+    addTerminationReason,
+    addDeductionType,
+    addNation,
+    addTitle,
+    addBloodType,
+    addPartner,
+    addPositionRank,
     deleteConfigItem
 } = require('../controllers/configController');
 const { protect, authorize } = require('../middleware/auth');
@@ -21,25 +36,34 @@ router.get('/', protect, authorize('admin'), getConfigurations);
 // @access  Private (Admin)
 router.put('/organization', protect, authorize('admin'), updateOrganization);
 
-// @route   POST /api/config/departments
-// @desc    Add department
-// @access  Private (Admin)
+// Organization Structure
 router.post('/departments', protect, authorize('admin'), addDepartment);
-
-// @route   POST /api/config/positions
-// @desc    Add position
-// @access  Private (Admin)
 router.post('/positions', protect, authorize('admin'), addPosition);
+router.post('/position-ranks', protect, authorize('admin'), addPositionRank);
+router.post('/job-titles', protect, authorize('admin'), addJobTitle);
 
-// @route   POST /api/config/leave-types
-// @desc    Add leave type
-// @access  Private (Admin)
-router.post('/leave-types', protect, authorize('admin'), addLeaveType);
-
-// @route   POST /api/config/skills
-// @desc    Add skill
-// @access  Private (Admin)
+// Skills & Qualifications
 router.post('/skills', protect, authorize('admin'), addSkill);
+router.post('/languages', protect, authorize('admin'), addLanguage);
+router.post('/licenses', protect, authorize('admin'), addLicense);
+router.post('/education-levels', protect, authorize('admin'), addEducationLevel);
+
+// Personal Information
+router.post('/religions', protect, authorize('admin'), addReligion);
+router.post('/marital-status', protect, authorize('admin'), addMaritalStatus);
+router.post('/nations', protect, authorize('admin'), addNation);
+router.post('/titles', protect, authorize('admin'), addTitle);
+router.post('/blood-types', protect, authorize('admin'), addBloodType);
+
+// Employment
+router.post('/employment-status', protect, authorize('admin'), addEmploymentStatus);
+router.post('/training-types', protect, authorize('admin'), addTrainingType);
+router.post('/leave-types', protect, authorize('admin'), addLeaveType);
+router.post('/termination-reasons', protect, authorize('admin'), addTerminationReason);
+router.post('/deduction-types', protect, authorize('admin'), addDeductionType);
+
+// Partners
+router.post('/partners', protect, authorize('admin'), addPartner);
 
 // @route   DELETE /api/config/:type/:id
 // @desc    Delete configuration item
