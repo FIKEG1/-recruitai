@@ -31,9 +31,17 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
+            const hadToken = !!localStorage.getItem('token');
             localStorage.removeItem('token');
             delete api.defaults.headers.common['Authorization'];
-            window.location.href = '/login';
+            
+            // Only force a redirect if the user had a token (expired session)
+            // or if they are actively trying to access a protected dashboard route.
+            const isProtectedRoute = window.location.pathname.match(/^\/(jobseeker|employer|admin)/);
+            
+            if (hadToken || isProtectedRoute) {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }

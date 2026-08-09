@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
@@ -41,6 +41,32 @@ const UserSchema = new mongoose.Schema({
             type: String,
             default: ''
         },
+        title: {
+            type: String,
+            default: ''
+        },
+        availabilityStatus: {
+            type: String,
+            enum: ['Available now', 'Busy', 'Available part-time', 'Not available'],
+            default: 'Available now'
+        },
+        expectedSalary: {
+            amount: { type: Number, default: 0 },
+            currency: { type: String, default: 'ETB' },
+            rateType: { type: String, enum: ['Hourly', 'Fixed', 'Monthly'], default: 'Hourly' }
+        },
+        successRate: {
+            type: Number,
+            default: 100 // mock initial percentage
+        },
+        rating: {
+            score: { type: Number, default: 0 },
+            reviews: { type: Number, default: 0 }
+        },
+        savedJobs: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Job'
+        }],
         profilePhoto: {
             type: String,
             default: null

@@ -21,7 +21,7 @@ let currentLanguage = 'en';
 // English translations
 const enTranslations = {
     "app": {
-        "title": "RecruitAI - Job Platform",
+        "title": "KETARI - Job Platform",
         "welcome": "Welcome",
         "tagline": "Intelligent Job Matching and Recruitment Automation Platform"
     },
@@ -73,13 +73,13 @@ const enTranslations = {
         "default_location": "Hawassa",
         "default_department": "ICT",
         "cta_title": "Ready to Transform Your Recruitment?",
-        "cta_text": "Join RecruitAI today and experience the power of AI-driven recruitment."
+        "cta_text": "Join KETARI today and experience the power of AI-driven recruitment."
     },
     "auth": {
         "login_title": "Welcome Back",
-        "login_subtitle": "Sign in to your RecruitAI account",
+        "login_subtitle": "Sign in to your KETARI account",
         "register_title": "Create Account",
-        "register_subtitle": "Join RecruitAI and find your perfect job",
+        "register_subtitle": "Join KETARI and find your perfect job",
         "email": "Email Address",
         "email_placeholder": "Enter your email",
         "password": "Password",
@@ -164,6 +164,7 @@ const enTranslations = {
         "full_name": "Full Name",
         "email": "Email",
         "phone": "Phone Number",
+        "location": "Location",
         "bio": "About You",
         "bio_placeholder": "Tell us about yourself...",
         "skills": "Skills",
@@ -331,7 +332,7 @@ export const t = (key, params = {}) => {
 
     if (typeof value === 'string' && params) {
         return value.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
-            return params[paramKey] || match;
+            return params[paramKey] !== undefined ? String(params[paramKey]) : match;
         });
     }
 

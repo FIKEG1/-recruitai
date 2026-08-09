@@ -18,11 +18,15 @@ import JobList from './components/employer/JobList';
 import PostJob from './components/employer/PostJob';
 import Applications from './components/employer/Applications';
 import EmployerProfile from './components/employer/EmployerProfile';
+import CandidateList from './components/employer/CandidateList';
 import AdminDashboard from './components/admin/AdminDashboard';
 import ManageUsers from './components/admin/ManageUsers';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import AIChat from './components/common/AIChat';
+import About from './components/About';
+import Contact from './components/Contact';
+import NotFound from './components/common/NotFound';
 
 // Internship Imports
 import InternshipList from './components/internships/InternshipList';
@@ -62,9 +66,12 @@ function App() {
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/register" element={<Register />} />
                                 <Route path="/jobs" element={<JobSearch />} />
+                                <Route path="/candidates" element={<CandidateList />} />
                                 <Route path="/internships" element={<InternshipList />} />
                                 <Route path="/privacy" element={<PrivacyPolicy />} />
                                 <Route path="/terms" element={<TermsOfService />} />
+                                <Route path="/about" element={<About />} />
+                                <Route path="/contact" element={<Contact />} />
 
                                 {/* ============================================
                                     JOB SEEKER ROUTES
@@ -188,7 +195,7 @@ function App() {
                                 {/* ============================================
                                     404 NOT FOUND
                                 ============================================ */}
-                                <Route path="*" element={<Navigate to="/" />} />
+                                <Route path="*" element={<NotFound />} />
                             </Routes>
                         </main>
                         <Footer />

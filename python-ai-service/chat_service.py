@@ -43,8 +43,8 @@ except Exception as e:
 
 # Platform Information
 PLATFORM_INFO = """
-ABOUT RECRUITAI:
-- RecruitAI is an Intelligent Job Matching and Recruitment Automation Platform
+ABOUT KETARI:
+- KETARI is an Intelligent Job Matching and Recruitment Automation Platform
 - Built for the Sidama Innovation and Technology Agency (SITA) in Ethiopia
 - Location: Hawassa, Sidama Region, Ethiopia
 - Purpose: To modernize and automate recruitment processes
@@ -90,7 +90,7 @@ PLATFORM URLS:
 - Admin Dashboard: http://localhost:3000/admin/dashboard
 """
 
-JOB_SEEKER_SYSTEM = f"""You are RecruitAI Assistant, a career advisor for the RecruitAI platform.
+JOB_SEEKER_SYSTEM = f"""You are KETARI Assistant, a career advisor for the KETARI platform.
 
 {PLATFORM_INFO}
 
@@ -116,7 +116,7 @@ RESPONSE GUIDELINES:
 - Keep responses concise but informative (2-4 paragraphs)
 """
 
-EMPLOYER_SYSTEM = f"""You are RecruitAI Assistant, a recruitment advisor for employers using the RecruitAI platform.
+EMPLOYER_SYSTEM = f"""You are KETARI Assistant, a recruitment advisor for employers using the KETARI platform.
 
 {PLATFORM_INFO}
 
@@ -237,7 +237,7 @@ def get_ai_response_local(message, user_context=None):
                 'admin': 'Admin'
             }.get(user_role, user_role)
             
-            response = f"🌟 **I know you!** 👋\n\nYou are **{user_name}**. You're logged in as a **{role_display}** on RecruitAI."
+            response = f"🌟 **I know you!** 👋\n\nYou are **{user_name}**. You're logged in as a **{role_display}** on KETARI."
             
             if user_context.get('email'):
                 response += f"\n\n📧 **Email**: {user_context.get('email')}"
@@ -256,16 +256,16 @@ def get_ai_response_local(message, user_context=None):
     # Hello / Hi / Hey with name
     if any(phrase in message_lower for phrase in ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening']):
         if is_authenticated and user_name:
-            return f"👋 **Hello {user_name}!**\n\nIt's great to see you again! You're logged in as a **{user_role}** on RecruitAI.\n\nHow can I help you today? I can assist with:\n• 🔍 Finding jobs\n• 📝 Applying for positions\n• 📄 Resume tips and upload\n• 🤖 AI matching and scores\n• 🗣️ Interview preparation\n• 👤 Profile updates\n\nJust ask me anything about RecruitAI! 😊"
+            return f"👋 **Hello {user_name}!**\n\nIt's great to see you again! You're logged in as a **{user_role}** on KETARI.\n\nHow can I help you today? I can assist with:\n• 🔍 Finding jobs\n• 📝 Applying for positions\n• 📄 Resume tips and upload\n• 🤖 AI matching and scores\n• 🗣️ Interview preparation\n• 👤 Profile updates\n\nJust ask me anything about KETARI! 😊"
         else:
-            return "👋 **Hello!**\n\nI'm your RecruitAI Career Assistant. I'm here to help you with everything related to job searching, applications, and recruitment.\n\nFeel free to ask me about:\n• 🔍 How to find jobs\n• 📝 How to apply\n• 📄 Resume tips\n• 🤖 AI matching\n• 🗣️ Interview prep\n\nTo get personalized help, please **login** or **register** first! 🚀"
+            return "👋 **Hello!**\n\nI'm your KETARI Career Assistant. I'm here to help you with everything related to job searching, applications, and recruitment.\n\nFeel free to ask me about:\n• 🔍 How to find jobs\n• 📝 How to apply\n• 📄 Resume tips\n• 🤖 AI matching\n• 🗣️ Interview prep\n\nTo get personalized help, please **login** or **register** first! 🚀"
     
     # ============================================
     # JOB SEARCH & FINDING JOBS
     # ============================================
     
     if any(phrase in message_lower for phrase in ['how to find a job', 'job search', 'find job', 'looking for job', 'search job', 'where to find jobs', 'job opportunities']):
-        return f"""🔍 **How to Find the Right Job on RecruitAI**
+        return f"""🔍 **How to Find the Right Job on KETARI**
 
 📍 **Step 1: Browse All Jobs**
 Visit the **Jobs page** at http://localhost:3000/jobs to see all available positions.
@@ -309,7 +309,7 @@ Once you find a job you like, click **"Apply Now"** and submit your application 
     # ============================================
     
     if any(phrase in message_lower for phrase in ['how to apply', 'application process', 'apply for job', 'submit application', 'applying']):
-        return f"""📝 **Complete Guide to Applying for Jobs on RecruitAI**
+        return f"""📝 **Complete Guide to Applying for Jobs on KETARI**
 
 📋 **Step-by-Step Application Process:**
 
@@ -366,9 +366,9 @@ Once you find a job you like, click **"Apply Now"** and submit your application 
     # ============================================
     
     if any(phrase in message_lower for phrase in ['interview', 'schedule interview', 'interview preparation', 'interview tips', 'prepare for interview', 'interview questions']):
-        return f"""🗣️ **Complete Interview Guide for RecruitAI**
+        return f"""🗣️ **Complete Interview Guide for KETARI**
 
-📅 **How Interviews Work on RecruitAI:**
+📅 **How Interviews Work on KETARI:**
 
 1️⃣ **Application Reviewed** - Employer reviews your application
 2️⃣ **Shortlisted** - You're selected for interview
@@ -907,7 +907,7 @@ To drive innovation, digital transformation, and technological development in th
 - ICT infrastructure managers
 - Data protection officers
 
-🤖 **RecruitAI:** 
+🤖 **KETARI:** 
 Built specifically for SITA to modernize recruitment and connect qualified professionals with opportunities in the Sidama Region.
 
 🌍 **Impact:**
@@ -932,7 +932,7 @@ Would you like to know about specific SITA job openings? 🚀"""
     # ============================================
     
     if any(phrase in message_lower for phrase in ['employer', 'post job', 'hire', 'recruit', 'job posting', 'employer dashboard']):
-        return f"""💼 **Employer Features on RecruitAI**
+        return f"""💼 **Employer Features on KETARI**
 
 📝 **Post a Job:** http://localhost:3000/employer/post-job
 
@@ -987,14 +987,14 @@ Would you like to know about specific SITA job openings? 🚀"""
 - 📄 Check resume details
 - 🤝 Consider communication skills
 
-💼 **Why Use RecruitAI?**
+💼 **Why Use KETARI?**
 - Faster hiring process
 - Better candidate matching
 - Data-driven decisions
 - Reduced time-to-hire
 - Access to qualified talent
 
-🚀 **Hire the best talent for your organization with RecruitAI!**
+🚀 **Hire the best talent for your organization with KETARI!**
 """
 
     # ============================================
@@ -1107,7 +1107,7 @@ Choose one:
 - Complete your profile immediately
 - Add a profile photo
 
-🚀 **Why Register on RecruitAI?**
+🚀 **Why Register on KETARI?**
 - 🔍 Find the perfect job
 - 💼 Hire the best talent
 - 🤖 AI-powered matching
@@ -1116,7 +1116,7 @@ Choose one:
 
 👉 **Already have an account?** Login at http://localhost:3000/login
 
-🎉 **Join thousands of professionals on RecruitAI!**
+🎉 **Join thousands of professionals on KETARI!**
 """
     
     # ============================================
@@ -1158,7 +1158,7 @@ Choose one:
 - Contact support if issues persist
 
 🔒 **Security Tips:**
-- Use unique password for RecruitAI
+- Use unique password for KETARI
 - Never share your password
 - Enable 2FA if available
 - Log out after each session
@@ -1187,7 +1187,7 @@ Choose one:
     if any(phrase in message_lower for phrase in ['suggest', 'recommend', 'advice', 'suggestion']):
         return f"""💡 **Personalized Suggestions for You**
 
-{'Based on your profile, ' + user_name + ', here are some recommendations:' if is_authenticated and user_name else 'Here are some suggestions to help you on RecruitAI:'}
+{'Based on your profile, ' + user_name + ', here are some recommendations:' if is_authenticated and user_name else 'Here are some suggestions to help you on KETARI:'}
 
 📋 **For Job Seekers:**
 
@@ -1246,7 +1246,7 @@ Choose one:
     # ============================================
     
     if any(phrase in message_lower for phrase in ['help', 'what can you do', 'capabilities', 'assist', 'features']):
-        return f"""🤖 **I'm Your RecruitAI Assistant - Here's What I Can Help You With!**
+        return f"""🤖 **I'm Your KETARI Assistant - Here's What I Can Help You With!**
 
 📋 **Complete List of Topics I Can Assist With:**
 
@@ -1325,19 +1325,19 @@ Choose one:
     
     if is_authenticated and user_name:
         default_responses = [
-            f"👋 Hi {user_name}! I'm here to help you with RecruitAI. You can ask me about:\n\n📋 **Topics I Cover:**\n• 🔍 Finding and applying for jobs\n• 📄 Resume tips and upload\n• 🤖 AI matching and scores\n• 🗣️ Interview preparation\n• 👤 Profile management\n• 📊 Dashboard and applications\n• 💰 Salary and compensation\n• 🌟 Career advice\n\nWhat would you like to know? I'm here to help you succeed! 💪",
+            f"👋 Hi {user_name}! I'm here to help you with KETARI. You can ask me about:\n\n📋 **Topics I Cover:**\n• 🔍 Finding and applying for jobs\n• 📄 Resume tips and upload\n• 🤖 AI matching and scores\n• 🗣️ Interview preparation\n• 👤 Profile management\n• 📊 Dashboard and applications\n• 💰 Salary and compensation\n• 🌟 Career advice\n\nWhat would you like to know? I'm here to help you succeed! 💪",
             
-            f"🌟 Great question {user_name}! Let me help you with that on RecruitAI.\n\nThe platform is designed to make job searching and recruitment easier. I can provide detailed answers about:\n• Job search strategies\n• Application process\n• Interview tips\n• Skill development\n• Platform features\n\nWhat specific aspect are you looking for?",
+            f"🌟 Great question {user_name}! Let me help you with that on KETARI.\n\nThe platform is designed to make job searching and recruitment easier. I can provide detailed answers about:\n• Job search strategies\n• Application process\n• Interview tips\n• Skill development\n• Platform features\n\nWhat specific aspect are you looking for?",
             
-            f"👋 I can help you navigate RecruitAI, {user_name}! You can ask me about:\n\n**Job Seekers:**\n• How to find and apply for jobs\n• Resume and profile tips\n• Interview preparation\n• Career advice\n\n**Employers:**\n• Posting jobs\n• Reviewing candidates\n• Scheduling interviews\n\n**Platform:**\n• AI matching system\n• Dashboard features\n• Account help\n\nWhat do you need help with? 🚀"
+            f"👋 I can help you navigate KETARI, {user_name}! You can ask me about:\n\n**Job Seekers:**\n• How to find and apply for jobs\n• Resume and profile tips\n• Interview preparation\n• Career advice\n\n**Employers:**\n• Posting jobs\n• Reviewing candidates\n• Scheduling interviews\n\n**Platform:**\n• AI matching system\n• Dashboard features\n• Account help\n\nWhat do you need help with? 🚀"
         ]
     else:
         default_responses = [
-            "👋 I'm here to help you with RecruitAI! You can ask me about:\n\n📋 **Topics I Cover:**\n• 🔍 Finding and applying for jobs\n• 📄 Resume tips and upload\n• 🤖 AI matching and scores\n• 🗣️ Interview preparation\n• 👤 Profile management\n• 📊 Dashboard and applications\n\n🚀 To get personalized help, please **login** at http://localhost:3000/login or **register** at http://localhost:3000/register first!",
+            "👋 I'm here to help you with KETARI! You can ask me about:\n\n📋 **Topics I Cover:**\n• 🔍 Finding and applying for jobs\n• 📄 Resume tips and upload\n• 🤖 AI matching and scores\n• 🗣️ Interview preparation\n• 👤 Profile management\n• 📊 Dashboard and applications\n\n🚀 To get personalized help, please **login** at http://localhost:3000/login or **register** at http://localhost:3000/register first!",
             
-            "🌟 Great question! Let me help you with that on RecruitAI.\n\nI can help with:\n• How to find jobs\n• How to apply\n• Resume tips\n• Interview advice\n• Platform features\n\nFor personalized assistance, login or register first!",
+            "🌟 Great question! Let me help you with that on KETARI.\n\nI can help with:\n• How to find jobs\n• How to apply\n• Resume tips\n• Interview advice\n• Platform features\n\nFor personalized assistance, login or register first!",
             
-            "👋 I can help you navigate RecruitAI! You can ask me about:\n\n• Job searching and applications\n• Resume and profile help\n• Interview preparation\n• Platform features\n• Account support\n\nLogin or register for personalized help! 🚀"
+            "👋 I can help you navigate KETARI! You can ask me about:\n\n• Job searching and applications\n• Resume and profile help\n• Interview preparation\n• Platform features\n• Account support\n\nLogin or register for personalized help! 🚀"
         ]
     
     return random.choice(default_responses)
@@ -1447,8 +1447,8 @@ def generate_suggestions(message, user_type, user_context=None):
             if key in message_lower:
                 return responses
     
-    # RecruitAI specific suggestions
-    recruitai_suggestions = {
+    # KETARI specific suggestions
+    ketari_suggestions = {
         'register': ['How to login?', 'What are the requirements?', 'Benefits of registering?'],
         'login': ['How to reset password?', 'How to register?', 'Login issues?'],
         'apply': ['How to upload resume?', 'How to track applications?', 'Application tips?'],
@@ -1465,7 +1465,7 @@ def generate_suggestions(message, user_type, user_context=None):
         'resume': ['Resume tips?', 'How to upload?', 'What to include?']
     }
     
-    for key, responses in recruitai_suggestions.items():
+    for key, responses in ketari_suggestions.items():
         if key in message_lower:
             return responses
     
@@ -1536,6 +1536,6 @@ def update_context():
 
 if __name__ == '__main__':
     port = int(os.getenv('AI_CHAT_PORT', os.getenv('AI_SERVICE_PORT', 5002)))
-    print(f"🤖 RecruitAI Chat Service starting on port {port}")
+    print(f"🤖 KETARI Chat Service starting on port {port}")
     print(f"📊 Providers: OpenAI={bool(openai.api_key)}, Gemini={bool(gemini_model)}, Local=Active")
     app.run(host='0.0.0.0', port=port, debug=True)

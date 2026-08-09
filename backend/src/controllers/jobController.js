@@ -62,6 +62,15 @@ exports.getJobs = async (req, res) => {
             query.employmentType = employmentType;
         }
         
+        if (req.query.experienceLevel) {
+            query.experienceLevel = req.query.experienceLevel;
+        }
+        
+        if (req.query.skills) {
+            const skillsArray = req.query.skills.split(',');
+            query['requirements.skills'] = { $in: skillsArray.map(s => new RegExp(s.trim(), 'i')) };
+        }
+        
         if (minSalary || maxSalary) {
             query.salary = {};
             if (minSalary) query.salary.min = { $gte: parseInt(minSalary) };
@@ -257,5 +266,43 @@ exports.getMatchingCandidates = async (req, res) => {
             success: false,
             message: 'Server Error'
         });
+    }
+};
+
+// @desc    Toggle Save/Bookmark Job
+// @route   POST /api/jobs/:id/save
+// @access  Private (Jobseeker)
+exports.toggleSaveJob = async (req, res) => {
+    try {
+        if (req.user.role !== 'jobseeker') {
+            return res.status(403).json({ success: false, message: 'Only jobseekers can save jobs' });
+        }
+
+        const job = await Job.findById(req.params.id);
+        const user = await User.findById(req.user.id);
+
+        if (!job || !user) {
+            return res.status(404).json({ success: false, message: 'Job or User not found' });
+        }
+
+        const savedJobsStr = user.profile.savedJobs.map(id => id.toString());
+        const isSaved = savedJobsStr.includes(job._id.toString());
+
+        if (isSaved) {
+            user.profile.savedJobs = user.profile.savedJobs.filter(id => id.toString() !== job._id.toString());
+            job.savedBy = job.savedBy.filter(id => id.toString() !== user._id.toString());
+        } else {
+            user.profile.savedJobs.push(job._id);
+            job.savedBy.push(user._id);
+        }
+
+        // Only validate modified paths if necessary, but skipping full validation is safer for partial profile updates
+        await user.save({ validateBeforeSave: false });
+        await job.save();
+
+        res.status(200).json({ success: true, isSaved: !isSaved, message: isSaved ? 'Job removed from saved' : 'Job saved successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

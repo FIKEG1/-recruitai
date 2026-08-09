@@ -8,7 +8,8 @@ const {
     updateJob, 
     deleteJob,
     getMatchingCandidates,
-    getEmployerJobs
+    getEmployerJobs,
+    toggleSaveJob
 } = require('../controllers/jobController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -44,6 +45,11 @@ router.get('/:id', getJob);
 // @desc    Get matching candidates for a job
 // @access  Private (Employer/Admin)
 router.get('/:id/matches', protect, authorize('employer', 'admin'), getMatchingCandidates);
+
+// @route   POST /api/jobs/:id/save
+// @desc    Toggle Save/Bookmark Job
+// @access  Private (Jobseeker)
+router.post('/:id/save', protect, authorize('jobseeker'), toggleSaveJob);
 
 // @route   PUT /api/jobs/:id
 // @desc    Update job

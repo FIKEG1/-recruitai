@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const JobSchema = new mongoose.Schema({
     title: {
@@ -22,8 +22,26 @@ const JobSchema = new mongoose.Schema({
     },
     employmentType: {
         type: String,
-        enum: ['Full-Time', 'Part-Time', 'Contract', 'Internship'],
+        enum: ['Full-Time', 'Part-Time', 'Contract', 'Internship', 'Freelance'],
         default: 'Full-Time'
+    },
+    experienceLevel: {
+        type: String,
+        enum: ['Entry', 'Intermediate', 'Expert', 'Any'],
+        default: 'Any'
+    },
+    budgetType: {
+        type: String,
+        enum: ['Fixed', 'Hourly', 'Milestone', 'Negotiable'],
+        default: 'Negotiable'
+    },
+    expectedDuration: {
+        type: String,
+        default: 'More than 6 months'
+    },
+    tags: {
+        type: [String],
+        default: []
     },
     // ============================================
     // INTERNSHIP SPECIFIC FIELDS (NEW)
@@ -120,6 +138,14 @@ const JobSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    proposalsCount: {
+        type: Number,
+        default: 0
+    },
+    savedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     createdAt: {
         type: Date,
         default: Date.now

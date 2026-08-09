@@ -114,7 +114,7 @@ const Login = () => {
 
                                     <Button
                                         type="submit"
-                                        variant="primary-gradient"
+                                        variant="primary"
                                         className="w-100 py-2 fw-semibold"
                                         disabled={loading}
                                     >

@@ -63,7 +63,7 @@ const Register = () => {
                                         <span style={{ fontSize: '3rem' }}>🚀</span>
                                     </div>
                                     <h3 className="fw-bold">Create Account</h3>
-                                    <p className="text-muted">Join RecruitAI and find your perfect job</p>
+                                    <p className="text-muted">Join KETARI and find your perfect job</p>
                                 </div>
 
                                 {error && (
@@ -194,7 +194,7 @@ const Register = () => {
 
                                     <Button
                                         type="submit"
-                                        variant="primary-gradient"
+                                        variant="primary"
                                         className="w-100 py-2 fw-semibold mt-2"
                                         disabled={loading}
                                     >

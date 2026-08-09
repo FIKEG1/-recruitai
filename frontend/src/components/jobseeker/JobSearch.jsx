@@ -1,58 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, Badge, Spinner, InputGroup, Pagination } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaMapMarkerAlt, FaBriefcase, FaClock, FaFilter, FaStar, FaRobot } from 'react-icons/fa';
+import { FaSearch, FaMapMarkerAlt, FaBriefcase, FaClock, FaFilter, FaStar, FaRobot, FaRegBookmark, FaBookmark, FaMoneyBillWave, FaTags, FaUsers } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import './JobSearch.css';
 
 const JobSearch = () => {
     const { user } = useAuth();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // Advanced Filters
     const [filters, setFilters] = useState({
         search: '',
         location: '',
         employmentType: '',
-        minSalary: '',
-        maxSalary: ''
+        experienceLevel: '',
+        skills: ''
     });
+    
+    const [selectedSkills, setSelectedSkills] = useState([]);
+    const [savedJobIds, setSavedJobIds] = useState([]);
+
     const [pagination, setPagination] = useState({
         currentPage: 1,
         totalPages: 1,
         totalJobs: 0
     });
-    const [showFilters, setShowFilters] = useState(false);
+
+    const commonSkills = ['React', 'Node.js', 'Python', 'Java', 'UI/UX', 'Digital Marketing', 'Translation', 'Graphic Design'];
 
     useEffect(() => {
+        if (user?.profile?.savedJobs) {
+            setSavedJobIds(user.profile.savedJobs.map(j => typeof j === 'string' ? j : j._id));
+        }
         fetchJobs();
     }, [filters, pagination.currentPage]);
 
+    // When selected skills array changes, update the comma-separated string filter
+    useEffect(() => {
+        setFilters(prev => ({ ...prev, skills: selectedSkills.join(',') }));
+    }, [selectedSkills]);
+
     const calculateMatchScore = (job) => {
-        // Calculate match score based on user profile and job requirements
+        if (!user?.profile?.skills) return { score: 0 };
         let score = 0;
-        let matchedSkills = [];
-        let totalSkills = 0;
-
         const jobSkills = job?.requirements?.skills || [];
-        const userSkills = user?.profile?.skills || [];
+        const userSkills = user.profile.skills || [];
         
-        totalSkills = jobSkills.length;
-
         if (jobSkills.length > 0 && userSkills.length > 0) {
-            matchedSkills = jobSkills.filter(skill => 
-                userSkills.some(us => us.toLowerCase().includes(skill.toLowerCase()) || 
-                                      skill.toLowerCase().includes(us.toLowerCase()))
+            const matchedSkills = jobSkills.filter(skill => 
+                userSkills.some(us => us.toLowerCase().includes(skill.toLowerCase()))
             );
             score = Math.round((matchedSkills.length / jobSkills.length) * 100);
         } else if (jobSkills.length === 0) {
             score = 100;
         }
-
-        return {
-            score: Math.min(score, 100),
-            matchedSkills: matchedSkills,
-            totalSkills: totalSkills
-        };
+        return { score: Math.min(score, 100) };
     };
 
     const fetchJobs = async () => {
@@ -63,13 +68,12 @@ const JobSearch = () => {
                 ...filters
             });
             Object.keys(params).forEach(key => {
-                if (!params[key]) delete params[key];
+                if (!params[key]) params.delete(key);
             });
             
             const response = await api.get(`/jobs?${params.toString()}`);
             let jobList = response.data.jobs || [];
             
-            // Calculate match score for each job if user is logged in
             if (user) {
                 jobList = jobList.map(job => ({
                     ...job,
@@ -96,322 +100,290 @@ const JobSearch = () => {
         setPagination({ ...pagination, currentPage: 1 });
     };
 
+    const handleSkillToggle = (skill) => {
+        setSelectedSkills(prev => 
+            prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+        );
+        setPagination({ ...pagination, currentPage: 1 });
+    };
+
+    const toggleSaveJob = async (jobId) => {
+        if (!user) return alert("Please login to save jobs.");
+        try {
+            const res = await api.post(`/jobs/${jobId}/save`);
+            if (res.data.success) {
+                if (res.data.isSaved) {
+                    setSavedJobIds([...savedJobIds, jobId]);
+                } else {
+                    setSavedJobIds(savedJobIds.filter(id => id !== jobId));
+                }
+            }
+        } catch (err) {
+            console.error("Error saving job", err);
+        }
+    };
+
     const handlePageChange = (page) => {
         setPagination({ ...pagination, currentPage: page });
         window.scrollTo(0, 0);
     };
 
-    const resetFilters = () => {
-        setFilters({
-            search: '',
-            location: '',
-            employmentType: '',
-            minSalary: '',
-            maxSalary: ''
-        });
+    const clearFilters = () => {
+        setFilters({ search: '', location: '', employmentType: '', experienceLevel: '', skills: '' });
+        setSelectedSkills([]);
         setPagination({ ...pagination, currentPage: 1 });
     };
 
-    const getEmploymentTypeBadge = (type) => {
-        const typeMap = {
-            'Full-Time': 'primary',
-            'Part-Time': 'warning',
-            'Contract': 'info',
-            'Internship': 'dark'
-        };
-        return typeMap[type] || 'secondary';
-    };
-
-    const getScoreColor = (score) => {
-        if (score >= 70) return 'primary';
-        if (score >= 40) return 'warning';
-        return 'danger';
-    };
-
-    const getScoreLabel = (score) => {
-        if (score >= 80) return 'Excellent Match';
-        if (score >= 60) return 'Good Match';
-        if (score >= 40) return 'Fair Match';
-        return 'Low Match';
-    };
-
-    if (loading) {
-        return (
-            <Container className="py-5 text-center">
-                <Spinner animation="border" variant="primary" />
-                <p className="mt-3">Loading jobs...</p>
-            </Container>
-        );
-    }
-
     return (
-        <section className="job-search-section py-4">
+        <section className="job-search-page py-5 bg-light min-vh-100">
             <Container>
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 className="fw-bold mb-0">Browse Jobs</h2>
-                        {user && (
-                            <p className="text-muted small">
-                                <FaRobot className="me-1" />
-                                AI-powered matching shows how well each job fits your profile
-                            </p>
-                        )}
-                    </div>
+                {/* Header Section */}
+                <div className="mb-5 text-center text-md-start">
+                    <h1 className="fw-bold text-dark">Find your next great opportunity</h1>
+                    <p className="text-muted fs-5">Browse {pagination.totalJobs} open jobs from top Ethiopian employers.</p>
                 </div>
-                
-                {/* Search Bar */}
-                <Card className="shadow-sm mb-4">
-                    <Card.Body>
-                        <Row>
-                            <Col md={6} className="mb-2 mb-md-0">
-                                <InputGroup>
-                                    <InputGroup.Text className="bg-white">
-                                        <FaSearch className="text-muted" />
+
+                {/* Main Search Bar */}
+                <Card className="shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
+                    <Card.Body className="p-2">
+                        <Row className="g-2">
+                            <Col md={7}>
+                                <InputGroup className="h-100 search-input-group">
+                                    <InputGroup.Text className="bg-white border-0 ps-4 text-primary">
+                                        <FaSearch />
                                     </InputGroup.Text>
                                     <Form.Control
                                         type="text"
                                         name="search"
-                                        placeholder="Search by job title, department, or keyword..."
+                                        placeholder="Search for roles, skills, or keywords..."
                                         value={filters.search}
                                         onChange={handleFilterChange}
-                                        className="border-start-0"
+                                        className="border-0 shadow-none py-3 fs-5"
                                     />
                                 </InputGroup>
                             </Col>
-                            <Col md={3} className="mb-2 mb-md-0">
-                                <Form.Control
-                                    type="text"
-                                    name="location"
-                                    placeholder="Location"
-                                    value={filters.location}
-                                    onChange={handleFilterChange}
-                                />
-                            </Col>
                             <Col md={3}>
-                                <Button 
-                                    variant="outline-secondary" 
-                                    className="w-100"
-                                    onClick={() => setShowFilters(!showFilters)}
-                                >
-                                    <FaFilter className="me-2" />
-                                    Filters {Object.values(filters).some(v => v) && <Badge bg="primary" className="ms-1">Active</Badge>}
+                                <InputGroup className="h-100 search-input-group border-start d-none d-md-flex">
+                                    <InputGroup.Text className="bg-white border-0 ps-3 text-primary">
+                                        <FaMapMarkerAlt />
+                                    </InputGroup.Text>
+                                    <Form.Control
+                                        type="text"
+                                        name="location"
+                                        placeholder="Location (e.g. Addis Ababa)"
+                                        value={filters.location}
+                                        onChange={handleFilterChange}
+                                        className="border-0 shadow-none py-3"
+                                    />
+                                </InputGroup>
+                            </Col>
+                            <Col md={2}>
+                                <Button variant="primary" className="w-100 h-100 py-3 fw-bold rounded-3" style={{fontSize:'1.1rem'}} onClick={fetchJobs}>
+                                    Search
                                 </Button>
                             </Col>
                         </Row>
-                        
-                        {/* Advanced Filters */}
-                        {showFilters && (
-                            <Row className="mt-3 pt-3 border-top">
-                                <Col md={4} className="mb-2">
-                                    <Form.Label className="fw-semibold small">Employment Type</Form.Label>
-                                    <Form.Select
-                                        name="employmentType"
-                                        value={filters.employmentType}
-                                        onChange={handleFilterChange}
-                                    >
-                                        <option value="">All Types</option>
-                                        <option value="Full-Time">Full-Time</option>
-                                        <option value="Part-Time">Part-Time</option>
-                                        <option value="Contract">Contract</option>
-                                        <option value="Internship">Internship</option>
-                                    </Form.Select>
-                                </Col>
-                                <Col md={4} className="mb-2">
-                                    <Form.Label className="fw-semibold small">Min Salary (ETB)</Form.Label>
-                                    <Form.Control
-                                        type="number"
-                                        name="minSalary"
-                                        placeholder="Min"
-                                        value={filters.minSalary}
-                                        onChange={handleFilterChange}
-                                    />
-                                </Col>
-                                <Col md={4} className="mb-2">
-                                    <Form.Label className="fw-semibold small">Max Salary (ETB)</Form.Label>
-                                    <Form.Control
-                                        type="number"
-                                        name="maxSalary"
-                                        placeholder="Max"
-                                        value={filters.maxSalary}
-                                        onChange={handleFilterChange}
-                                    />
-                                </Col>
-                                <Col md={12} className="text-end mt-2">
-                                    <Button variant="link" onClick={resetFilters} className="text-decoration-none">
-                                        Reset Filters
-                                    </Button>
-                                </Col>
-                            </Row>
-                        )}
                     </Card.Body>
                 </Card>
 
-                {/* Results Count */}
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                    <span className="text-muted">
-                        Found {pagination.totalJobs} job{pagination.totalJobs !== 1 ? 's' : ''}
-                    </span>
-                    {user && (
-                        <span className="text-muted small">
-                            <FaStar className="text-warning me-1" />
-                            Sorted by AI match score
-                        </span>
-                    )}
-                </div>
+                <Row className="mt-5">
+                    {/* LEFT SIDEBAR: FILTERS */}
+                    <Col lg={3} className="mb-4">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="fw-bold mb-0">Filters</h5>
+                            <span className="text-primary text-decoration-underline" style={{cursor: 'pointer', fontSize:'0.9rem'}} onClick={clearFilters}>Clear all</span>
+                        </div>
+                        <Card className="border-0 shadow-sm rounded-4 sticky-top" style={{top: '80px', zIndex: 1}}>
+                            <Card.Body className="p-4">
+                                
+                                {/* Experience Level */}
+                                <div className="filter-group mb-4">
+                                    <h6 className="fw-bold mb-3">Experience Level</h6>
+                                    <div className="d-flex flex-wrap gap-2">
+                                        {['Entry', 'Intermediate', 'Expert'].map(level => (
+                                            <Badge 
+                                                key={level}
+                                                bg={filters.experienceLevel === level ? 'primary' : 'light'}
+                                                text={filters.experienceLevel === level ? 'white' : 'dark'}
+                                                className="border fw-normal px-3 py-2"
+                                                style={{cursor:'pointer'}}
+                                                onClick={() => setFilters(prev => ({...prev, experienceLevel: prev.experienceLevel === level ? '' : level}))}
+                                            >
+                                                {level}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
 
-                {/* Job Listings */}
-                {jobs.length === 0 ? (
-                    <Card className="text-center py-5">
-                        <Card.Body>
-                            <div className="mb-3" style={{ fontSize: '4rem' }}>🔍</div>
-                            <h4>No jobs found</h4>
-                            <p className="text-muted">Try adjusting your search filters</p>
-                            <Button variant="primary-gradient" onClick={resetFilters}>
-                                Clear Filters
-                            </Button>
-                        </Card.Body>
-                    </Card>
-                ) : (
-                    <Row>
-                        {jobs.map((job) => {
-                            const matchScore = job.matchScore?.score || 0;
-                            const matchedSkills = job.matchScore?.matchedSkills || [];
-                            const totalSkills = job.matchScore?.totalSkills || 0;
-                            
-                            return (
-                                <Col md={6} lg={4} key={job._id} className="mb-4">
-                                    <Card className="job-card h-100">
-                                        <Card.Body>
-                                            <div className="job-card-header">
-                                                <h5 className="job-title">{job.title}</h5>
-                                                <Badge bg={getEmploymentTypeBadge(job.employmentType)}>
-                                                    {job.employmentType || 'Full-Time'}
-                                                </Badge>
-                                            </div>
-                                            <p className="company-name text-muted">
-                                                {job.employer?.name || 'Sidama Innovation and Technology Agency'}
-                                            </p>
-                                            <div className="job-meta small text-muted">
-                                                <div><FaMapMarkerAlt className="me-1" /> {job.location || 'Hawassa'}</div>
-                                                <div><FaBriefcase className="me-1" /> {job.department || 'ICT'}</div>
-                                            </div>
-                                            
-                                            {/* AI Match Score - Only show if user is logged in */}
-                                            {user && (
-                                                <div className="mt-2 mb-2">
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <small className="text-muted">
-                                                            <FaRobot className="me-1" />
-                                                            AI Match
-                                                        </small>
-                                                        <div className="d-flex align-items-center gap-2">
-                                                            <span className={`fw-bold text-${getScoreColor(matchScore)}`}>
-                                                                {matchScore}%
-                                                            </span>
-                                                            <Badge bg={getScoreColor(matchScore)} className="px-2 py-1">
-                                                                {getScoreLabel(matchScore)}
-                                                            </Badge>
-                                                        </div>
+                                {/* Job Type */}
+                                <div className="filter-group mb-4">
+                                    <h6 className="fw-bold mb-3">Job Type</h6>
+                                    <Form>
+                                        {['Full-Time', 'Part-Time', 'Contract', 'Remote', 'Hybrid', 'On-Site', 'Internship'].map(type => (
+                                            <Form.Check 
+                                                key={type}
+                                                type="checkbox"
+                                                id={`type-${type}`}
+                                                label={type}
+                                                checked={filters.employmentType === type}
+                                                onChange={() => setFilters(prev => ({...prev, employmentType: prev.employmentType === type ? '' : type}))}
+                                                className="mb-2 text-muted custom-checkbox"
+                                            />
+                                        ))}
+                                    </Form>
+                                </div>
+
+                                {/* Skills */}
+                                <div className="filter-group mb-4">
+                                    <h6 className="fw-bold mb-3">Top Skills</h6>
+                                    <Form>
+                                        {commonSkills.map(skill => (
+                                            <Form.Check 
+                                                key={skill}
+                                                type="checkbox"
+                                                id={`skill-${skill}`}
+                                                label={skill}
+                                                checked={selectedSkills.includes(skill)}
+                                                onChange={() => handleSkillToggle(skill)}
+                                                className="mb-2 text-muted custom-checkbox"
+                                            />
+                                        ))}
+                                    </Form>
+                                </div>
+
+                            </Card.Body>
+                        </Card>
+                    </Col>
+
+                    {/* RIGHT CONTENT: JOB LIST */}
+                    <Col lg={9}>
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                            <h5 className="fw-bold mb-0">{pagination.totalJobs} Jobs Found</h5>
+                            <Form.Select style={{width: 'auto', backgroundColor: '#f8faf9', border: 'none', fontWeight: '500'}}>
+                                <option>Sort by: Newest</option>
+                                <option>Sort by: Most Relevant</option>
+                            </Form.Select>
+                        </div>
+
+                        {loading ? (
+                            <div className="text-center py-5">
+                                <Spinner animation="border" variant="primary" />
+                            </div>
+                        ) : jobs.length > 0 ? (
+                            jobs.map((job) => {
+                                const isSaved = savedJobIds.includes(job._id);
+                                return (
+                                <Card key={job._id} className="job-card border-0 shadow-sm rounded-4 mb-4 position-relative">
+                                    <Card.Body className="p-4">
+                                        
+                                        {/* Save Bookmark */}
+                                        <button 
+                                            className="btn btn-link p-0 position-absolute text-muted" 
+                                            style={{top: '24px', right: '24px', fontSize: '1.4rem'}}
+                                            onClick={() => toggleSaveJob(job._id)}
+                                        >
+                                            {isSaved ? <FaBookmark className="text-primary"/> : <FaRegBookmark className="job-bookmark-icon"/>}
+                                        </button>
+
+                                        <Row>
+                                            <Col md={9}>
+                                                <div className="mb-2">
+                                                    <span className="text-muted small fw-bold text-uppercase tracking-wider">
+                                                        Posted {new Date(job.createdAt).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                                <h4 className="fw-bold mb-1">
+                                                    <Link to={`/jobseeker/apply/${job._id}`} className="text-dark text-decoration-none job-title-link">
+                                                        {job.title}
+                                                    </Link>
+                                                </h4>
+                                                <p className="text-muted mb-3 fs-6">
+                                                    <span className="fw-bold text-dark">{job.employer?.name || 'Company'}</span> • {job.location}
+                                                </p>
+
+                                                <div className="job-meta-grid mb-3">
+                                                    <div className="meta-item">
+                                                        <FaMoneyBillWave className="meta-icon" /> 
+                                                        <span className="fw-bold">{job.budgetType || 'Negotiable'}</span>
                                                     </div>
-                                                    {matchedSkills.length > 0 && totalSkills > 0 && (
-                                                        <div className="mt-1">
-                                                            <small className="text-muted">
-                                                                {matchedSkills.length}/{totalSkills} skills matched
-                                                            </small>
-                                                            <div className="progress" style={{ height: '4px' }}>
-                                                                <div 
-                                                                    className={`progress-bar bg-${getScoreColor(matchScore)}`} 
-                                                                    style={{ width: `${matchScore}%` }}
-                                                                ></div>
-                                                            </div>
-                                                        </div>
+                                                    <div className="meta-item">
+                                                        <FaBriefcase className="meta-icon" />
+                                                        <span>{job.experienceLevel || 'Intermediate'}</span>
+                                                    </div>
+                                                    <div className="meta-item">
+                                                        <FaClock className="meta-icon" />
+                                                        <span>{job.employmentType}</span>
+                                                    </div>
+                                                    <div className="meta-item text-primary bg-primary bg-opacity-10 rounded-pill px-2 py-1 small fw-bold">
+                                                        <FaUsers className="me-1" /> {job.proposalsCount || 0} Proposals
+                                                    </div>
+                                                </div>
+
+                                                <p className="text-muted small mb-4 text-truncate-2">
+                                                    {job.description}
+                                                </p>
+
+                                                <div className="d-flex flex-wrap gap-2 mb-3 mb-md-0">
+                                                    {job.requirements?.skills?.slice(0,5).map((skill, index) => (
+                                                        <span key={index} className="skill-pill">
+                                                            {skill}
+                                                        </span>
+                                                    ))}
+                                                    {(job.requirements?.skills?.length || 0) > 5 && (
+                                                        <span className="skill-pill bg-light text-muted">+{job.requirements.skills.length - 5} more</span>
                                                     )}
                                                 </div>
-                                            )}
-                                            
-                                            <div className="job-description mt-2 small text-muted" style={{ 
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: 'vertical',
-                                                overflow: 'hidden'
-                                            }}>
-                                                {job.description}
-                                            </div>
-                                            <div className="mt-3">
-                                                {job.requirements?.skills?.slice(0, 4).map((skill, idx) => {
-                                                    const isMatched = user && matchedSkills.includes(skill);
-                                                    return (
-                                                        <span 
-                                                            key={idx} 
-                                                            className="job-tag" 
-                                                            style={{
-                                                                background: isMatched ? 'rgba(123, 44, 191, 0.1)' : 'rgba(0, 0, 0, 0.04)',
-                                                                color: isMatched ? '#7b2cbf' : 'var(--text-secondary)',
-                                                                padding: '4px 12px',
-                                                                borderRadius: '20px',
-                                                                fontSize: '0.75rem',
-                                                                marginRight: '6px',
-                                                                marginBottom: '6px',
-                                                                display: 'inline-block',
-                                                                border: isMatched ? '1px solid rgba(123, 44, 191, 0.3)' : '1px solid rgba(0, 0, 0, 0.08)',
-                                                                fontWeight: isMatched ? '600' : 'normal'
-                                                            }}
-                                                        >
-                                                            {skill}
-                                                            {isMatched && ' ✅'}
-                                                        </span>
-                                                    );
-                                                })}
-                                                {job.requirements?.skills?.length > 4 && (
-                                                    <span className="text-muted small">+{job.requirements.skills.length - 4} more</span>
-                                                )}
-                                            </div>
-                                            <div className="d-flex justify-content-between align-items-center mt-3">
-                                                <span className="text-muted small">
-                                                    <FaClock className="me-1" />
-                                                    Deadline: {new Date(job.applicationDeadline).toLocaleDateString()}
-                                                </span>
-                                                <Button 
-                                                    as={Link} 
-                                                    to={`/jobseeker/apply/${job._id}`} 
-                                                    variant="primary-gradient" 
-                                                    size="sm"
-                                                >
-                                                    Apply Now
-                                                </Button>
-                                            </div>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            );
-                        })}
-                    </Row>
-                )}
+                                            </Col>
 
-                {/* Pagination */}
-                {pagination.totalPages > 1 && (
-                    <div className="d-flex justify-content-center mt-4">
-                        <Pagination>
-                            <Pagination.Prev 
-                                onClick={() => handlePageChange(pagination.currentPage - 1)}
-                                disabled={pagination.currentPage === 1}
-                            />
-                            {[...Array(pagination.totalPages)].map((_, idx) => (
-                                <Pagination.Item
-                                    key={idx + 1}
-                                    active={pagination.currentPage === idx + 1}
-                                    onClick={() => handlePageChange(idx + 1)}
-                                >
-                                    {idx + 1}
-                                </Pagination.Item>
-                            ))}
-                            <Pagination.Next
-                                onClick={() => handlePageChange(pagination.currentPage + 1)}
-                                disabled={pagination.currentPage === pagination.totalPages}
-                            />
-                        </Pagination>
-                    </div>
-                )}
+                                            <Col md={3} className="d-flex flex-column justify-content-between align-items-end border-start ps-4">
+                                                {user && job.matchScore && (
+                                                    <div className="text-end w-100 mb-3">
+                                                        <div className="d-flex align-items-center justify-content-end mb-1">
+                                                            <FaRobot className="text-primary me-2" />
+                                                            <span className="fw-bold fs-5 text-primary">{job.matchScore.score}%</span>
+                                                        </div>
+                                                        <small className="text-muted">AI Match Score</small>
+                                                    </div>
+                                                )}
+                                                <div className="w-100 mt-auto">
+                                                    <Button as={Link} to={`/jobseeker/apply/${job._id}`} variant="outline-primary" className="w-100 fw-bold rounded-pill">
+                                                        View Details
+                                                    </Button>
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    </Card.Body>
+                                </Card>
+                            )})
+                        ) : (
+                            <Card className="border-0 shadow-sm rounded-4 py-5 text-center">
+                                <Card.Body>
+                                    <div className="text-muted mb-3" style={{fontSize: '3rem'}}><FaSearch /></div>
+                                    <h4 className="fw-bold">No jobs found</h4>
+                                    <p className="text-muted">Try adjusting your filters or search terms to find more results.</p>
+                                    <Button variant="primary" onClick={clearFilters} className="rounded-pill mt-2 px-4">
+                                        Clear All Filters
+                                    </Button>
+                                </Card.Body>
+                            </Card>
+                        )}
+
+                        {/* Pagination */}
+                        {pagination.totalPages > 1 && (
+                            <Pagination className="justify-content-center mt-5 custom-pagination">
+                                {[...Array(pagination.totalPages)].map((_, idx) => (
+                                    <Pagination.Item 
+                                        key={idx + 1} 
+                                        active={idx + 1 === pagination.currentPage}
+                                        onClick={() => handlePageChange(idx + 1)}
+                                    >
+                                        {idx + 1}
+                                    </Pagination.Item>
+                                ))}
+                            </Pagination>
+                        )}
+                    </Col>
+                </Row>
             </Container>
         </section>
     );

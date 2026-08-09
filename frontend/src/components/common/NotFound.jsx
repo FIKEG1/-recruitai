@@ -1,25 +1,27 @@
 import React from 'react';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Container, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaHome } from 'react-icons/fa';
+import { FaHome, FaSearch } from 'react-icons/fa';
 
 const NotFound = () => {
     return (
-        <Container className="py-5">
-            <Row className="justify-content-center">
-                <Col md={6} className="text-center">
-                    <div style={{ fontSize: '6rem', fontWeight: 'bold', color: 'var(--primary-color)' }} className="mb-3">404</div>
-                    <h2 className="fw-bold">Page Not Found</h2>
-                    <p className="text-muted mb-4">
-                        The page you are looking for might have been removed, had its name changed, 
-                        or is temporarily unavailable.
-                    </p>
-                    <Button as={Link} to="/" variant="primary-gradient">
+        <div className="not-found-page min-vh-100 d-flex align-items-center bg-light">
+            <Container className="text-center">
+                <h1 className="display-1 fw-bold text-primary mb-0">404</h1>
+                <h2 className="fw-bold mb-4">Page Not Found</h2>
+                <p className="text-muted mb-5 lead mx-auto" style={{ maxWidth: '500px' }}>
+                    Oops! The page you are looking for doesn't exist, has been moved, or is temporarily unavailable.
+                </p>
+                <div className="d-flex justify-content-center gap-3 flex-wrap">
+                    <Button as={Link} to="/" variant="primary" size="lg" className="rounded-pill px-4 fw-bold">
                         <FaHome className="me-2" /> Back to Home
                     </Button>
-                </Col>
-            </Row>
-        </Container>
+                    <Button as={Link} to="/jobs" variant="outline-primary" size="lg" className="rounded-pill px-4 fw-bold">
+                        <FaSearch className="me-2" /> Browse Jobs
+                    </Button>
+                </div>
+            </Container>
+        </div>
     );
 };
 

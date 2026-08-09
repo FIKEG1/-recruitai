@@ -52,7 +52,14 @@ export const AuthProvider = ({ children }) => {
             toast.success('Login successful!');
             return { success: true, user };
         } catch (error) {
-            const message = error.response?.data?.message || 'Login failed. Please try again.';
+            let message = 'Login failed. Please try again.';
+            if (error.response?.data?.message) {
+                message = error.response.data.message;
+            } else if (error.response?.data?.errors?.length) {
+                message = error.response.data.errors.map(e => e.msg).join(', ');
+            } else if (error.code === 'ERR_NETWORK' || !error.response) {
+                message = 'Backend server is not running or unreachable. Please start the server.';
+            }
             toast.error(message);
             return { success: false, message };
         }
@@ -69,7 +76,14 @@ export const AuthProvider = ({ children }) => {
             toast.success('Registration successful!');
             return { success: true, user };
         } catch (error) {
-            const message = error.response?.data?.message || 'Registration failed. Please try again.';
+            let message = 'Registration failed. Please try again.';
+            if (error.response?.data?.message) {
+                message = error.response.data.message;
+            } else if (error.response?.data?.errors?.length) {
+                message = error.response.data.errors.map(e => e.msg).join(', ');
+            } else if (error.code === 'ERR_NETWORK' || !error.response) {
+                message = 'Backend server is not running or unreachable. Please start the server.';
+            }
             toast.error(message);
             return { success: false, message };
         }
@@ -103,6 +117,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateProfile,
+        reloadUser: loadUser,
         isAuthenticated: !!user,
         isJobSeeker: user?.role === 'jobseeker',
         isEmployer: user?.role === 'employer',

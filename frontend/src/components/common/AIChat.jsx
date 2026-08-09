@@ -26,8 +26,8 @@ const AIChat = () => {
     useEffect(() => {
         const userName = user?.name || 'there';
         const welcomeMessage = userType === 'employer' 
-            ? `Hello ${userName}! 👋 I'm your RecruitAI Employer Assistant. I can help you with:\n📋 Job postings\n🔍 Candidate screening\n🗣️ Interview questions\n💼 Hiring strategies\n\nWhat would you like to know?`
-            : `Hello ${userName}! 👋 I'm your RecruitAI Career Assistant. I can help you with:\n🔍 Job searching\n📝 Resume writing\n🎯 Interview preparation\n💡 Career advice\n\nWhat would you like to know?`;
+            ? `Hello ${userName}! 👋 I'm your KETARI Employer Assistant. I can help you with:\n📋 Job postings\n🔍 Candidate screening\n🗣️ Interview questions\n💼 Hiring strategies\n\nWhat would you like to know?`
+            : `Hello ${userName}! 👋 I'm your KETARI Career Assistant. I can help you with:\n🔍 Job searching\n📝 Resume writing\n🎯 Interview preparation\n💡 Career advice\n\nWhat would you like to know?`;
         
         setMessages([
             { 
@@ -514,7 +514,7 @@ const AIChat = () => {
                             </Form.Group>
                             <div style={{ fontSize: '0.6rem', textAlign: 'center', color: 'var(--muted)', marginTop: '4px' }}>
                                 {conversationCount > 0 && `${conversationCount} messages · `}
-                                Powered by RecruitAI
+                                Powered by KETARI
                             </div>
                         </Card.Footer>
                     </>

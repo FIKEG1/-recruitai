@@ -14,7 +14,7 @@ const TermsOfService = () => {
                             <hr />
                             
                             <h5 className="fw-bold mt-4">1. Acceptance of Terms</h5>
-                            <p>By using RecruitAI, you agree to these Terms of Service. If you do not agree, please do not use our platform.</p>
+                            <p>By using KETARI, you agree to these Terms of Service. If you do not agree, please do not use our platform.</p>
 
                             <h5 className="fw-bold mt-4">2. User Accounts</h5>
                             <p>You are responsible for:</p>
@@ -48,10 +48,10 @@ const TermsOfService = () => {
                             </ul>
 
                             <h5 className="fw-bold mt-4">5. Intellectual Property</h5>
-                            <p>All content on RecruitAI is owned by the Sidama Innovation and Technology Agency.</p>
+                            <p>All content on KETARI is owned by the Sidama Innovation and Technology Agency.</p>
 
                             <h5 className="fw-bold mt-4">6. Limitation of Liability</h5>
-                            <p>RecruitAI is provided "as is" without warranties of any kind. We are not liable for:</p>
+                            <p>KETARI is provided "as is" without warranties of any kind. We are not liable for:</p>
                             <ul>
                                 <li>Employment decisions made using our platform</li>
                                 <li>Data loss or service interruptions</li>
@@ -66,7 +66,7 @@ const TermsOfService = () => {
 
                             <hr className="mt-4" />
                             <p className="text-muted small">
-                                By using RecruitAI, you agree to these Terms of Service.
+                                By using KETARI, you agree to these Terms of Service.
                             </p>
                         </Card.Body>
                     </Card>

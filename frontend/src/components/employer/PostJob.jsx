@@ -268,7 +268,7 @@ const PostJob = () => {
                                                 className="form-control-custom"
                                                 onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
                                             />
-                                            <Button onClick={handleAddSkill} variant="primary-gradient">
+                                            <Button onClick={handleAddSkill} variant="primary">
                                                 <FaPlus />
                                             </Button>
                                         </div>
@@ -300,7 +300,7 @@ const PostJob = () => {
                                                 className="form-control-custom"
                                                 onKeyPress={(e) => e.key === 'Enter' && handleAddQualification()}
                                             />
-                                            <Button onClick={handleAddQualification} variant="primary-gradient">
+                                            <Button onClick={handleAddQualification} variant="primary">
                                                 <FaPlus />
                                             </Button>
                                         </div>
@@ -366,7 +366,7 @@ const PostJob = () => {
                                     <div className="d-flex gap-3 mt-4">
                                         <Button
                                             type="submit"
-                                            variant="primary-gradient"
+                                            variant="primary"
                                             className="flex-grow-1"
                                             disabled={loading}
                                         >

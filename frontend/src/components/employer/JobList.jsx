@@ -65,7 +65,7 @@ const JobList = () => {
                         <h2 className="fw-bold mb-0">My Jobs</h2>
                         <p className="text-muted">Manage your job postings</p>
                     </div>
-                    <Button as={Link} to="/employer/post-job" variant="primary-gradient">
+                    <Button as={Link} to="/employer/post-job" variant="primary">
                         <FaPlus className="me-2" /> Post New Job
                     </Button>
                 </div>
@@ -80,7 +80,7 @@ const JobList = () => {
                             <div className="mb-3" style={{ fontSize: '4rem' }}>📋</div>
                             <h4>No jobs posted yet</h4>
                             <p className="text-muted">Start by posting your first job opening</p>
-                            <Button as={Link} to="/employer/post-job" variant="primary-gradient">
+                            <Button as={Link} to="/employer/post-job" variant="primary">
                                 Post a Job
                             </Button>
                         </Card.Body>

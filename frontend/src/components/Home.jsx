@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Button, Card } from 'react-bootstrap';
+import { Container, Row, Col, Button, Card, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaFileAlt, FaRobot, FaChartLine, FaBriefcase, FaUsers, FaClock, FaCheckCircle } from 'react-icons/fa';
+import { FaRobot, FaBriefcase, FaUsers, FaCheckCircle, FaLaptopCode, FaChartBar, FaBullhorn, FaPenNib, FaHeadset, FaMicrophone, FaLanguage, FaDesktop } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
@@ -10,12 +10,7 @@ import './Home.css';
 const Home = () => {
     const { isAuthenticated } = useAuth();
     const { t } = useLanguage();
-    const [stats, setStats] = useState({
-        jobs: 0,
-        candidates: 0,
-        placements: 0,
-        companies: 0
-    });
+    const [stats, setStats] = useState({ jobs: 24, candidates: 156, placements: 89, companies: 24 });
     const [recentJobs, setRecentJobs] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -26,71 +21,35 @@ const Home = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
+            const jobsResponse = await api.get('/jobs?limit=4');
+            setRecentJobs(jobsResponse.data.jobs || []);
             
-            const jobsResponse = await api.get('/jobs?limit=6');
-            const jobs = jobsResponse.data.jobs || [];
-            setRecentJobs(jobs);
-            const totalJobs = jobsResponse.data.totalJobs || 0;
-
-            let totalCandidates = 0;
-            let totalEmployers = 0;
             try {
-                const usersResponse = await api.get('/admin/stats');
-                if (usersResponse.data.stats) {
-                    totalCandidates = usersResponse.data.stats.totalUsers || 0;
-                }
-            } catch (error) {
-                console.log('Admin stats not available, using fallback');
-            }
-
-            let totalApplications = 0;
-            try {
-                const appsResponse = await api.get('/applications/me');
-                totalApplications = appsResponse.data.applications?.length || 0;
-            } catch (error) {
-                console.log('Applications not available, using fallback');
-            }
-
-            setStats({
-                jobs: totalJobs || 24,
-                candidates: totalCandidates || 156,
-                placements: totalApplications || 89,
-                companies: totalEmployers || 24
-            });
-
+                const usersResponse = await api.get('/public/stats');
+                setStats(prev => ({ ...prev, candidates: usersResponse.data.stats?.totalUsers || prev.candidates, jobs: usersResponse.data.stats?.totalJobs || prev.jobs }));
+            } catch (e) { }
         } catch (error) {
             console.error('Error fetching data:', error);
-            setStats({
-                jobs: 24,
-                candidates: 156,
-                placements: 89,
-                companies: 24
-            });
         } finally {
             setLoading(false);
         }
     };
 
-    const features = [
-        { icon: <FaSearch />, title: t('home.smart_search'), description: t('home.smart_search_desc') },
-        { icon: <FaFileAlt />, title: t('home.resume_parsing'), description: t('home.resume_parsing_desc') },
-        { icon: <FaRobot />, title: t('home.ai_matching'), description: t('home.ai_matching_desc') },
-        { icon: <FaChartLine />, title: t('home.analytics_title'), description: t('home.analytics_desc') }
-    ];
-
-    const howItWorks = [
-        { step: '1', title: t('home.step1_title'), description: t('home.step1_desc') },
-        { step: '2', title: t('home.step2_title'), description: t('home.step2_desc') },
-        { step: '3', title: t('home.step3_title'), description: t('home.step3_desc') },
-        { step: '4', title: t('home.step4_title'), description: t('home.step4_desc') }
+    const popularServices = [
+        { icon: <FaBullhorn />, title: "Digital Marketing" },
+        { icon: <FaLanguage />, title: "Translation" },
+        { icon: <FaDesktop />, title: "Web Development" },
+        { icon: <FaLaptopCode />, title: "Mobile Apps" },
+        { icon: <FaChartBar />, title: "Data Analysis" },
+        { icon: <FaPenNib />, title: "Graphic Design" },
+        { icon: <FaMicrophone />, title: "Voice Over" },
+        { icon: <FaHeadset />, title: "Customer Support" }
     ];
 
     if (loading) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">{t('common.loading')}</span>
-                </div>
+                <div className="spinner-border text-primary" role="status"></div>
             </div>
         );
     }
@@ -101,103 +60,172 @@ const Home = () => {
             <section className="hero-section">
                 <Container>
                     <Row className="align-items-center">
-                        <Col lg={6} className="mb-4 mb-lg-0">
-                            <div className="hero-content">
+                        <Col lg={6} className="mb-5 mb-lg-0">
+                            <div className="hero-content pe-lg-4">
                                 <div className="hero-badge">
-                                    <FaRobot className="me-2" /> {t('home.hero_badge')}
+                                    <FaRobot className="me-2" /> ET Where Talent Meets Opportunity
                                 </div>
                                 <h1 className="hero-title">
-                                    The Talent Your Work Deserves. All in <span className="highlight">One Platform.</span>
+                                    Your AI-Powered Recruitment <span className="text-secondary">Platform</span>
                                 </h1>
                                 <p className="hero-subtitle">
-                                    Connect with skilled professionals ready to deliver. From quick tasks to complex projects, find the right people to move your business forward.
+                                    KETARI connects businesses with top-tier professionals for on-site, remote, and hybrid opportunities. Leverage our intelligent matching to find your next great hire or perfect job.
                                 </p>
-                                <div className="hero-buttons">
-                                    {isAuthenticated ? (
-                                        <>
-                                            <Button as={Link} to="/jobs" variant="light" size="lg" className="hero-btn-light">
-                                                {t('home.browse_jobs')}
-                                            </Button>
-                                            <Button as={Link} to="/employer/post-job" variant="outline-light" size="lg" className="hero-btn-outline">
-                                                {t('home.get_started')}
-                                            </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Button as={Link} to="/register" variant="light" size="lg" className="hero-btn-light">
-                                                {t('home.get_started')}
-                                            </Button>
-                                            <Button as={Link} to="/jobs" variant="outline-light" size="lg" className="hero-btn-outline">
-                                                {t('home.browse_jobs')}
-                                            </Button>
-                                        </>
-                                    )}
+                                {!isAuthenticated && (
+                                    <div className="hero-buttons mb-4">
+                                        <Button as={Link} to="/register" variant="primary" size="lg" className="hero-btn-solid">
+                                            Sign Up for Free
+                                        </Button>
+                                        <Button as={Link} to="/login" variant="outline-primary" size="lg" className="hero-btn-outline">
+                                            Login
+                                        </Button>
+                                    </div>
+                                )}
+                                <div className="hero-buttons d-flex flex-wrap gap-2">
+                                    <Button as={Link} to="/employer/post-job" variant={isAuthenticated ? "primary" : "secondary"} size="md" className="shadow-sm">
+                                        Post a Job
+                                    </Button>
+                                    <Button as={Link} to="/jobs" variant="light" size="md" className="shadow-sm border">
+                                        Explore Jobs
+                                    </Button>
+                                </div>
+                                <div className="hero-stats-row mt-5">
+                                    <span><strong>{stats.candidates}+</strong> candidates</span>
+                                    <span><strong>{stats.jobs}+</strong> completed jobs</span>
+                                    <span>Trusted by Ethiopian startups</span>
                                 </div>
                             </div>
                         </Col>
                         <Col lg={6}>
-                            <div className="hero-image-wrapper">
-                                <div className="hero-image-placeholder">
-                                    <div className="floating-card card-1">
-                                        <FaUsers /> {stats.candidates}+ {t('home.candidates')}
-                                    </div>
-                                    <div className="floating-card card-2">
-                                        <FaBriefcase /> {stats.jobs}+ {t('home.job_openings')}
-                                    </div>
-                                    <div className="floating-card card-3">
-                                        <FaCheckCircle /> {stats.placements}+ {t('home.placements')}
-                                    </div>
-                                    <div className="hero-image-content">
-                                        <span className="hero-image-icon">🤖</span>
-                                        <h3>{t('home.hero_image_title')}</h3>
-                                        <p>{t('home.hero_image_desc')}</p>
-                                    </div>
-                                </div>
+                            <div className="hero-visual">
+                                <Card className="floating-job-card card-1 shadow-sm">
+                                    <Card.Body>
+                                        <div className="d-flex justify-content-between mb-2">
+                                            <h6 className="fw-bold mb-0">Web developer</h6>
+                                        </div>
+                                        <p className="text-muted small mb-3">we need a remote python developer to work from home</p>
+                                        <div className="d-flex justify-content-between align-items-center mt-3">
+                                            <div>
+                                                <span className="fw-bold text-success">$2999.99 fixed</span>
+                                            </div>
+                                            <Button variant="success" size="sm" className="rounded-pill px-3">View Details</Button>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                                <Card className="floating-job-card card-2 shadow-sm">
+                                    <Card.Body>
+                                        <div className="d-flex justify-content-between mb-2">
+                                            <h6 className="fw-bold mb-0">Junior Python Developer</h6>
+                                        </div>
+                                        <p className="text-muted small mb-3">as a python developer u are responsible to handle python based operations</p>
+                                        <div className="d-flex justify-content-between align-items-center mt-3">
+                                            <div>
+                                                <span className="fw-bold text-success">Negotiable</span>
+                                            </div>
+                                            <Button variant="success" size="sm" className="rounded-pill px-3">View Details</Button>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
                             </div>
                         </Col>
                     </Row>
                 </Container>
             </section>
 
-            {/* Stats Section */}
-            <section className="stats-section-wrapper">
-                <Container>
-                    <Row className="stats-section">
-                        <Col md={3} sm={6} className="stat-item">
-                            <div className="stat-number">{stats.jobs}+</div>
-                            <div className="stat-label">{t('home.job_openings')}</div>
+            {/* How It Works - Dual Path */}
+            <section className="how-it-works-section py-5">
+                <Container className="py-4">
+                    <div className="text-center mb-5">
+                        <h2 className="fw-bold">How KETARI works</h2>
+                        <p className="text-muted">One platform, two paths to success</p>
+                    </div>
+                    <Row className="g-4">
+                        <Col md={6}>
+                            <Card className="workflow-card employer-card h-100 border-0">
+                                <Card.Body className="p-5">
+                                    <h3 className="fw-bold mb-4 text-primary">For Employers</h3>
+                                    
+                                    <div className="workflow-step">
+                                        <div className="step-num bg-white text-primary fw-bold shadow-sm">1</div>
+                                        <div>
+                                            <h5 className="fw-bold">Post a Job</h5>
+                                            <p className="text-muted mb-0">Describe your project, set a budget.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="workflow-step">
+                                        <div className="step-num bg-white text-primary fw-bold shadow-sm">2</div>
+                                        <div>
+                                            <h5 className="fw-bold">Receive Proposals</h5>
+                                            <p className="text-muted mb-0">Connect with skilled Ethiopian professionals.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="workflow-step">
+                                        <div className="step-num bg-white text-primary fw-bold shadow-sm">3</div>
+                                        <div>
+                                            <h5 className="fw-bold">Hire & get work done</h5>
+                                            <p className="text-muted mb-0">Collaborate, review, and pay securely.</p>
+                                        </div>
+                                    </div>
+                                </Card.Body>
+                            </Card>
                         </Col>
-                        <Col md={3} sm={6} className="stat-item">
-                            <div className="stat-number">{stats.candidates}+</div>
-                            <div className="stat-label">{t('home.candidates')}</div>
-                        </Col>
-                        <Col md={3} sm={6} className="stat-item">
-                            <div className="stat-number">{stats.placements}+</div>
-                            <div className="stat-label">{t('home.placements')}</div>
-                        </Col>
-                        <Col md={3} sm={6} className="stat-item">
-                            <div className="stat-number">{stats.companies}+</div>
-                            <div className="stat-label">{t('home.companies')}</div>
+                        <Col md={6}>
+                            <Card className="workflow-card talent-card h-100 border-0">
+                                <Card.Body className="p-5">
+                                    <h3 className="fw-bold mb-4 text-secondary">For Candidates</h3>
+                                    
+                                    <div className="workflow-step">
+                                        <div className="step-num bg-white text-secondary fw-bold shadow-sm">1</div>
+                                        <div>
+                                            <h5 className="fw-bold">Create Profile</h5>
+                                            <p className="text-muted mb-0">Showcase your skills & portfolio.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="workflow-step">
+                                        <div className="step-num bg-white text-secondary fw-bold shadow-sm">2</div>
+                                        <div>
+                                            <h5 className="fw-bold">Find Jobs</h5>
+                                            <p className="text-muted mb-0">Browse projects that match your expertise.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="workflow-step">
+                                        <div className="step-num bg-white text-secondary fw-bold shadow-sm">3</div>
+                                        <div>
+                                            <h5 className="fw-bold">Get Paid</h5>
+                                            <p className="text-muted mb-0">Secure payments, local or international.</p>
+                                        </div>
+                                    </div>
+                                </Card.Body>
+                            </Card>
                         </Col>
                     </Row>
                 </Container>
             </section>
 
-            {/* Features Section */}
-            <section className="features-section">
-                <Container>
-                    <div className="section-header text-center">
-                        <h2>{t('home.features_title')}</h2>
-                        <p className="text-muted">{t('home.features_subtitle')}</p>
+            {/* Popular Services Grid */}
+            <section className="popular-services-section py-5">
+                <Container className="py-4">
+                    <div className="text-center mb-5">
+                        <Badge bg="light" text="dark" className="px-3 py-2 border mb-3 rounded-pill">
+                            <span className="text-warning me-1">🔥</span> In Demand
+                        </Badge>
+                        <h2 className="fw-bold">Popular Services on <span className="text-primary">KETARI</span></h2>
+                        <p className="text-muted">In-demand skills from Ethiopia's top talent</p>
                     </div>
-                    <Row>
-                        {features.map((feature, index) => (
-                            <Col md={3} sm={6} key={index} className="mb-4">
-                                <Card className="feature-card text-center h-100">
-                                    <Card.Body>
-                                        <div className="feature-icon">{feature.icon}</div>
-                                        <Card.Title>{feature.title}</Card.Title>
-                                        <Card.Text>{feature.description}</Card.Text>
+                    
+                    <Row className="g-3 justify-content-center">
+                        {popularServices.map((service, idx) => (
+                            <Col xs={6} md={3} lg={3} key={idx}>
+                                <Card className="service-card text-center h-100 border shadow-sm">
+                                    <Card.Body className="d-flex flex-column align-items-center justify-content-center p-4">
+                                        <div className="service-icon mb-3">
+                                            {service.icon}
+                                        </div>
+                                        <h6 className="fw-bold mb-0 text-dark">{service.title}</h6>
                                     </Card.Body>
                                 </Card>
                             </Col>
@@ -206,94 +234,42 @@ const Home = () => {
                 </Container>
             </section>
 
-            {/* Recent Jobs */}
-            <section className="recent-jobs-section">
-                <Container>
-                    <div className="section-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2>{t('jobs.title')}</h2>
-                            <p className="text-muted">{t('home.hero_subtitle')}</p>
-                        </div>
-                        <Button as={Link} to="/jobs" variant="outline-primary-custom">
-                            {t('home.browse_jobs')}
+            {/* Featured Candidates (Mock Data representing recent candidates/jobs) */}
+            <section className="recent-jobs-section bg-light py-5">
+                <Container className="py-4">
+                    <div className="d-flex justify-content-between align-items-center mb-5">
+                        <h2 className="fw-bold mb-0">Featured Candidates</h2>
+                        <Button as={Link} to="/candidates" variant="link" className="text-decoration-none fw-bold text-primary">
+                            View all
                         </Button>
                     </div>
-                    <Row>
-                        {recentJobs.length > 0 ? (
-                            recentJobs.map((job, index) => (
-                                <Col md={4} key={index} className="mb-4">
-                                    <Card className="job-card h-100">
-                                        <Card.Body>
-                                            <div className="job-card-header">
-                                                <h5 className="job-title">{job.title}</h5>
-                                                <span className={`job-tag job-tag-${(job.employmentType || t('home.default_employment_type')).toLowerCase().replace(/\s+/g, '')}`}>
-                                                    {job.employmentType || t('home.default_employment_type')}
-                                                </span>
+                    <Row className="g-4">
+                        {[1, 2, 3, 4].map((item, index) => (
+                            <Col md={3} key={index}>
+                                <Card className="featured-candidate-card h-100 border-0 shadow-sm">
+                                    <Card.Body className="d-flex flex-column">
+                                        <div className="d-flex align-items-center mb-3">
+                                            <div className="avatar-placeholder bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style={{width: 50, height: 50}}>
+                                                JD
                                             </div>
-                                            <p className="company-name">{job.employer?.name || t('home.default_company')}</p>
-                                            <div className="job-meta">
-                                                <span className="job-location">📍 {job.location || t('home.default_location')}</span>
-                                                <span className="job-department">🏢 {job.department || t('home.default_department')}</span>
+                                            <div>
+                                                <h6 className="fw-bold mb-0">Developer {index+1}</h6>
+                                                <small className="text-muted">⭐⭐⭐⭐⭐ 5.0</small>
                                             </div>
-                                            <Button as={Link} to={`/jobseeker/apply/${job._id}`} variant="primary-gradient" className="w-100 mt-3">
-                                                {t('jobs.apply_now')}
+                                        </div>
+                                        <h6 className="fw-bold mt-2">Full Stack Developer</h6>
+                                        <p className="text-muted small mb-3"><FaCheckCircle className="me-1"/> Addis Ababa</p>
+                                        
+                                        <div className="mt-auto pt-3 d-flex justify-content-between align-items-center">
+                                            <span className="fw-bold text-success fs-5">ETB 150<small className="text-muted fs-6">/hr</small></span>
+                                            <Button variant="primary" size="sm" className="rounded-pill px-3">
+                                                View Profile
                                             </Button>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            ))
-                        ) : (
-                            <Col md={12}>
-                                <div className="text-center py-5">
-                                    <h5>{t('jobs.no_jobs')}</h5>
-                                    <p className="text-muted">{t('jobs.no_jobs_desc')}</p>
-                                </div>
-                            </Col>
-                        )}
-                    </Row>
-                </Container>
-            </section>
-
-            {/* How It Works */}
-            <section className="how-it-works">
-                <Container>
-                    <div className="section-header text-center">
-                        <h2>{t('home.how_it_works')}</h2>
-                        <p className="text-muted">{t('home.hero_subtitle')}</p>
-                    </div>
-                    <Row className="justify-content-center">
-                        {howItWorks.map((item, index) => (
-                            <Col md={3} sm={6} key={index} className="mb-4">
-                                <div className="step-card text-center">
-                                    <div className="step-number">{item.step}</div>
-                                    <h5>{item.title}</h5>
-                                    <p className="text-muted">{item.description}</p>
-                                </div>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
                             </Col>
                         ))}
-                    </Row>
-                </Container>
-            </section>
-
-            {/* CTA Section */}
-            <section className="cta-section">
-                <Container>
-                    <Row className="align-items-center">
-                        <Col lg={8} className="mb-4 mb-lg-0">
-                            <h2 className="cta-title">{t('home.cta_title')}</h2>
-                            <p className="cta-text">{t('home.cta_text')}</p>
-                        </Col>
-                        <Col lg={4} className="text-lg-end">
-                            {isAuthenticated ? (
-                                <Button as={Link} to="/jobs" variant="light" size="lg" className="cta-btn">
-                                    {t('home.browse_jobs')}
-                                </Button>
-                            ) : (
-                                <Button as={Link} to="/register" variant="light" size="lg" className="cta-btn">
-                                    {t('home.get_started')}
-                                </Button>
-                            )}
-                        </Col>
                     </Row>
                 </Container>
             </section>
