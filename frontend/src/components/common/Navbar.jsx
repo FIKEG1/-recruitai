@@ -100,7 +100,7 @@ const CustomNavbar = () => {
                         <Nav className="mx-auto align-items-center">
                             <Nav.Link 
                                 as={Link} 
-                                to={isAuthenticated ? (isJobSeeker ? '/jobseeker/dashboard' : isEmployer ? '/employer/jobs' : '/admin/dashboard') : '/'}
+                                to="/"
                                 className="nav-link-custom" 
                                 style={{ 
                                     color: 'var(--muted)', 

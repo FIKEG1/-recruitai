@@ -33,7 +33,8 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
             delete api.defaults.headers.common['Authorization'];
-            window.location.href = '/login';
+            // Don't redirect automatically - let ProtectedRoute handle redirects
+            // This allows the home page to load by default
         }
         return Promise.reject(error);
     }

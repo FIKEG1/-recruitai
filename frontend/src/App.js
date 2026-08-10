@@ -222,9 +222,9 @@ function App() {
                                 } />
 
                                 {/* ============================================
-                                    404 NOT FOUND
+                                    DEFAULT REDIRECT TO HOME
                                 ============================================ */}
-                                <Route path="*" element={<Navigate to="/" />} />
+                                <Route path="*" element={<Navigate to="/" replace />} />
                             </Routes>
                         </main>
                         <Footer />
