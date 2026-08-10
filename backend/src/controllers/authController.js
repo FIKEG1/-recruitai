@@ -173,8 +173,16 @@ exports.updateProfile = async (req, res) => {
         const user = await User.findById(req.user.id);
 
         if (name) user.name = name;
-        if (profile) user.profile = { ...user.profile, ...profile };
-        if (company) user.company = { ...user.company, ...company };
+        if (profile) {
+            const existingProfile = user.profile ? (user.profile.toObject ? user.profile.toObject() : user.profile) : {};
+            user.profile = { ...existingProfile, ...profile };
+            user.markModified('profile');
+        }
+        if (company) {
+            const existingCompany = user.company ? (user.company.toObject ? user.company.toObject() : user.company) : {};
+            user.company = { ...existingCompany, ...company };
+            user.markModified('company');
+        }
 
         await user.save();
 

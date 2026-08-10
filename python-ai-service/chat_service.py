@@ -5,8 +5,6 @@ from datetime import datetime
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from dotenv import load_dotenv
-import openai
-import google.generativeai as genai
 import requests
 import random
 
@@ -21,20 +19,25 @@ CORS(app, origins=['http://localhost:3000', 'http://localhost:3001'])
 # ============================================
 
 # OpenAI Configuration
-openai.api_key = os.getenv('OPENAI_API_KEY', '')
+try:
+    import openai
+    openai.api_key = os.getenv('OPENAI_API_KEY', '')
+except Exception as e:
+    print(f"[INFO] OpenAI setup info: {e}")
 
 # Google Gemini Configuration
 try:
     api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
     if api_key:
+        import google.generativeai as genai
         genai.configure(api_key=api_key)
         gemini_model = genai.GenerativeModel('gemini-1.5-pro')
-        print("✅ Gemini configured successfully")
+        print("[OK] Gemini configured successfully")
     else:
         gemini_model = None
-        print("⚠️ No Gemini API key found, using local fallback")
+        print("[INFO] No Gemini API key found, using local fallback")
 except Exception as e:
-    print(f"⚠️ Gemini setup error: {e}")
+    print(f"[INFO] Gemini setup error: {e}")
     gemini_model = None
 
 # ============================================
@@ -1729,7 +1732,14 @@ def update_context():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     port = int(os.getenv('AI_CHAT_PORT', os.getenv('AI_SERVICE_PORT', 5001)))
     print(f"🤖 KETARI Chat Service starting on port {port}")
     print(f"📊 Providers: OpenAI={bool(openai.api_key)}, Gemini={bool(gemini_model)}, Local=Active")
+=======
+    port = int(os.getenv('AI_CHAT_PORT', os.getenv('AI_SERVICE_PORT', 5002)))
+    has_openai = 'openai' in globals() and bool(getattr(openai, 'api_key', None))
+    print(f"[START] KETARI Chat Service starting on port {port}")
+    print(f"[STATUS] Providers: OpenAI={has_openai}, Gemini={bool(gemini_model)}, Local=Active")
+>>>>>>> dc9265676ac94e80f21cecf3fbd84c268e552e5a
     app.run(host='0.0.0.0', port=port, debug=True)
