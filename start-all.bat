@@ -8,14 +8,9 @@ echo   KETARI Platform Launcher
 echo ========================================
 echo.
 
-<<<<<<< HEAD
-echo [1/3] Starting AI Service...
-start "AI Service" cmd /k "cd /d "%~dp0python-ai-service" && .\venv\Scripts\python.exe chat_service.py"
-=======
 echo [1/4] Starting AI Services...
 start "AI Service" cmd /k "cd /d "%~dp0python-ai-service" && .\venv\Scripts\python.exe app.py"
 start "AI Chat Service" cmd /k "cd /d "%~dp0python-ai-service" && .\venv\Scripts\python.exe chat_service.py"
->>>>>>> dc9265676ac94e80f21cecf3fbd84c268e552e5a
 ping 127.0.0.1 -n 4 >nul
 
 echo [2/4] Starting Backend...

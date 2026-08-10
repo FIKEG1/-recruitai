@@ -1732,14 +1732,8 @@ def update_context():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
-<<<<<<< HEAD
-    port = int(os.getenv('AI_CHAT_PORT', os.getenv('AI_SERVICE_PORT', 5001)))
-    print(f"🤖 KETARI Chat Service starting on port {port}")
-    print(f"📊 Providers: OpenAI={bool(openai.api_key)}, Gemini={bool(gemini_model)}, Local=Active")
-=======
-    port = int(os.getenv('AI_CHAT_PORT', os.getenv('AI_SERVICE_PORT', 5002)))
+    port = int(os.getenv('AI_CHAT_PORT', 5002))
     has_openai = 'openai' in globals() and bool(getattr(openai, 'api_key', None))
     print(f"[START] KETARI Chat Service starting on port {port}")
     print(f"[STATUS] Providers: OpenAI={has_openai}, Gemini={bool(gemini_model)}, Local=Active")
->>>>>>> dc9265676ac94e80f21cecf3fbd84c268e552e5a
     app.run(host='0.0.0.0', port=port, debug=True)

@@ -333,8 +333,8 @@ const enTranslations = {
     "footer": {
         "description": "Intelligent Job Matching and Recruitment Automation Platform for the Sidama Innovation and Technology Agency.",
         "quick_links": "Quick Links",
-        "about": "About",
-        "contact": "Contact",
+        "about": "About Us",
+        "contact": "Contact Us",
         "for_job_seekers": "For Job Seekers",
         "dashboard": "Dashboard",
         "profile": "Profile",
@@ -345,7 +345,21 @@ const enTranslations = {
         "post_job": "Post a Job",
         "find_candidates": "Find Candidates",
         "pricing": "Pricing",
-        "rights": "All rights reserved"
+        "rights": "All rights reserved",
+        "newsletter_title": "Subscribe to Job Alerts",
+        "newsletter_desc": "Get notified about the latest job opportunities, career advice, and recruitment updates in Sidama Region.",
+        "subscribe": "Subscribe",
+        "email_placeholder": "Enter your email address...",
+        "contact_info": "Contact & Location",
+        "address": "Hawassa, Sidama Region, Ethiopia",
+        "email_label": "info@sit-agency.gov.et",
+        "phone_label": "+251 46 220 1234",
+        "legal": "Legal & Security",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service",
+        "complaints": "Complaints & Feedback",
+        "internships": "Internship Programs",
+        "subscribed_success": "Thank you for subscribing to KETARI Job Alerts!"
     },
     "complaints": {
         "title": "Complaints & Feedback",

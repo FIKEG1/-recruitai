@@ -7,6 +7,7 @@ import { useTheme } from './context/ThemeContext';
 
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Navbar from './components/common/Navbar';
+import Footer from './components/common/Footer';
 import Home from './components/Home';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
@@ -23,11 +24,7 @@ import PostJob from './components/employer/PostJob';
 import Applications from './components/employer/Applications';
 import EmployerProfile from './components/employer/EmployerProfile';
 import CandidateList from './components/employer/CandidateList';
-<<<<<<< HEAD
-
-=======
 import EmployerAttendance from './components/employer/EmployerAttendance';
->>>>>>> dc9265676ac94e80f21cecf3fbd84c268e552e5a
 import AdminDashboard from './components/admin/AdminDashboard';
 import ManageUsers from './components/admin/ManageUsers';
 import JobSeekerAttendance from './components/admin/JobSeekerAttendance';
@@ -272,6 +269,7 @@ function App() {
 
                             </Routes>
                         </main>
+                        <Footer />
 
                         <ToastContainer
                             position="top-right"

@@ -324,7 +324,21 @@
         "post_job": "ስራ ልጥፍ",
         "find_candidates": "እጩዎችን ያግኙ",
         "pricing": "ዋጋ",
-        "rights": "መብቶች በህግ የተጠበቁ ናቸው"
+        "rights": "መብቶች በህግ የተጠበቁ ናቸው",
+        "newsletter_title": "በስራ ማሳወቂያዎች እንደተገናኙ ይቆዩ",
+        "newsletter_desc": "በሲዳማ ክልል ስለቅርብ ጊዜ የስራ እድሎች እና የመመልመል ማስታወቂያዎች መረጃ ያግኙ።",
+        "subscribe": "ተመዝገብ",
+        "email_placeholder": "የኢሜይል አድራሻዎን ያስገቡ...",
+        "contact_info": "የእውቂያ መረጃ",
+        "address": "ሀዋሳ፣ ሲዳማ ክልል፣ ኢትዮጵያ",
+        "email_label": "info@sit-agency.gov.et",
+        "phone_label": "+251 46 220 1234",
+        "legal": "ህጋዊ እና ፖሊሲዎች",
+        "privacy": "የግላዊነት ፖሊሲ",
+        "terms": "የአገልግሎት ውሎች",
+        "complaints": "ቅሬታ እና አስተያየት",
+        "internships": "የልምድ ልውውጥ ፕሮግራሞች",
+        "subscribed_success": "ለስራ ማሳወቂያዎች ስለተመዘገቡ እናመሰግናለን!"
     },
     "complaints": {
         "title": "ቅልጥፍና አስተያየት",
