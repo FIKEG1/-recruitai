@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form, Spinner, Alert, Badge } from 'react-bootstrap';
-import { FaExclamationTriangle, FaPlus, FaEye, FaPaperPlane } from 'react-icons/fa';
+import { Container, Card, Form, Button, Badge, Spinner, Alert, Row, Col } from 'react-bootstrap';
+import { FaExclamationTriangle, FaPlus } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const Complaints = () => {
+    const { user } = useAuth();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [complaints, setComplaints] = useState([]);
     const [showForm, setShowForm] = useState(false);
@@ -96,10 +101,11 @@ const Complaints = () => {
 
     return (
         <Container className="py-5">
+            <BackButton to="/jobseeker/dashboard" />
             <Row className="mb-4">
                 <Col>
-                    <h2 className="fw-bold mb-1">Complaints & Feedback</h2>
-                    <p className="text-muted">Submit and track your complaints and feedback</p>
+                    <h2 className="fw-bold mb-1">{t('complaints.title')}</h2>
+                    <p className="text-muted">{t('complaints.subtitle')}</p>
                 </Col>
                 <Col xs="auto">
                     <Button 
@@ -107,8 +113,8 @@ const Complaints = () => {
                         onClick={() => setShowForm(!showForm)}
                         className="d-flex align-items-center gap-2"
                     >
-                        {showForm ? <FaEye /> : <FaPlus />}
-                        {showForm ? 'View Complaints' : 'New Complaint'}
+                        {showForm ? <FaExclamationTriangle /> : <FaPlus />}
+                        {showForm ? t('complaints.view_complaints') : t('complaints.new_complaint')}
                     </Button>
                 </Col>
             </Row>
@@ -123,38 +129,38 @@ const Complaints = () => {
                 <Card className="mb-4 shadow-sm">
                     <Card.Header className="bg-white fw-bold">
                         <FaExclamationTriangle className="me-2" />
-                        Submit New Complaint
+                        {t('complaints.submit_complaint')}
                     </Card.Header>
                     <Card.Body>
                         <Form onSubmit={handleSubmit}>
                             <Row>
                                 <Col md={6}>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Title *</Form.Label>
+                                        <Form.Label>{t('complaints.form.title')} *</Form.Label>
                                         <Form.Control
                                             type="text"
                                             value={formData.title}
                                             onChange={(e) => setFormData({...formData, title: e.target.value})}
                                             required
-                                            placeholder="Brief title of your complaint"
+                                            placeholder={t('complaints.form.title.placeholder')}
                                         />
                                     </Form.Group>
                                 </Col>
                                 <Col md={6}>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Category *</Form.Label>
+                                        <Form.Label>{t('complaints.form.category')} *</Form.Label>
                                         <Form.Select
                                             value={formData.category}
                                             onChange={(e) => setFormData({...formData, category: e.target.value})}
                                             required
                                         >
-                                            <option value="">Select category</option>
-                                            <option value="workplace">Workplace</option>
-                                            <option value="salary">Salary & Benefits</option>
-                                            <option value="harassment">Harassment</option>
-                                            <option value="management">Management</option>
-                                            <option value="equipment">Equipment</option>
-                                            <option value="other">Other</option>
+                                            <option value="">{t('complaints.category_placeholder')}</option>
+                                            <option value="workplace">{t('complaints.form.category.workplace')}</option>
+                                            <option value="salary">{t('complaints.form.category.salary')}</option>
+                                            <option value="harassment">{t('complaints.form.category.harassment')}</option>
+                                            <option value="management">{t('complaints.form.category.management')}</option>
+                                            <option value="equipment">{t('complaints.form.category.equipment')}</option>
+                                            <option value="other">{t('complaints.form.category.other')}</option>
                                         </Form.Select>
                                     </Form.Group>
                                 </Col>
@@ -162,28 +168,28 @@ const Complaints = () => {
                             <Row>
                                 <Col md={6}>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Priority</Form.Label>
+                                        <Form.Label>{t('complaints.form.priority')}</Form.Label>
                                         <Form.Select
                                             value={formData.priority}
                                             onChange={(e) => setFormData({...formData, priority: e.target.value})}
                                         >
-                                            <option value="low">Low</option>
-                                            <option value="medium">Medium</option>
-                                            <option value="high">High</option>
-                                            <option value="urgent">Urgent</option>
+                                            <option value="low">{t('complaints.form.priority.low')}</option>
+                                            <option value="medium">{t('complaints.form.priority.medium')}</option>
+                                            <option value="high">{t('complaints.form.priority.high')}</option>
+                                            <option value="urgent">{t('complaints.form.priority.urgent')}</option>
                                         </Form.Select>
                                     </Form.Group>
                                 </Col>
                             </Row>
                             <Form.Group className="mb-3">
-                                <Form.Label>Description *</Form.Label>
+                                <Form.Label>{t('complaints.form.description')} *</Form.Label>
                                 <Form.Control
                                     as="textarea"
                                     rows={5}
                                     value={formData.description}
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                                     required
-                                    placeholder="Provide detailed description of your complaint"
+                                    placeholder={t('complaints.form.description.placeholder')}
                                 />
                             </Form.Group>
                             <div className="d-flex gap-2">
@@ -193,14 +199,14 @@ const Complaints = () => {
                                     disabled={submitting}
                                     className="d-flex align-items-center gap-2"
                                 >
-                                    {submitting ? <Spinner size="sm" /> : <FaPaperPlane />}
-                                    Submit Complaint
+                                    {submitting ? <Spinner size="sm" /> : <FaExclamationTriangle />}
+                                    {t('complaints.form.submit')}
                                 </Button>
                                 <Button 
                                     variant="outline-secondary" 
                                     onClick={() => setShowForm(false)}
                                 >
-                                    Cancel
+                                    {t('complaints.form.cancel')}
                                 </Button>
                             </div>
                         </Form>
@@ -209,15 +215,17 @@ const Complaints = () => {
             ) : (
                 <Card className="shadow-sm">
                     <Card.Header className="bg-white fw-bold">
-                        My Complaints
+                        {t('complaints.my_complaints')}
                     </Card.Header>
                     <Card.Body className="p-0">
                         {complaints.length === 0 ? (
                             <div className="text-center p-4">
-                                <FaExclamationTriangle className="text-muted mb-3" size={48} />
-                                <p className="text-muted">No complaints submitted yet</p>
+                                <h2 className="fw-bold mb-4">
+                                    <FaExclamationTriangle className="me-2 text-primary" /> {t('complaints.title')}
+                                </h2>
+                                <p className="text-muted">{t('complaints.no_complaints')}</p>
                                 <Button variant="primary" onClick={() => setShowForm(true)}>
-                                    Submit Your First Complaint
+                                    {t('complaints.submit_first')}
                                 </Button>
                             </div>
                         ) : (

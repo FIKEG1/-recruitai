@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Badge, Spinner, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaUserPlus, FaUserCheck, FaUserTimes } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const ManageUsers = () => {
+    const { t } = useLanguage();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -106,10 +109,11 @@ const ManageUsers = () => {
     return (
         <section className="manage-users py-4">
             <Container>
+                <BackButton to="/admin/dashboard" />
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 className="fw-bold mb-0">Manage Users</h2>
-                        <p className="text-muted">View and manage all platform users</p>
+                        <h2 className="fw-bold mb-0">{t('admin.manage_users')}</h2>
+                        <p className="text-muted">{t('admin.view_users')}</p>
                     </div>
                     <Button variant="primary-gradient" onClick={() => {
                         setEditingUser(null);

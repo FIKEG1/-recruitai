@@ -1,33 +1,31 @@
 @echo off
-title RecruitAI Platform Launcher
+title KETARI Platform Launcher
 color 0A
 
 echo.
 echo ========================================
-echo   🤖 RecruitAI Platform Launcher
+echo   KETARI Platform Launcher
 echo ========================================
 echo.
 
-echo [1/4] Starting MongoDB...
-start "MongoDB" /min mongod --dbpath C:\data\db
-timeout /t 3 /nobreak >nul
+echo [1/3] Starting AI Service...
+start "AI Service" cmd /k "cd /d "%~dp0python-ai-service" && .\venv\Scripts\python.exe chat_service.py"
+ping 127.0.0.1 -n 4 >nul
 
-echo [2/4] Starting Backend...
-start "Backend" /min cmd /k "cd /d C:\Users\Fikadu\Documents\recruitment-platform\backend && npm run dev"
-timeout /t 3 /nobreak >nul
+echo [2/3] Starting Backend...
+start "Backend" cmd /k "cd /d "%~dp0backend" && npm run dev"
+ping 127.0.0.1 -n 6 >nul
 
-echo [3/4] Starting AI Chat Service...
-start "AI Chat" /min cmd /k "cd /d C:\Users\Fikadu\Documents\recruitment-platform\python-ai-service && venv\Scripts\activate && python chat_service.py"
-timeout /t 5 /nobreak >nul
-
-echo [4/4] Starting Frontend...
-start "Frontend" /min cmd /k "cd /d C:\Users\Fikadu\Documents\recruitment-platform\frontend && npm start"
-timeout /t 5 /nobreak >nul
+echo [3/3] Starting Frontend...
+start "Frontend" cmd /k "cd /d "%~dp0frontend" && npm start"
+ping 127.0.0.1 -n 6 >nul
 
 echo.
 echo ========================================
-echo   ✅ All services started!
-echo   📱 Open: http://localhost:3000
-echo   🤖 AI Chat: http://localhost:5002
+echo   All services started!
+echo   Frontend: http://localhost:3000
+echo   Backend:  http://localhost:5000/api
+echo   AI Svc:   http://localhost:5001/api
 echo ========================================
-timeout /t 3 /nobreak >nul
+echo.
+pause

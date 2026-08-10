@@ -3,11 +3,14 @@ import { Container, Row, Col, Card, Button, Table, Badge, Spinner, Alert } from 
 import { Link } from 'react-router-dom';
 import { FaPlus, FaEye, FaEdit, FaTrash, FaUsers, FaClock } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const JobList = () => {
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -60,13 +63,14 @@ const JobList = () => {
     return (
         <section className="job-list-section py-4">
             <Container>
+                <BackButton to="/" />
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 className="fw-bold mb-0">My Jobs</h2>
-                        <p className="text-muted">Manage your job postings</p>
+                        <h2 className="fw-bold mb-0">{t('employer.my_jobs')}</h2>
+                        <p className="text-muted">{t('employer.manage_jobs')}</p>
                     </div>
-                    <Button as={Link} to="/employer/post-job" variant="primary-gradient">
-                        <FaPlus className="me-2" /> Post New Job
+                    <Button as={Link} to="/employer/post-job" variant="primary">
+                        <FaPlus className="me-2" /> {t('employer.post_new_job')}
                     </Button>
                 </div>
 
@@ -78,10 +82,10 @@ const JobList = () => {
                     <Card className="text-center py-5">
                         <Card.Body>
                             <div className="mb-3" style={{ fontSize: '4rem' }}>📋</div>
-                            <h4>No jobs posted yet</h4>
-                            <p className="text-muted">Start by posting your first job opening</p>
-                            <Button as={Link} to="/employer/post-job" variant="primary-gradient">
-                                Post a Job
+                            <h4>{t('employer.no_jobs')}</h4>
+                            <p className="text-muted">{t('employer.no_jobs_desc')}</p>
+                            <Button as={Link} to="/employer/post-job" variant="primary">
+                                {t('employer.post_job')}
                             </Button>
                         </Card.Body>
                     </Card>

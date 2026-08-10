@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FaSave, FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const PostJob = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
@@ -125,10 +128,11 @@ const PostJob = () => {
     return (
         <section className="post-job-section py-4">
             <Container>
+                <BackButton to="/employer/jobs" />
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 className="fw-bold mb-0">Post a New Job</h2>
-                        <p className="text-muted">Fill in the details below to create a job posting</p>
+                        <h2 className="fw-bold mb-0">{t('employer.post_new_job')}</h2>
+                        <p className="text-muted">{t('jobs.fill_details')}</p>
                     </div>
                     <Button variant="outline-secondary" onClick={() => navigate('/employer/jobs')}>
                         <FaTimes className="me-2" /> Cancel
@@ -268,7 +272,7 @@ const PostJob = () => {
                                                 className="form-control-custom"
                                                 onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
                                             />
-                                            <Button onClick={handleAddSkill} variant="primary-gradient">
+                                            <Button onClick={handleAddSkill} variant="primary">
                                                 <FaPlus />
                                             </Button>
                                         </div>
@@ -300,7 +304,7 @@ const PostJob = () => {
                                                 className="form-control-custom"
                                                 onKeyPress={(e) => e.key === 'Enter' && handleAddQualification()}
                                             />
-                                            <Button onClick={handleAddQualification} variant="primary-gradient">
+                                            <Button onClick={handleAddQualification} variant="primary">
                                                 <FaPlus />
                                             </Button>
                                         </div>
@@ -366,7 +370,7 @@ const PostJob = () => {
                                     <div className="d-flex gap-3 mt-4">
                                         <Button
                                             type="submit"
-                                            variant="primary-gradient"
+                                            variant="primary"
                                             className="flex-grow-1"
                                             disabled={loading}
                                         >

@@ -20,6 +20,8 @@ const reportRoutes = require('./routes/reports');
 const uploadRoutes = require('./routes/upload');
 const adminRoutes = require('./routes/admin');
 const internshipRoutes = require('./routes/internships');
+const candidateRoutes = require('./routes/candidates');
+const publicRoutes = require('./routes/public');
 
 // ============================================
 // NEW HRM MODULE ROUTES
@@ -40,7 +42,9 @@ connectDB();
 // ============================================
 // MIDDLEWARE
 // ============================================
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:3001'],
     credentials: true
@@ -74,6 +78,8 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/internships', internshipRoutes);
+app.use('/api/candidates', candidateRoutes);
+app.use('/api/public', publicRoutes);
 
 // ============================================
 // HRM MODULE ROUTES

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Badge, Spinner, Alert, Modal, Form } from 'react-bootstrap';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaUser, FaCalendar } from 'react-icons/fa';
+import { Container, Row, Col, Card, Table, Badge, Button, Spinner, Alert, Modal, Form } from 'react-bootstrap';
+import { FaPlus, FaEdit, FaTrash, FaSave, FaTimes, FaCalendar, FaUser } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const TrainingManager = () => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [trainings, setTrainings] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -86,13 +89,14 @@ const TrainingManager = () => {
 
     return (
         <Container className="py-4">
+            <BackButton to="/admin/dashboard" />
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 className="fw-bold mb-0">📚 Training Management</h2>
-                    <p className="text-muted">Manage all training programs</p>
+                    <h2 className="fw-bold mb-0">📚 {t('admin.training_management')}</h2>
+                    <p className="text-muted">{t('admin.manage_training')}</p>
                 </div>
                 <Button variant="primary-gradient" onClick={() => setShowModal(true)}>
-                    <FaPlus className="me-2" /> Create Training
+                    <FaPlus className="me-2" /> {t('admin.create_training')}
                 </Button>
             </div>
 
@@ -128,8 +132,8 @@ const TrainingManager = () => {
                 {trainings.length === 0 && (
                     <Col md={12}>
                         <div className="text-center py-5">
-                            <h5>No training programs found</h5>
-                            <p className="text-muted">Create your first training program</p>
+                            <h5>{t('admin.no_training')}</h5>
+                            <p className="text-muted">{t('admin.create_first')}</p>
                         </div>
                     </Col>
                 )}

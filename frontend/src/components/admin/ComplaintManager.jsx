@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Table, Badge, Button, Spinner, Alert, Modal, Form } from 'react-bootstrap';
-import { FaCheck, FaTimes, FaEye, FaSearch, FaClock } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaExclamationTriangle, FaSearch, FaEye } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const ComplaintManager = () => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [complaints, setComplaints] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -76,7 +79,8 @@ const ComplaintManager = () => {
 
     return (
         <Container className="py-4">
-            <h2 className="fw-bold mb-4">📋 Complaint Management</h2>
+            <BackButton to="/admin/dashboard" />
+            <h2 className="fw-bold mb-4">📋 {t('complaints.title')}</h2>
 
             {error && <Alert variant="danger">{error}</Alert>}
 

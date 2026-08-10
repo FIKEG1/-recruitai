@@ -14,12 +14,12 @@ exports.sendWelcomeEmail = async (userEmail, userName) => {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: userEmail,
-        subject: 'Welcome to RecruitAI!',
+        subject: 'Welcome to KETARI!',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: #2c3e8f;">Welcome to RecruitAI! 🎉</h1>
+                <h1 style="color: #2c3e8f;">Welcome to KETARI! 🎉</h1>
                 <p>Dear <strong>${userName}</strong>,</p>
-                <p>Thank you for joining RecruitAI - the intelligent job matching and recruitment automation platform for the Sidama Innovation and Technology Agency.</p>
+                <p>Thank you for joining KETARI - the intelligent job matching and recruitment automation platform for the Sidama Innovation and Technology Agency.</p>
                 <p>Here's what you can do next:</p>
                 <ul>
                     <li>📝 Complete your profile</li>
@@ -29,7 +29,7 @@ exports.sendWelcomeEmail = async (userEmail, userName) => {
                 </ul>
                 <p>Get started now: <a href="${process.env.FRONTEND_URL}/login" style="color: #2c3e8f;">Login to your account</a></p>
                 <hr style="border: 1px solid #eee;">
-                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} RecruitAI - Sidama Innovation and Technology Agency</p>
+                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency</p>
             </div>
         `
     };
@@ -50,7 +50,7 @@ exports.sendApplicationConfirmation = async (userEmail, userName, jobTitle, comp
                 <p>You will be notified when your application status changes.</p>
                 <p><a href="${process.env.FRONTEND_URL}/jobseeker/dashboard" style="color: #2c3e8f;">Track your applications →</a></p>
                 <hr style="border: 1px solid #eee;">
-                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} RecruitAI - Sidama Innovation and Technology Agency</p>
+                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency</p>
             </div>
         `
     };
@@ -77,7 +77,7 @@ exports.sendInterviewInvitation = async (userEmail, userName, jobTitle, companyN
                 <p>Please confirm your availability by replying to this email.</p>
                 <p><a href="${process.env.FRONTEND_URL}/jobseeker/dashboard" style="color: #2c3e8f;">View application details →</a></p>
                 <hr style="border: 1px solid #eee;">
-                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} RecruitAI - Sidama Innovation and Technology Agency</p>
+                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency</p>
             </div>
         `
     };
@@ -120,7 +120,7 @@ exports.sendStatusUpdate = async (userEmail, userName, jobTitle, status, notes) 
                 ${notes ? `<p><strong>📝 Note from employer:</strong> ${notes}</p>` : ''}
                 <p><a href="${process.env.FRONTEND_URL}/jobseeker/dashboard" style="color: #2c3e8f;">View application →</a></p>
                 <hr style="border: 1px solid #eee;">
-                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} RecruitAI - Sidama Innovation and Technology Agency</p>
+                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency</p>
             </div>
         `
     };
@@ -146,7 +146,7 @@ exports.sendPasswordResetEmail = async (userEmail, userName, resetUrl) => {
                 <p>This link will expire in <strong>10 minutes</strong>.</p>
                 <p>If you didn't request this, please ignore this email.</p>
                 <hr style="border: 1px solid #eee;">
-                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} RecruitAI - Sidama Innovation and Technology Agency</p>
+                <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency</p>
             </div>
         `
     };

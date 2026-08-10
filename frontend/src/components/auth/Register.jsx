@@ -3,6 +3,7 @@ import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaUserPlus, FaBuilding } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const Register = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { register } = useAuth();
+    const { t } = useLanguage();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -26,7 +28,7 @@ const Register = () => {
         e.preventDefault();
         
         if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
+            setError(t('auth.password_mismatch') || 'Passwords do not match');
             return;
         }
 
@@ -62,8 +64,8 @@ const Register = () => {
                                     <div className="auth-icon mb-3">
                                         <span style={{ fontSize: '3rem' }}>🚀</span>
                                     </div>
-                                    <h3 className="fw-bold">Create Account</h3>
-                                    <p className="text-muted">Join the platform and find your perfect job</p>
+                                    <h3 className="fw-bold">{t('auth.register_title')}</h3>
+                                    <p className="text-muted">{t('auth.register_subtitle')}</p>
                                 </div>
 
                                 {error && (
@@ -75,7 +77,7 @@ const Register = () => {
                                 <Form onSubmit={handleSubmit}>
                                     <Row>
                                         <Col md={12} className="mb-3">
-                                            <Form.Label className="fw-semibold">Full Name</Form.Label>
+                                            <Form.Label className="fw-semibold">{t('auth.name')}</Form.Label>
                                             <div className="input-group-custom">
                                                 <span className="input-icon">
                                                     <FaUser />
@@ -83,7 +85,7 @@ const Register = () => {
                                                 <Form.Control
                                                     type="text"
                                                     name="name"
-                                                    placeholder="Enter your full name"
+                                                    placeholder={t('auth.name_placeholder')}
                                                     value={formData.name}
                                                     onChange={handleChange}
                                                     className="form-control-custom"
@@ -95,7 +97,7 @@ const Register = () => {
 
                                     <Row>
                                         <Col md={12} className="mb-3">
-                                            <Form.Label className="fw-semibold">Email Address</Form.Label>
+                                            <Form.Label className="fw-semibold">{t('auth.email')}</Form.Label>
                                             <div className="input-group-custom">
                                                 <span className="input-icon">
                                                     <FaEnvelope />
@@ -103,7 +105,7 @@ const Register = () => {
                                                 <Form.Control
                                                     type="email"
                                                     name="email"
-                                                    placeholder="Enter your email"
+                                                    placeholder={t('auth.email_placeholder')}
                                                     value={formData.email}
                                                     onChange={handleChange}
                                                     className="form-control-custom"
@@ -115,7 +117,7 @@ const Register = () => {
 
                                     <Row>
                                         <Col md={6} className="mb-3">
-                                            <Form.Label className="fw-semibold">Password</Form.Label>
+                                            <Form.Label className="fw-semibold">{t('auth.password')}</Form.Label>
                                             <div className="input-group-custom">
                                                 <span className="input-icon">
                                                     <FaLock />
@@ -123,7 +125,7 @@ const Register = () => {
                                                 <Form.Control
                                                     type="password"
                                                     name="password"
-                                                    placeholder="Min 6 characters"
+                                                    placeholder={t('auth.password_placeholder')}
                                                     value={formData.password}
                                                     onChange={handleChange}
                                                     className="form-control-custom"
@@ -133,7 +135,7 @@ const Register = () => {
                                             </div>
                                         </Col>
                                         <Col md={6} className="mb-3">
-                                            <Form.Label className="fw-semibold">Confirm Password</Form.Label>
+                                            <Form.Label className="fw-semibold">{t('auth.confirm_password')}</Form.Label>
                                             <div className="input-group-custom">
                                                 <span className="input-icon">
                                                     <FaLock />
@@ -141,7 +143,7 @@ const Register = () => {
                                                 <Form.Control
                                                     type="password"
                                                     name="confirmPassword"
-                                                    placeholder="Confirm password"
+                                                    placeholder={t('auth.confirm_password')}
                                                     value={formData.confirmPassword}
                                                     onChange={handleChange}
                                                     className="form-control-custom"
@@ -154,7 +156,7 @@ const Register = () => {
 
                                     <Row>
                                         <Col md={12} className="mb-3">
-                                            <Form.Label className="fw-semibold">I am a</Form.Label>
+                                            <Form.Label className="fw-semibold">{t('auth.role')}</Form.Label>
                                             <div className="role-selector">
                                                 <div className="role-option">
                                                     <Form.Check
@@ -166,7 +168,7 @@ const Register = () => {
                                                         onChange={handleChange}
                                                         label={
                                                             <span>
-                                                                <FaUser className="me-2" /> Job Seeker
+                                                                <FaUser className="me-2" /> {t('auth.job_seeker')}
                                                             </span>
                                                         }
                                                         className="role-radio"
@@ -182,7 +184,7 @@ const Register = () => {
                                                         onChange={handleChange}
                                                         label={
                                                             <span>
-                                                                <FaBuilding className="me-2" /> Employer
+                                                                <FaBuilding className="me-2" /> {t('auth.employer')}
                                                             </span>
                                                         }
                                                         className="role-radio"
@@ -194,18 +196,18 @@ const Register = () => {
 
                                     <Button
                                         type="submit"
-                                        variant="primary-gradient"
+                                        variant="primary"
                                         className="w-100 py-2 fw-semibold mt-2"
                                         disabled={loading}
                                     >
                                         {loading ? (
                                             <>
                                                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                                Creating Account...
+                                                {t('common.loading')}
                                             </>
                                         ) : (
                                             <>
-                                                Create Account <FaUserPlus className="ms-2" />
+                                                {t('auth.sign_up')} <FaUserPlus className="ms-2" />
                                             </>
                                         )}
                                     </Button>
@@ -213,9 +215,9 @@ const Register = () => {
 
                                 <div className="text-center mt-4">
                                     <p className="text-muted">
-                                        Already have an account?{' '}
+                                        {t('auth.has_account')}{' '}
                                         <Link to="/login" className="fw-semibold text-decoration-none">
-                                            Sign In
+                                            {t('auth.sign_in_link')}
                                         </Link>
                                     </p>
                                 </div>
@@ -223,7 +225,7 @@ const Register = () => {
                                 <hr className="my-4" />
                                 <div className="text-center">
                                     <p className="text-muted small">
-                                        By creating an account, you agree to our Terms of Service and Privacy Policy
+                                        {t('auth.terms')}
                                     </p>
                                 </div>
                             </Card.Body>

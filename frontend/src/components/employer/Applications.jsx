@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import api, { getImageUrl } from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const Applications = () => {
     const { jobId } = useParams();
@@ -138,6 +139,7 @@ const Applications = () => {
     return (
         <section className="applications-section py-4">
             <Container>
+                <BackButton to="/employer/jobs" />
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <Button 

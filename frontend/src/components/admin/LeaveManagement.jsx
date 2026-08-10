@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Badge, Spinner, Alert, Button, Form, Modal } from 'react-bootstrap';
 import { FaCalendarAlt, FaCheck, FaTimes, FaSync } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const LeaveManagement = () => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [leaves, setLeaves] = useState([]);
@@ -106,10 +109,11 @@ const LeaveManagement = () => {
 
     return (
         <Container className="py-5">
+            <BackButton to="/admin/dashboard" />
             <Row className="mb-4">
                 <Col>
-                    <h2 className="fw-bold mb-1">Leave Management</h2>
-                    <p className="text-muted">Manage and review leave requests from job seekers</p>
+                    <h2 className="fw-bold mb-1">{t('admin.leave_management')}</h2>
+                    <p className="text-muted">{t('leave.subtitle')}</p>
                 </Col>
                 <Col xs="auto">
                     <Button 

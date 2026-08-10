@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaSave, FaTimes, FaArrowLeft, FaPlus, FaTrash } from 'react-icons/fa';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const EditJob = () => {
     const { id } = useParams();
@@ -172,6 +173,7 @@ const EditJob = () => {
     return (
         <section className="edit-job-section py-4">
             <Container>
+                <BackButton to="/employer/jobs" />
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <Button 

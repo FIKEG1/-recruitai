@@ -1,11 +1,8 @@
-/* Afriwork Inspired Design System for Home Page */
+/* Modern Design System for Home Page */
 
 .hero-section {
-    background: var(--surface);
-    background-image: 
-        radial-gradient(circle at 10% 20%, rgba(255, 107, 53, 0.06) 0%, transparent 45%),
-        radial-gradient(circle at 90% 80%, rgba(123, 44, 191, 0.06) 0%, transparent 45%);
-    padding: 90px 0 70px;
+    background: var(--body-bg);
+    padding: 100px 0 80px;
     position: relative;
     overflow: hidden;
 }
@@ -14,31 +11,23 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 107, 53, 0.1);
-    color: #ff6b35;
+    background: var(--primary-subtle);
+    color: var(--primary-color);
     padding: 8px 22px;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     font-size: 0.88rem;
     font-weight: 600;
     margin-bottom: 24px;
-    border: 1px solid rgba(255, 107, 53, 0.2);
+    border: 1px solid rgba(15, 107, 79, 0.2);
 }
 
 .hero-title {
-    font-size: 3.4rem;
+    font-size: 3.5rem;
     font-weight: 800;
     color: var(--text-primary);
     margin-bottom: 24px;
-    line-height: 1.18;
+    line-height: 1.2;
     letter-spacing: -0.02em;
-}
-
-.hero-title .highlight {
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    position: relative;
 }
 
 .hero-subtitle {
@@ -56,345 +45,179 @@
     align-items: center;
 }
 
-.hero-btn-light {
-    background: var(--gradient) !important;
-    color: var(--surface) !important;
+.hero-btn-solid {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
     border: none !important;
     padding: 14px 38px !important;
     border-radius: 50px !important;
     font-weight: 700 !important;
-    box-shadow: 0 10px 25px rgba(255, 107, 53, 0.28) !important;
+    box-shadow: 0 10px 25px rgba(15, 107, 79, 0.28) !important;
     transition: all 0.3s ease !important;
 }
 
-.hero-btn-light:hover {
+.hero-btn-solid:hover {
+    background: var(--primary-strong) !important;
     transform: translateY(-3px) !important;
-    box-shadow: 0 14px 32px rgba(255, 107, 53, 0.38) !important;
-    color: var(--surface) !important;
+    box-shadow: 0 14px 32px rgba(15, 107, 79, 0.38) !important;
 }
 
 .hero-btn-outline {
-    background: var(--surface) !important;
-    color: var(--text-primary) !important;
-    border: 2px solid #e2e8f0 !important;
+    background: transparent !important;
+    color: var(--primary-color) !important;
+    border: 2px solid var(--primary-color) !important;
     padding: 12px 36px !important;
     border-radius: 50px !important;
     font-weight: 700 !important;
     transition: all 0.3s ease !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
 }
 
 .hero-btn-outline:hover {
-    background: rgba(255, 107, 53, 0.05) !important;
-    border-color: var(--primary-color) !important;
-    color: var(--primary-color) !important;
+    background: rgba(15, 107, 79, 0.05) !important;
     transform: translateY(-3px) !important;
 }
 
-.hero-image-wrapper {
-    position: relative;
+.hero-stats-row {
     display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.hero-image-placeholder {
-    width: 100%;
-    max-width: 440px;
-    aspect-ratio: 1;
-    background: var(--surface);
-    border-radius: 36px;
-    border: 1px solid rgba(123, 44, 191, 0.1);
-    box-shadow: 0 20px 60px rgba(123, 44, 191, 0.08);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 40px;
-}
-
-.hero-image-content {
-    text-align: center;
-    color: var(--text-primary);
-}
-
-.hero-image-icon {
-    font-size: 4.5rem;
-    display: block;
-    margin-bottom: 16px;
-}
-
-.hero-image-content h3 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.hero-image-content p {
+    gap: 20px;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
-.floating-card {
-    position: absolute;
-    background: var(--surface);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    padding: 12px 22px;
-    border-radius: 20px;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    font-weight: 600;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+.hero-visual {
+    position: relative;
+    height: 400px;
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 10px;
-    z-index: 5;
 }
 
-.floating-card svg {
-    font-size: 1.2rem;
-    color: #ff6b35;
+.floating-job-card {
+    position: absolute;
+    width: 320px;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-2xl) !important;
+    animation: float 6s ease-in-out infinite;
+    background: var(--surface);
 }
 
 .card-1 {
-    top: 5%;
-    left: -12%;
-    animation: float 3.5s ease-in-out infinite;
+    top: 20px;
+    right: 20px;
+    z-index: 2;
 }
 
 .card-2 {
-    top: 55%;
-    right: -12%;
-    animation: float 3.5s ease-in-out infinite 1.2s;
-}
-
-.card-3 {
-    bottom: 5%;
-    left: 15%;
-    animation: float 3.5s ease-in-out infinite 0.6s;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1;
+    animation-delay: -3s;
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
 }
 
-.stats-section-wrapper {
-    margin-top: -30px;
-    position: relative;
-    z-index: 10;
+/* Workflow Cards */
+.workflow-card {
+    border-radius: var(--radius-2xl) !important;
+    background: var(--primary-color);
+    color: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
-.stats-section {
+.workflow-card.employer-card {
     background: var(--surface);
-    border-radius: 24px;
-    padding: 40px;
-    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-.stat-item {
-    text-align: center;
-    padding: 10px 0;
-}
-
-.stat-number {
-    font-size: 2.8rem;
-    font-weight: 800;
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
-}
-
-.stat-label {
-    color: var(--text-secondary);
-    font-weight: 600;
-    margin-top: 8px;
-    font-size: 0.95rem;
-}
-
-.features-section {
-    padding: 90px 0;
-    background: var(--body-bg);
-}
-
-.section-header h2 {
-    font-size: 2.3rem;
-    font-weight: 800;
     color: var(--text-primary);
 }
 
-.feature-card {
-    border: none;
-    border-radius: 20px;
-    padding: 24px 20px;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+.workflow-card.talent-card {
     background: var(--surface);
+    color: var(--text-primary);
 }
 
-.feature-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 15px 40px rgba(123, 44, 191, 0.1);
-}
-
-.feature-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    background: var(--gradient);
-    color: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    margin: 0 auto 20px;
-    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.25);
-}
-
-.recent-jobs-section {
-    padding: 80px 0;
-    background: var(--surface);
-}
-
-.job-card {
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 20px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
-    transition: all 0.3s ease;
-    background: var(--surface);
-}
-
-.job-card:hover {
+.workflow-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-    border-color: rgba(255, 107, 53, 0.3);
+    box-shadow: var(--shadow-lg) !important;
 }
 
-.job-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.job-title {
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-}
-
-.company-name {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.job-meta {
+.workflow-step {
     display: flex;
     gap: 16px;
-    margin-top: 8px;
-    font-size: 0.85rem;
-    color: var(--muted);
+    margin-bottom: 24px;
 }
 
-.how-it-works {
-    padding: 90px 0;
-    background: var(--body-bg);
-}
-
-.step-card {
-    padding: 32px 24px;
-    background: var(--surface);
-    border-radius: 20px;
-    height: 100%;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
-}
-
-.step-number {
-    width: 52px;
-    height: 52px;
+.step-num {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background: var(--gradient);
-    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
-    font-weight: 800;
-    margin: 0 auto 20px;
-    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.25);
+    font-size: 1.1rem;
+    flex-shrink: 0;
 }
 
-.cta-section {
-    background: var(--gradient-purple);
-    padding: 80px 0;
-    color: var(--surface);
-    border-radius: 30px;
-    margin-bottom: 40px;
-    position: relative;
-    overflow: hidden;
+/* Service Cards */
+.service-card {
+    border-radius: var(--radius-xl) !important;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
 }
 
-.cta-title {
-    font-size: 2.4rem;
-    font-weight: 800;
+.service-card:hover {
+    border-color: var(--primary-light) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-4px);
 }
 
-.cta-text {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1.15rem;
-    max-width: 520px;
+.service-card:hover .service-icon {
+    color: var(--primary-color);
+    background: rgba(15, 107, 79, 0.1);
 }
 
-.cta-btn {
-    background: #ffffff !important;
-    color: #7b2cbf !important;
-    border: none !important;
-    padding: 14px 38px !important;
-    border-radius: 50px !important;
-    font-weight: 700 !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+.service-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--muted);
+    background: #f5f7fa;
+    transition: all 0.3s ease;
 }
 
-.cta-btn:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.25) !important;
+/* Featured Candidates */
+.featured-candidate-card {
+    border-radius: 16px !important;
+    transition: all 0.3s ease;
+}
+
+.featured-candidate-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08) !important;
 }
 
 @media (max-width: 991px) {
-    .hero-section {
-        padding: 64px 0 48px;
-    }
-
-    .hero-content {
-        text-align: center;
-        margin-bottom: 24px;
-    }
-
-    .hero-subtitle {
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .hero-buttons {
-        justify-content: center;
-    }
-
-    .hero-image-placeholder {
-        max-width: 360px;
-        min-height: 320px;
-    }
-}
-
-@media (max-width: 768px) {
     .hero-title {
-        font-size: 2.4rem;
+        font-size: 2.5rem;
     }
-
-    .stat-number {
-        font-size: 2.2rem;
+    .hero-visual {
+        margin-top: 40px;
+        height: 450px;
+    }
+    .card-1 { right: 0; left: 50%; transform: translateX(-50%); }
+    .card-2 { left: 50%; transform: translateX(-50%); bottom: 0; }
+    
+    .hero-stats-row {
+        flex-direction: column;
+        gap: 10px;
     }
 }

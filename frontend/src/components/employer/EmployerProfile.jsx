@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import api, { getImageUrl } from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const EmployerProfile = () => {
     const { user, updateProfile } = useAuth();
@@ -145,8 +146,9 @@ const EmployerProfile = () => {
     return (
         <section className="profile-section py-4">
             <Container>
+                <BackButton to="/employer/jobs" />
                 <h2 className="fw-bold mb-4">
-                    <FaBuilding className="me-2 text-primary" /> Company Profile
+                    <FaBuilding className="me-2 text-primary" /> {t('employer.company_profile')}
                 </h2>
                 
                 <Row>

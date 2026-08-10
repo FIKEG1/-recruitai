@@ -1,47 +1,69 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, Button, Spinner, Alert, Badge, Tab, Nav, Table, Image } from 'react-bootstrap';
-import { FaUser, FaUpload, FaTrash, FaStar, FaCheck, FaPlus, FaTimes, FaGraduationCap, FaBriefcase, FaCertificate, FaLanguage, FaEdit, FaSave, FaCamera } from 'react-icons/fa';
+import { Container, Row, Col, Card, Form, Button, Spinner, Alert, Badge, Tab, Tabs, Nav, Table, Image } from 'react-bootstrap';
+import { FaUser, FaUpload, FaTrash, FaStar, FaCheck, FaPlus, FaTimes, FaGraduationCap, FaBriefcase, FaCertificate, FaLanguage, FaEdit, FaSave, FaCamera, FaBuilding } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import api, { getImageUrl } from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
+import './Profile.css';
 
 const Profile = () => {
-    const { user, updateProfile } = useAuth();
+    const { user, updateProfile, reloadUser } = useAuth();
     const { t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const [activeTab, setActiveTab] = useState('personal');
     const [resumes, setResumes] = useState([]);
-    const [profilePhoto, setProfilePhoto] = useState(null);
+    const [profilePhoto, setProfilePhoto] = useState(user?.profile?.profilePhoto || null);
+    const [previewPhoto, setPreviewPhoto] = useState(null);
+    const [imageError, setImageError] = useState(false);
 
     useEffect(() => {
-        console.log('Profile component - User data:', user);
-        console.log('Profile component - Profile photo from user:', user?.profile?.profilePhoto);
         if (user?.profile?.profilePhoto) {
             setProfilePhoto(user.profile.profilePhoto);
-            const photoUrl = getImageUrl(user.profile.profilePhoto);
-            console.log('Setting profile photo path:', user.profile.profilePhoto);
-            console.log('Generated photo URL:', photoUrl);
+            setImageError(false);
         } else {
-            console.log('No profile photo found in user data');
+            setProfilePhoto(null);
         }
     }, [user]);
-    const [previewPhoto, setPreviewPhoto] = useState(null);
+
     const [formData, setFormData] = useState({
         name: user?.name || '',
         profile: {
             phone: user?.profile?.phone || '',
             location: user?.profile?.location || '',
             bio: user?.profile?.bio || '',
+            title: user?.profile?.title || '',
+            availabilityStatus: user?.profile?.availabilityStatus || 'Available now',
+            expectedSalary: {
+                amount: user?.profile?.expectedSalary?.amount || '',
+                rateType: user?.profile?.expectedSalary?.rateType || 'Hourly'
+            },
             skills: user?.profile?.skills || [],
             education: user?.profile?.education || [],
             workExperience: user?.profile?.workExperience || [],
             certifications: user?.profile?.certifications || [],
-            languages: user?.profile?.languages || []
+            languages: user?.profile?.languages || [],
+            profilePhoto: user?.profile?.profilePhoto || null
         }
     });
-    
+
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                name: user.name || prev.name,
+                profile: {
+                    ...prev.profile,
+                    ...user.profile,
+                    profilePhoto: user.profile?.profilePhoto || null
+                }
+            }));
+        }
+    }, [user]);
+
     // New item states
     const [newSkill, setNewSkill] = useState('');
     const [newCertification, setNewCertification] = useState('');
@@ -63,11 +85,7 @@ const Profile = () => {
 
     useEffect(() => {
         fetchResumes();
-        // Set profile photo from user data
-        if (user?.profile?.profilePhoto) {
-            setProfilePhoto(user.profile.profilePhoto);
-        }
-    }, [user]);
+    }, []);
 
     const fetchResumes = async () => {
         try {
@@ -81,11 +99,24 @@ const Profile = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name.startsWith('profile.')) {
-            const field = name.split('.')[1];
-            setFormData({
-                ...formData,
-                profile: { ...formData.profile, [field]: value }
-            });
+            const path = name.split('.');
+            if (path.length === 2) {
+                setFormData({
+                    ...formData,
+                    profile: { ...formData.profile, [path[1]]: value }
+                });
+            } else if (path.length === 3) {
+                setFormData({
+                    ...formData,
+                    profile: { 
+                        ...formData.profile, 
+                        [path[1]]: {
+                            ...formData.profile[path[1]],
+                            [path[2]]: value
+                        }
+                    }
+                });
+            }
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -96,11 +127,15 @@ const Profile = () => {
         setLoading(true);
         const result = await updateProfile({
             name: formData.name,
-            profile: formData.profile
+            profile: {
+                ...formData.profile,
+                profilePhoto: profilePhoto || formData.profile.profilePhoto
+            }
         });
         setLoading(false);
         if (result.success) {
             toast.success('Profile updated successfully!');
+            if (reloadUser) await reloadUser();
         }
     };
 
@@ -120,29 +155,30 @@ const Profile = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('photo', file);
+        const uploadFormData = new FormData();
+        uploadFormData.append('photo', file);
 
         const localPreview = URL.createObjectURL(file);
         setPreviewPhoto(localPreview);
+        setImageError(false);
         setUploadingPhoto(true);
+
         try {
-            console.log('=== Starting photo upload ===');
-            console.log('File:', file.name, file.type, file.size);
-            const response = await api.post('/upload/profile-photo', formData);
-            console.log('Upload response:', response.data);
+            const response = await api.post('/upload/profile-photo', uploadFormData);
             const uploadedPhoto = response.data.data.profilePhoto;
-            console.log('Uploaded photo path:', uploadedPhoto);
-            
-            // Update state immediately
             setProfilePhoto(uploadedPhoto);
+            setFormData(prev => ({
+                ...prev,
+                profile: {
+                    ...prev.profile,
+                    profilePhoto: uploadedPhoto
+                }
+            }));
             setPreviewPhoto(null);
             
-            // Force reload user data to get updated profile
-            await loadUser();
-            
-            toast.success('Profile photo updated successfully!');
-            console.log('=== Photo upload completed ===');
+            if (reloadUser) {
+                await reloadUser();
+            }
         } catch (error) {
             console.error('=== Upload error ===');
             console.error('Error:', error);
@@ -155,28 +191,24 @@ const Profile = () => {
         }
     };
 
-    const loadUser = async () => {
-        try {
-            const response = await api.get('/auth/me');
-            const updatedUser = response.data.user;
-            if (updatedUser?.profile?.profilePhoto) {
-                console.log('Loaded user with photo:', updatedUser.profile.profilePhoto);
-                setProfilePhoto(updatedUser.profile.profilePhoto);
-            }
-        } catch (error) {
-            console.error('Error loading user:', error);
-        }
-    };
-
     const handleRemovePhoto = async () => {
         if (!window.confirm('Are you sure you want to remove your profile photo?')) return;
         try {
             await api.delete('/upload/profile-photo');
             setProfilePhoto(null);
+            setPreviewPhoto(null);
+            setImageError(false);
+            setFormData(prev => ({
+                ...prev,
+                profile: {
+                    ...prev.profile,
+                    profilePhoto: null
+                }
+            }));
             toast.success('Profile photo removed');
-            await updateProfile({
-                profile: { profilePhoto: null }
-            });
+            if (reloadUser) {
+                await reloadUser();
+            }
         } catch (error) {
             toast.error('Failed to remove photo');
         }
@@ -329,12 +361,17 @@ const Profile = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('resume', file);
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('Resume file must be less than 10MB');
+            return;
+        }
+
+        const resumeFormData = new FormData();
+        resumeFormData.append('resume', file);
 
         setUploading(true);
         try {
-            const response = await api.post('/resumes', formData, {
+            const response = await api.post('/resumes', resumeFormData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setResumes([response.data.resume, ...resumes]);
@@ -374,124 +411,51 @@ const Profile = () => {
     return (
         <section className="profile-section py-4">
             <Container>
+                <BackButton to="/jobseeker/dashboard" />
                 <h2 className="fw-bold mb-4">
-                    <FaUser className="me-2 text-primary" /> {t('profile.title')}
+                    <FaUser className="me-2 text-primary" /> {t('profile.title') || 'My Profile'}
                 </h2>
                 
                 <Row>
                     <Col lg={3}>
                         {/* Profile Photo Card */}
-                        <Card className="shadow-sm mb-4 text-center">
+                        <Card className="shadow-sm border-0 rounded-4 mb-4 text-center">
                             <Card.Body className="p-4">
-                                <div className="position-relative d-inline-block">
-                                    {profilePhoto || previewPhoto ? (
-                                        <>
+                                <div className="avatar-profile-wrapper mb-3">
+                                    <div className="avatar-circle">
+                                        {(previewPhoto || (profilePhoto && !imageError)) ? (
                                             <img 
-                                                key={profilePhoto || previewPhoto}
-                                                src={previewPhoto || getImageUrl(profilePhoto)}
-                                                alt="Profile"
-                                                style={{ 
-                                                    width: '150px', 
-                                                    height: '150px', 
-                                                    objectFit: 'cover',
-                                                    border: '4px solid #2c3e8f',
-                                                    borderRadius: '50%',
-                                                    display: 'block'
-                                                }}
-                                                onError={(e) => {
-                                                    console.error('=== IMAGE LOAD ERROR ===');
-                                                    console.error('Image src:', e.target.src);
-                                                    console.error('Profile photo path:', profilePhoto);
-                                                    console.error('Preview photo:', previewPhoto);
-                                                    console.error('Generated URL:', getImageUrl(profilePhoto));
-                                                    e.target.style.display = 'none';
-                                                    const fallback = e.target.parentElement.querySelector('.fallback-avatar');
-                                                    if (fallback) {
-                                                        console.log('Showing fallback avatar');
-                                                        fallback.style.display = 'flex';
-                                                    }
-                                                }}
-                                                onLoad={(e) => {
-                                                    console.log('=== IMAGE LOADED SUCCESSFULLY ===');
-                                                    console.log('Image src:', e.target.src);
-                                                    const fallback = e.target.parentElement.querySelector('.fallback-avatar');
-                                                    if (fallback) fallback.style.display = 'none';
-                                                }}
+                                                src={previewPhoto || getImageUrl(profilePhoto)} 
+                                                alt={user?.name || 'Profile Avatar'} 
+                                                onError={() => setImageError(true)}
                                             />
-                                            <div 
-                                                className="fallback-avatar"
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    width: '150px',
-                                                    height: '150px',
-                                                    borderRadius: '50%',
-                                                    background: 'linear-gradient(135deg, #2c3e8f, #1a237e)',
-                                                    display: 'none',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: 'var(--surface)',
-                                                    fontSize: '4rem',
-                                                    border: '4px solid #2c3e8f'
-                                                }}
-                                            >
+                                        ) : (
+                                            <span className="avatar-fallback-text">
                                                 {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div 
-                                            style={{ 
-                                                width: '150px', 
-                                                height: '150px', 
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #2c3e8f, #1a237e)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'var(--surface)',
-                                                fontSize: '4rem',
-                                                margin: '0 auto',
-                                                border: '4px solid #2c3e8f'
-                                            }}
-                                        >
-                                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                        </div>
-                                    )}
-                                    <div className="position-absolute bottom-0 end-0">
-                                        <label 
-                                            style={{ 
-                                                cursor: 'pointer',
-                                                background: '#2c3e8f',
-                                                color: 'var(--surface)',
-                                                borderRadius: '50%',
-                                                padding: '10px',
-                                                display: 'inline-block',
-                                                transition: 'all 0.3s ease'
-                                            }}
-                                        >
-                                            <FaCamera />
-                                            <input 
-                                                id="photo-upload"
-                                                type="file"
-                                                accept="image/*"
-                                                capture="user"
-                                                onChange={handlePhotoUpload}
-                                                style={{ display: 'none' }}
-                                                disabled={uploadingPhoto}
-                                            />
-                                        </label>
+                                            </span>
+                                        )}
                                     </div>
-                                </div>
-                                <h5 className="mt-3">{user?.name}</h5>
-                                <p className="text-muted small">{user?.role}</p>
-                                {profilePhoto && (
-                                    <Button 
-                                        variant="outline-danger" 
-                                        size="sm" 
-                                        onClick={handleRemovePhoto}
-                                        className="mt-2"
+                                    <label 
+                                        htmlFor="photo-upload" 
+                                        className="avatar-upload-badge"
+                                        title="Change profile photo"
                                     >
+                                        <FaCamera size={15} />
+                                    </label>
+                                    <input
+                                        id="photo-upload" 
+                                        type="file" 
+                                        accept="image/*" 
+                                        capture="user"
+                                        onChange={handlePhotoUpload} 
+                                        style={{ display: 'none' }} 
+                                        disabled={uploadingPhoto}
+                                    />
+                                </div>
+                                <h5 className="mt-3 fw-bold">{user?.name}</h5>
+                                <p className="text-muted small mb-0">{formData.profile.title || user?.role}</p>
+                                {profilePhoto && (
+                                    <Button variant="outline-danger" size="sm" onClick={handleRemovePhoto} className="mt-2 w-100 rounded-pill">
                                         <FaTrash className="me-1" /> Remove Photo
                                     </Button>
                                 )}
@@ -505,484 +469,368 @@ const Profile = () => {
                         </Card>
 
                         {/* Profile Completion */}
-                        <Card className="shadow-sm">
-                            <Card.Header className="bg-white fw-bold">
-                                Profile Completion
-                            </Card.Header>
+                        <Card className="shadow-sm border-0 rounded-4 mb-4">
                             <Card.Body>
                                 <div className="mb-3">
-                                    <div className="d-flex justify-content-between">
-                                        <span>Completeness</span>
-                                        <span className="fw-bold">
-                                            {Math.min(
-                                                100,
-                                                (formData.profile.skills.length * 5) +
-                                                (formData.profile.education.length * 5) +
-                                                (formData.profile.workExperience.length * 5) +
-                                                (formData.profile.certifications.length * 5) +
-                                                (formData.profile.languages.length * 5) +
-                                                (formData.profile.bio ? 10 : 0) +
-                                                (formData.profile.phone ? 5 : 0) +
-                                                (formData.profile.location ? 5 : 0) +
-                                                (resumes.length > 0 ? 10 : 0) +
-                                                (profilePhoto ? 10 : 0)
+                                    <div className="d-flex justify-content-between mb-2">
+                                        <span className="fw-semibold text-muted">Profile Completion</span>
+                                        <span className="fw-bold text-primary">
+                                            {Math.min(100,
+                                                (formData.profile.skills.length * 5) + (formData.profile.education.length * 5) +
+                                                (formData.profile.workExperience.length * 5) + (formData.profile.certifications.length * 5) +
+                                                (formData.profile.languages.length * 5) + (formData.profile.bio ? 10 : 0) +
+                                                (formData.profile.phone ? 5 : 0) + (formData.profile.location ? 5 : 0) +
+                                                (resumes.length > 0 ? 10 : 0) + (profilePhoto ? 10 : 0)
                                             )}%
                                         </span>
                                     </div>
-                                    <div className="progress">
+                                    <div className="progress" style={{ height: '8px' }}>
                                         <div 
-                                            className="progress-bar bg-success" 
+                                            className="progress-bar bg-primary-gradient" 
                                             style={{ 
                                                 width: `${Math.min(100,
-                                                    (formData.profile.skills.length * 5) +
-                                                    (formData.profile.education.length * 5) +
-                                                    (formData.profile.workExperience.length * 5) +
-                                                    (formData.profile.certifications.length * 5) +
-                                                    (formData.profile.languages.length * 5) +
-                                                    (formData.profile.bio ? 10 : 0) +
-                                                    (formData.profile.phone ? 5 : 0) +
-                                                    (formData.profile.location ? 5 : 0) +
-                                                    (resumes.length > 0 ? 10 : 0) +
-                                                    (profilePhoto ? 10 : 0)
+                                                    (formData.profile.skills.length * 5) + (formData.profile.education.length * 5) +
+                                                    (formData.profile.workExperience.length * 5) + (formData.profile.certifications.length * 5) +
+                                                    (formData.profile.languages.length * 5) + (formData.profile.bio ? 10 : 0) +
+                                                    (formData.profile.phone ? 5 : 0) + (formData.profile.location ? 5 : 0) +
+                                                    (resumes.length > 0 ? 10 : 0) + (profilePhoto ? 10 : 0)
                                                 )}%` 
                                             }}
                                         />
                                     </div>
                                 </div>
-                                <div className="text-muted small">
-                                    <ul className="list-unstyled">
-                                        <li className={formData.profile.bio ? 'text-success' : 'text-muted'}>
-                                            {formData.profile.bio ? '✅' : '⬜'} Bio/About
-                                        </li>
-                                        <li className={formData.profile.skills.length > 0 ? 'text-success' : 'text-muted'}>
-                                            {formData.profile.skills.length > 0 ? '✅' : '⬜'} Skills ({formData.profile.skills.length})
-                                        </li>
-                                        <li className={formData.profile.education.length > 0 ? 'text-success' : 'text-muted'}>
-                                            {formData.profile.education.length > 0 ? '✅' : '⬜'} Education ({formData.profile.education.length})
-                                        </li>
-                                        <li className={formData.profile.workExperience.length > 0 ? 'text-success' : 'text-muted'}>
-                                            {formData.profile.workExperience.length > 0 ? '✅' : '⬜'} Experience ({formData.profile.workExperience.length})
-                                        </li>
-                                        <li className={formData.profile.certifications.length > 0 ? 'text-success' : 'text-muted'}>
-                                            {formData.profile.certifications.length > 0 ? '✅' : '⬜'} Certifications ({formData.profile.certifications.length})
-                                        </li>
-                                        <li className={resumes.length > 0 ? 'text-success' : 'text-muted'}>
-                                            {resumes.length > 0 ? '✅' : '⬜'} Resume Uploaded
-                                        </li>
-                                        <li className={profilePhoto ? 'text-success' : 'text-muted'}>
-                                            {profilePhoto ? '✅' : '⬜'} Profile Photo
-                                        </li>
-                                    </ul>
-                                </div>
+                            </Card.Body>
+                        </Card>
+
+                        {/* Sidebar Navigation */}
+                        <Card className="shadow-sm border-0 rounded-4 sticky-top" style={{ top: '90px' }}>
+                            <Card.Body className="p-2">
+                                <Nav variant="pills" className="flex-column profile-sidebar-nav">
+                                    <Nav.Item>
+                                        <Nav.Link active={activeTab === 'personal'} onClick={() => setActiveTab('personal')} className="d-flex align-items-center py-3 px-3 rounded-3 mb-1">
+                                            <FaUser className="me-3 fs-5" /> <span className="fw-semibold">Personal Info</span>
+                                        </Nav.Link>
+                                    </Nav.Item>
+                                    <Nav.Item>
+                                        <Nav.Link active={activeTab === 'experience'} onClick={() => setActiveTab('experience')} className="d-flex align-items-center py-3 px-3 rounded-3 mb-1">
+                                            <FaBriefcase className="me-3 fs-5" /> <span className="fw-semibold">Experience & Education</span>
+                                        </Nav.Link>
+                                    </Nav.Item>
+                                    <Nav.Item>
+                                        <Nav.Link active={activeTab === 'skills'} onClick={() => setActiveTab('skills')} className="d-flex align-items-center py-3 px-3 rounded-3 mb-1">
+                                            <FaStar className="me-3 fs-5" /> <span className="fw-semibold">Skills & Languages</span>
+                                        </Nav.Link>
+                                    </Nav.Item>
+                                    <Nav.Item>
+                                        <Nav.Link active={activeTab === 'resumes'} onClick={() => setActiveTab('resumes')} className="d-flex align-items-center py-3 px-3 rounded-3">
+                                            <FaUpload className="me-3 fs-5" /> <span className="fw-semibold">Resumes & CVs</span>
+                                        </Nav.Link>
+                                    </Nav.Item>
+                                </Nav>
                             </Card.Body>
                         </Card>
                     </Col>
 
                     <Col lg={9}>
-                        <Card className="shadow-sm mb-4">
-                            <Card.Body className="p-4">
-                                <Tab.Container defaultActiveKey="personal">
-                                    <Nav variant="tabs" className="mb-3">
-                                        <Nav.Item>
-                                            <Nav.Link eventKey="personal">
-                                                <FaUser className="me-2" /> Personal
-                                            </Nav.Link>
-                                        </Nav.Item>
-                                        <Nav.Item>
-                                            <Nav.Link eventKey="skills">
-                                                <FaStar className="me-2" /> Skills
-                                            </Nav.Link>
-                                        </Nav.Item>
-                                        <Nav.Item>
-                                            <Nav.Link eventKey="education">
-                                                <FaGraduationCap className="me-2" /> Education
-                                            </Nav.Link>
-                                        </Nav.Item>
-                                        <Nav.Item>
-                                            <Nav.Link eventKey="experience">
-                                                <FaBriefcase className="me-2" /> Experience
-                                            </Nav.Link>
-                                        </Nav.Item>
-                                        <Nav.Item>
-                                            <Nav.Link eventKey="certifications">
-                                                <FaCertificate className="me-2" /> Certifications
-                                            </Nav.Link>
-                                        </Nav.Item>
-                                    </Nav>
+                        <Card className="shadow-sm border-0 rounded-4">
+                            <Card.Body className="p-4 p-md-5">
+                                {activeTab === 'personal' && (
+                                    <div className="fade-in">
+                                        <h4 className="fw-bold mb-4 border-bottom pb-3"><FaUser className="me-2 text-primary" /> Personal Information</h4>
+                                        <Form onSubmit={handleSubmit}>
+                                            <Row>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-4">
+                                                        <Form.Label className="fw-semibold text-muted small text-uppercase">Full Name <span className="text-danger">*</span></Form.Label>
+                                                        <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} className="form-control-custom bg-light border-0 py-2" required />
+                                                    </Form.Group>
+                                                </Col>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-4">
+                                                        <Form.Label className="fw-semibold text-muted small text-uppercase">Email Address</Form.Label>
+                                                        <Form.Control type="email" value={user?.email} disabled className="form-control-custom bg-light border-0 py-2 text-muted" />
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
 
-                                    <Tab.Content>
-                                        {/* ===== PERSONAL INFO TAB ===== */}
-                                        <Tab.Pane eventKey="personal">
-                                            <Form onSubmit={handleSubmit}>
-                                                <Row>
-                                                    <Col md={6}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label className="fw-semibold">{t('profile.full_name')}</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                name="name"
-                                                                value={formData.name}
-                                                                onChange={handleChange}
-                                                                className="form-control-custom"
-                                                                required
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={6}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label className="fw-semibold">{t('profile.email')}</Form.Label>
-                                                            <Form.Control
-                                                                type="email"
-                                                                value={user?.email}
-                                                                disabled
-                                                                className="form-control-custom bg-light"
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                </Row>
+                                            <Row>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-4">
+                                                        <Form.Label className="fw-semibold text-muted small text-uppercase">Professional Title</Form.Label>
+                                                        <Form.Control type="text" name="profile.title" value={formData.profile.title} onChange={handleChange} placeholder="e.g., Senior Frontend Developer" className="form-control-custom bg-light border-0 py-2" />
+                                                    </Form.Group>
+                                                </Col>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-4">
+                                                        <Form.Label className="fw-semibold text-muted small text-uppercase">Availability Status</Form.Label>
+                                                        <Form.Select name="profile.availabilityStatus" value={formData.profile.availabilityStatus} onChange={handleChange} className="form-control-custom bg-light border-0 py-2 text-dark">
+                                                            <option value="Available now">Available now</option>
+                                                            <option value="Available part-time">Available part-time</option>
+                                                            <option value="Busy">Busy (Not open to work)</option>
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
 
-                                                <Row>
-                                                    <Col md={6}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label className="fw-semibold">{t('profile.phone')}</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                name="profile.phone"
-                                                                value={formData.profile.phone}
-                                                                onChange={handleChange}
-                                                                placeholder="e.g., +251 912 345 678"
-                                                                className="form-control-custom"
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={6}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label className="fw-semibold">{t('profile.location')}</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                name="profile.location"
-                                                                value={formData.profile.location}
-                                                                onChange={handleChange}
-                                                                placeholder="e.g., Hawassa, Ethiopia"
-                                                                className="form-control-custom"
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                </Row>
+                                            <Row>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-4">
+                                                        <Form.Label className="fw-semibold text-muted small text-uppercase">Expected Salary</Form.Label>
+                                                        <div className="d-flex gap-2">
+                                                            <Form.Control type="number" name="profile.expectedSalary.amount" value={formData.profile.expectedSalary.amount} onChange={handleChange} placeholder="Amount" className="form-control-custom bg-light border-0 py-2" />
+                                                            <Form.Select name="profile.expectedSalary.rateType" value={formData.profile.expectedSalary.rateType} onChange={handleChange} className="form-control-custom bg-light border-0 py-2 w-auto">
+                                                                <option value="Hourly">/ hr</option>
+                                                                <option value="Monthly">/ mo</option>
+                                                                <option value="Fixed">Fixed</option>
+                                                            </Form.Select>
+                                                        </div>
+                                                    </Form.Group>
+                                                </Col>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-4">
+                                                        <Form.Label className="fw-semibold text-muted small text-uppercase">Phone Number</Form.Label>
+                                                        <Form.Control type="text" name="profile.phone" value={formData.profile.phone} onChange={handleChange} placeholder="+251..." className="form-control-custom bg-light border-0 py-2" />
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
 
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label className="fw-semibold">Bio / About</Form.Label>
-                                                    <Form.Control
-                                                        as="textarea"
-                                                        rows={4}
-                                                        name="profile.bio"
-                                                        value={formData.profile.bio}
-                                                        onChange={handleChange}
-                                                        placeholder="Tell us about yourself, your experience, and career goals..."
-                                                        className="form-control-custom"
-                                                    />
-                                                </Form.Group>
+                                            <Row>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-4">
+                                                        <Form.Label className="fw-semibold text-muted small text-uppercase">Location</Form.Label>
+                                                        <Form.Control type="text" name="profile.location" value={formData.profile.location} onChange={handleChange} placeholder="e.g. Addis Ababa, Ethiopia" className="form-control-custom bg-light border-0 py-2" />
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
 
-                                                <Button
-                                                    type="submit"
-                                                    variant="primary-gradient"
-                                                    disabled={loading}
-                                                >
-                                                    {loading ? (
-                                                        <Spinner animation="border" size="sm" className="me-2" />
-                                                    ) : (
-                                                        <FaSave className="me-2" />
-                                                    )}
-                                                    {t('profile.save_changes')}
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="fw-semibold text-muted small text-uppercase">Professional Bio</Form.Label>
+                                                <Form.Control as="textarea" rows={4} name="profile.bio" value={formData.profile.bio} onChange={handleChange} placeholder="Describe your background and expertise..." className="form-control-custom bg-light border-0" />
+                                            </Form.Group>
+
+                                            <div className="text-end mt-4">
+                                                <Button type="submit" disabled={loading} className="btn-primary-gradient px-4 py-2 rounded-3 fw-semibold">
+                                                    {loading ? <Spinner animation="border" size="sm" /> : <><FaSave className="me-2" /> Save Changes</>}
                                                 </Button>
-                                            </Form>
-                                        </Tab.Pane>
-
-                                        {/* ===== SKILLS TAB ===== */}
-                                        <Tab.Pane eventKey="skills">
-                                            <div className="mb-3">
-                                                <label className="fw-semibold mb-2">Add Skill</label>
-                                                <div className="d-flex gap-2">
-                                                    <Form.Control
-                                                        type="text"
-                                                        value={newSkill}
-                                                        onChange={(e) => setNewSkill(e.target.value)}
-                                                        placeholder="e.g., Python, Java, React, Project Management"
-                                                        className="form-control-custom"
-                                                        onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
-                                                    />
-                                                    <Button onClick={handleAddSkill} variant="primary-gradient">
-                                                        <FaPlus />
-                                                    </Button>
-                                                </div>
-                                                <small className="text-muted">Press Enter or click + to add</small>
                                             </div>
+                                        </Form>
+                                    </div>
+                                )}
 
-                                            <div className="d-flex flex-wrap gap-2 mt-3">
-                                                {formData.profile.skills.map((skill, idx) => (
-                                                    <Badge 
-                                                        key={idx} 
-                                                        bg="primary" 
-                                                        className="p-2 d-flex align-items-center gap-2"
-                                                        style={{ fontSize: '0.9rem' }}
-                                                    >
-                                                        {skill}
-                                                        <Button
-                                                            variant="link"
-                                                            className="p-0 text-white"
-                                                            onClick={() => handleRemoveSkill(skill)}
-                                                            style={{ fontSize: '0.7rem' }}
-                                                        >
-                                                            <FaTimes />
-                                                        </Button>
-                                                    </Badge>
-                                                ))}
-                                                {formData.profile.skills.length === 0 && (
-                                                    <p className="text-muted">No skills added yet. Add your top skills!</p>
-                                                )}
-                                            </div>
-                                        </Tab.Pane>
-
-                                        {/* ===== EDUCATION TAB ===== */}
-                                        <Tab.Pane eventKey="education">
-                                            <div className="mb-3 p-3 border rounded bg-light">
-                                                <h6 className="fw-bold mb-3">Add Education</h6>
-                                                <Row>
-                                                    <Col md={6} className="mb-2">
-                                                        <Form.Control
-                                                            placeholder="Institution *"
-                                                            value={newEducation.institution}
-                                                            onChange={(e) => setNewEducation({ ...newEducation, institution: e.target.value })}
-                                                        />
+                                {activeTab === 'experience' && (
+                                    <div className="fade-in">
+                                        <h4 className="fw-bold mb-4 border-bottom pb-3"><FaBriefcase className="me-2 text-primary" /> Experience & Education</h4>
+                                        
+                                        {/* Work Experience */}
+                                        <div className="mb-5">
+                                            <h5 className="fw-bold text-dark mb-3">Work Experience</h5>
+                                            <Card className="bg-light border-0 p-3 mb-4 rounded-3">
+                                                <Row className="g-3">
+                                                    <Col md={6}>
+                                                        <Form.Control type="text" placeholder="Company Name *" value={newExperience.company} onChange={e => setNewExperience({ ...newExperience, company: e.target.value })} className="form-control-custom bg-white border-0" />
                                                     </Col>
-                                                    <Col md={6} className="mb-2">
-                                                        <Form.Control
-                                                            placeholder="Degree *"
-                                                            value={newEducation.degree}
-                                                            onChange={(e) => setNewEducation({ ...newEducation, degree: e.target.value })}
-                                                        />
+                                                    <Col md={6}>
+                                                        <Form.Control type="text" placeholder="Job Title / Position *" value={newExperience.position} onChange={e => setNewExperience({ ...newExperience, position: e.target.value })} className="form-control-custom bg-white border-0" />
                                                     </Col>
-                                                    <Col md={6} className="mb-2">
-                                                        <Form.Control
-                                                            placeholder="Field of Study"
-                                                            value={newEducation.field}
-                                                            onChange={(e) => setNewEducation({ ...newEducation, field: e.target.value })}
-                                                        />
+                                                    <Col md={6}>
+                                                        <Form.Control type="date" placeholder="Start Date" value={newExperience.startDate} onChange={e => setNewExperience({ ...newExperience, startDate: e.target.value })} className="form-control-custom bg-white border-0" />
                                                     </Col>
-                                                    <Col md={4} className="mb-2">
-                                                        <Form.Control
-                                                            type="number"
-                                                            placeholder="Graduation Year"
-                                                            value={newEducation.graduationYear}
-                                                            onChange={(e) => setNewEducation({ ...newEducation, graduationYear: e.target.value })}
-                                                        />
-                                                    </Col>
-                                                    <Col md={2} className="mb-2">
-                                                        <Button onClick={handleAddEducation} variant="primary-gradient" className="w-100">
-                                                            <FaPlus />
-                                                        </Button>
-                                                    </Col>
-                                                </Row>
-                                            </div>
-
-                                            {formData.profile.education.map((edu, idx) => (
-                                                <div key={idx} className="d-flex justify-content-between align-items-start p-2 border-bottom">
-                                                    <div>
-                                                        <strong>{edu.degree}</strong> - {edu.institution}
-                                                        {edu.field && <span className="text-muted"> ({edu.field})</span>}
-                                                        {edu.graduationYear && <span className="text-muted">, {edu.graduationYear}</span>}
-                                                    </div>
-                                                    <Button
-                                                        variant="link"
-                                                        className="text-danger p-0"
-                                                        onClick={() => handleRemoveEducation(idx)}
-                                                    >
-                                                        <FaTrash />
-                                                    </Button>
-                                                </div>
-                                            ))}
-                                            {formData.profile.education.length === 0 && (
-                                                <p className="text-muted">No education added yet</p>
-                                            )}
-                                        </Tab.Pane>
-
-                                        {/* ===== EXPERIENCE TAB ===== */}
-                                        <Tab.Pane eventKey="experience">
-                                            <div className="mb-3 p-3 border rounded bg-light">
-                                                <h6 className="fw-bold mb-3">Add Work Experience</h6>
-                                                <Row>
-                                                    <Col md={6} className="mb-2">
-                                                        <Form.Control
-                                                            placeholder="Company *"
-                                                            value={newExperience.company}
-                                                            onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })}
-                                                        />
-                                                    </Col>
-                                                    <Col md={6} className="mb-2">
-                                                        <Form.Control
-                                                            placeholder="Position *"
-                                                            value={newExperience.position}
-                                                            onChange={(e) => setNewExperience({ ...newExperience, position: e.target.value })}
-                                                        />
-                                                    </Col>
-                                                    <Col md={5} className="mb-2">
-                                                        <Form.Control
-                                                            type="date"
-                                                            placeholder="Start Date"
-                                                            value={newExperience.startDate}
-                                                            onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })}
-                                                        />
-                                                    </Col>
-                                                    <Col md={5} className="mb-2">
-                                                        <Form.Control
-                                                            type="date"
-                                                            placeholder="End Date"
-                                                            value={newExperience.endDate}
-                                                            onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })}
-                                                            disabled={newExperience.currentlyWorking}
-                                                        />
-                                                    </Col>
-                                                    <Col md={2} className="mb-2 d-flex align-items-center">
-                                                        <Form.Check
-                                                            type="checkbox"
-                                                            label="Currently Working"
-                                                            checked={newExperience.currentlyWorking}
-                                                            onChange={(e) => setNewExperience({ ...newExperience, currentlyWorking: e.target.checked })}
-                                                        />
-                                                    </Col>
-                                                    <Col md={12} className="mb-2">
-                                                        <Form.Control
-                                                            as="textarea"
-                                                            rows={2}
-                                                            placeholder="Description"
-                                                            value={newExperience.description}
-                                                            onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })}
-                                                        />
+                                                    <Col md={6}>
+                                                        <Form.Control type="date" placeholder="End Date" disabled={newExperience.currentlyWorking} value={newExperience.endDate} onChange={e => setNewExperience({ ...newExperience, endDate: e.target.value })} className="form-control-custom bg-white border-0" />
                                                     </Col>
                                                     <Col md={12}>
-                                                        <Button onClick={handleAddExperience} variant="primary-gradient">
-                                                            <FaPlus className="me-2" /> Add Experience
+                                                        <Form.Check type="checkbox" label="I currently work here" checked={newExperience.currentlyWorking} onChange={e => setNewExperience({ ...newExperience, currentlyWorking: e.target.checked })} />
+                                                    </Col>
+                                                    <Col md={12}>
+                                                        <Form.Control as="textarea" rows={2} placeholder="Description of responsibilities..." value={newExperience.description} onChange={e => setNewExperience({ ...newExperience, description: e.target.value })} className="form-control-custom bg-white border-0" />
+                                                    </Col>
+                                                    <Col md={12} className="text-end">
+                                                        <Button variant="primary" size="sm" onClick={handleAddExperience} className="rounded-2 px-3 fw-semibold">
+                                                            <FaPlus className="me-1" /> Add Experience
                                                         </Button>
                                                     </Col>
                                                 </Row>
-                                            </div>
+                                            </Card>
 
                                             {formData.profile.workExperience.map((exp, idx) => (
-                                                <div key={idx} className="d-flex justify-content-between align-items-start p-2 border-bottom">
-                                                    <div>
-                                                        <strong>{exp.position}</strong> at {exp.company}
-                                                        {exp.startDate && (
-                                                            <span className="text-muted">
-                                                                {' '}({new Date(exp.startDate).getFullYear()} - {exp.endDate === 'Present' ? 'Present' : exp.endDate ? new Date(exp.endDate).getFullYear() : 'Present'})
-                                                            </span>
-                                                        )}
-                                                        {exp.description && (
-                                                            <p className="text-muted small mb-0">{exp.description}</p>
-                                                        )}
+                                                <Card key={idx} className="border-0 shadow-sm mb-3 rounded-3 p-3 position-relative">
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 className="fw-bold mb-1 text-dark">{exp.position}</h6>
+                                                            <p className="text-primary fw-semibold small mb-1"><FaBuilding className="me-1" /> {exp.company}</p>
+                                                            <small className="text-muted d-block mb-2">{exp.startDate ? new Date(exp.startDate).toLocaleDateString() : ''} - {exp.currentlyWorking ? 'Present' : exp.endDate ? new Date(exp.endDate).toLocaleDateString() : ''}</small>
+                                                            <p className="text-secondary small mb-0">{exp.description}</p>
+                                                        </div>
+                                                        <Button variant="link" className="text-danger p-0" onClick={() => handleRemoveExperience(idx)}><FaTrash /></Button>
                                                     </div>
-                                                    <Button
-                                                        variant="link"
-                                                        className="text-danger p-0"
-                                                        onClick={() => handleRemoveExperience(idx)}
-                                                    >
-                                                        <FaTrash />
-                                                    </Button>
-                                                </div>
+                                                </Card>
                                             ))}
-                                            {formData.profile.workExperience.length === 0 && (
-                                                <p className="text-muted">No work experience added yet</p>
-                                            )}
-                                        </Tab.Pane>
+                                        </div>
 
-                                        {/* ===== CERTIFICATIONS TAB ===== */}
-                                        <Tab.Pane eventKey="certifications">
-                                            <div className="mb-3">
-                                                <label className="fw-semibold mb-2">Add Certification</label>
-                                                <div className="d-flex gap-2">
-                                                    <Form.Control
-                                                        type="text"
-                                                        value={newCertification}
-                                                        onChange={(e) => setNewCertification(e.target.value)}
-                                                        placeholder="e.g., AWS Certified Developer, PMP, CCNA"
-                                                        className="form-control-custom"
-                                                        onKeyPress={(e) => e.key === 'Enter' && handleAddCertification()}
-                                                    />
-                                                    <Button onClick={handleAddCertification} variant="primary-gradient">
-                                                        <FaPlus />
-                                                    </Button>
-                                                </div>
-                                            </div>
-
-                                            <div className="d-flex flex-wrap gap-2 mt-2">
-                                                {formData.profile.certifications.map((cert, idx) => (
-                                                    <Badge 
-                                                        key={idx} 
-                                                        bg="info" 
-                                                        className="p-2 d-flex align-items-center gap-2"
-                                                        style={{ fontSize: '0.85rem' }}
-                                                    >
-                                                        <FaCertificate className="me-1" />
-                                                        {cert}
-                                                        <Button
-                                                            variant="link"
-                                                            className="p-0 text-white"
-                                                            onClick={() => handleRemoveCertification(cert)}
-                                                            style={{ fontSize: '0.7rem' }}
-                                                        >
-                                                            <FaTimes />
+                                        {/* Education */}
+                                        <div>
+                                            <h5 className="fw-bold text-dark mb-3"><FaGraduationCap className="me-2 text-primary" /> Education</h5>
+                                            <Card className="bg-light border-0 p-3 mb-4 rounded-3">
+                                                <Row className="g-3">
+                                                    <Col md={6}>
+                                                        <Form.Control type="text" placeholder="Institution / University *" value={newEducation.institution} onChange={e => setNewEducation({ ...newEducation, institution: e.target.value })} className="form-control-custom bg-white border-0" />
+                                                    </Col>
+                                                    <Col md={6}>
+                                                        <Form.Control type="text" placeholder="Degree / Certificate *" value={newEducation.degree} onChange={e => setNewEducation({ ...newEducation, degree: e.target.value })} className="form-control-custom bg-white border-0" />
+                                                    </Col>
+                                                    <Col md={6}>
+                                                        <Form.Control type="text" placeholder="Field of Study" value={newEducation.field} onChange={e => setNewEducation({ ...newEducation, field: e.target.value })} className="form-control-custom bg-white border-0" />
+                                                    </Col>
+                                                    <Col md={6}>
+                                                        <Form.Control type="number" placeholder="Graduation Year" value={newEducation.graduationYear} onChange={e => setNewEducation({ ...newEducation, graduationYear: e.target.value })} className="form-control-custom bg-white border-0" />
+                                                    </Col>
+                                                    <Col md={12} className="text-end">
+                                                        <Button variant="primary" size="sm" onClick={handleAddEducation} className="rounded-2 px-3 fw-semibold">
+                                                            <FaPlus className="me-1" /> Add Education
                                                         </Button>
+                                                    </Col>
+                                                </Row>
+                                            </Card>
+
+                                            {formData.profile.education.map((edu, idx) => (
+                                                <Card key={idx} className="border-0 shadow-sm mb-3 rounded-3 p-3 position-relative">
+                                                    <div className="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 className="fw-bold mb-1 text-dark">{edu.degree} {edu.field ? `in ${edu.field}` : ''}</h6>
+                                                            <p className="text-secondary fw-semibold small mb-1">{edu.institution}</p>
+                                                            {edu.graduationYear && <small className="text-muted">Class of {edu.graduationYear}</small>}
+                                                        </div>
+                                                        <Button variant="link" className="text-danger p-0" onClick={() => handleRemoveEducation(idx)}><FaTrash /></Button>
+                                                    </div>
+                                                </Card>
+                                            ))}
+                                        </div>
+
+                                        <div className="text-end mt-4">
+                                            <Button onClick={handleSubmit} disabled={loading} className="btn-primary-gradient px-4 py-2 rounded-3 fw-semibold">
+                                                {loading ? <Spinner animation="border" size="sm" /> : <><FaSave className="me-2" /> Save Experience & Education</>}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'skills' && (
+                                    <div className="fade-in">
+                                        <h4 className="fw-bold mb-4 border-bottom pb-3"><FaStar className="me-2 text-primary" /> Skills & Languages</h4>
+                                        
+                                        {/* Skills */}
+                                        <div className="mb-4">
+                                            <h5 className="fw-bold text-dark mb-3">Technical & Soft Skills</h5>
+                                            <div className="d-flex gap-2 mb-3">
+                                                <Form.Control type="text" placeholder="Add a skill (e.g. React, Node.js, Project Management)" value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())} className="form-control-custom bg-light border-0" />
+                                                <Button variant="primary" onClick={handleAddSkill} className="px-4 fw-semibold rounded-3"><FaPlus /></Button>
+                                            </div>
+                                            <div className="d-flex flex-wrap gap-2">
+                                                {formData.profile.skills.map((skill, idx) => (
+                                                    <Badge key={idx} bg="primary" className="p-2 px-3 fs-6 rounded-pill d-flex align-items-center gap-2 font-sans fw-normal">
+                                                        {skill}
+                                                        <FaTimes style={{ cursor: 'pointer' }} onClick={() => handleRemoveSkill(skill)} />
                                                     </Badge>
                                                 ))}
-                                                {formData.profile.certifications.length === 0 && (
-                                                    <p className="text-muted">No certifications added yet</p>
-                                                )}
                                             </div>
+                                        </div>
 
-                                            <hr />
+                                        {/* Certifications */}
+                                        <div className="mb-4 mt-5">
+                                            <h5 className="fw-bold text-dark mb-3"><FaCertificate className="me-2 text-primary" /> Certifications</h5>
+                                            <div className="d-flex gap-2 mb-3">
+                                                <Form.Control type="text" placeholder="Add certification (e.g. AWS Certified Developer)" value={newCertification} onChange={e => setNewCertification(e.target.value)} onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), handleAddCertification())} className="form-control-custom bg-light border-0" />
+                                                <Button variant="primary" onClick={handleAddCertification} className="px-4 fw-semibold rounded-3"><FaPlus /></Button>
+                                            </div>
+                                            <div className="d-flex flex-wrap gap-2">
+                                                {formData.profile.certifications.map((cert, idx) => (
+                                                    <Badge key={idx} bg="info" className="p-2 px-3 fs-6 rounded-pill d-flex align-items-center gap-2 font-sans fw-normal text-dark">
+                                                        {cert}
+                                                        <FaTimes style={{ cursor: 'pointer' }} onClick={() => handleRemoveCertification(cert)} />
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
 
+                                        {/* Languages */}
+                                        <div className="mb-4 mt-5">
+                                            <h5 className="fw-bold text-dark mb-3"><FaLanguage className="me-2 text-primary" /> Languages Spoken</h5>
+                                            <div className="d-flex gap-2 mb-3">
+                                                <Form.Control type="text" placeholder="Add language (e.g. Amharic, English, Oromo)" value={newLanguage} onChange={e => setNewLanguage(e.target.value)} onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), handleAddLanguage())} className="form-control-custom bg-light border-0" />
+                                                <Button variant="primary" onClick={handleAddLanguage} className="px-4 fw-semibold rounded-3"><FaPlus /></Button>
+                                            </div>
+                                            <div className="d-flex flex-wrap gap-2">
+                                                {formData.profile.languages.map((lang, idx) => (
+                                                    <Badge key={idx} bg="secondary" className="p-2 px-3 fs-6 rounded-pill d-flex align-items-center gap-2 font-sans fw-normal">
+                                                        {lang}
+                                                        <FaTimes style={{ cursor: 'pointer' }} onClick={() => handleRemoveLanguage(lang)} />
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="text-end mt-4">
+                                            <Button onClick={handleSubmit} disabled={loading} className="btn-primary-gradient px-4 py-2 rounded-3 fw-semibold">
+                                                {loading ? <Spinner animation="border" size="sm" /> : <><FaSave className="me-2" /> Save Skills & Languages</>}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'resumes' && (
+                                    <div className="fade-in">
+                                        <h4 className="fw-bold mb-4 border-bottom pb-3"><FaUpload className="me-2 text-primary" /> Resumes & Curriculum Vitae</h4>
+                                        
+                                        <Card className="border-dashed bg-light p-4 text-center mb-4 rounded-4">
+                                            <div className="mb-3 text-primary" style={{ fontSize: '2.5rem' }}>📄</div>
+                                            <h5 className="fw-bold">Upload Your Resume</h5>
+                                            <p className="text-muted small mb-3">Upload PDF or DOCX format (Max 10MB). Having an updated resume boosts AI job matching accuracy!</p>
                                             <div>
-                                                <label className="fw-semibold mb-2">Languages</label>
-                                                <div className="d-flex gap-2">
-                                                    <Form.Control
-                                                        type="text"
-                                                        value={newLanguage}
-                                                        onChange={(e) => setNewLanguage(e.target.value)}
-                                                        placeholder="e.g., English (Fluent), Amharic (Native)"
-                                                        className="form-control-custom"
-                                                        onKeyPress={(e) => e.key === 'Enter' && handleAddLanguage()}
-                                                    />
-                                                    <Button onClick={handleAddLanguage} variant="primary-gradient">
-                                                        <FaPlus />
-                                                    </Button>
-                                                </div>
-                                                <div className="d-flex flex-wrap gap-2 mt-2">
-                                                    {formData.profile.languages.map((lang, idx) => (
-                                                        <Badge 
-                                                            key={idx} 
-                                                            bg="secondary" 
-                                                            className="p-2 d-flex align-items-center gap-2"
-                                                            style={{ fontSize: '0.85rem' }}
-                                                        >
-                                                            <FaLanguage className="me-1" />
-                                                            {lang}
-                                                            <Button
-                                                                variant="link"
-                                                                className="p-0 text-white"
-                                                                onClick={() => handleRemoveLanguage(lang)}
-                                                                style={{ fontSize: '0.7rem' }}
-                                                            >
-                                                                <FaTimes />
-                                                            </Button>
-                                                        </Badge>
-                                                    ))}
-                                                    {formData.profile.languages.length === 0 && (
-                                                        <p className="text-muted">No languages added yet</p>
-                                                    )}
-                                                </div>
+                                                <label htmlFor="resume-file-input" className="btn btn-primary-gradient px-4 py-2 rounded-3 fw-semibold" style={{ cursor: 'pointer' }}>
+                                                    {uploading ? <Spinner animation="border" size="sm" /> : <><FaUpload className="me-2" /> Select File & Upload</>}
+                                                </label>
+                                                <input id="resume-file-input" type="file" accept=".pdf,.docx" onChange={handleResumeUpload} style={{ display: 'none' }} disabled={uploading} />
                                             </div>
-                                        </Tab.Pane>
-                                    </Tab.Content>
-                                </Tab.Container>
+                                        </Card>
+
+                                        <h5 className="fw-bold mb-3 text-dark">Uploaded Resumes</h5>
+                                        {resumes.length === 0 ? (
+                                            <p className="text-muted small">No resumes uploaded yet.</p>
+                                        ) : (
+                                            <div className="table-responsive">
+                                                <Table hover className="align-middle">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>File Name</th>
+                                                            <th>Uploaded Date</th>
+                                                            <th>Status</th>
+                                                            <th className="text-end">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {resumes.map(r => (
+                                                            <tr key={r._id}>
+                                                                <td className="fw-semibold">📄 {r.originalName}</td>
+                                                                <td className="text-muted small">{new Date(r.createdAt).toLocaleDateString()}</td>
+                                                                <td>
+                                                                    {r.isDefault ? (
+                                                                        <Badge bg="success" className="px-2 py-1"><FaCheck className="me-1" /> Default</Badge>
+                                                                    ) : (
+                                                                        <Button variant="outline-secondary" size="sm" onClick={() => handleSetDefaultResume(r._id)}>Set Default</Button>
+                                                                    )}
+                                                                </td>
+                                                                <td className="text-end">
+                                                                    <a href={getImageUrl(r.filePath)} target="_blank" rel="noreferrer" className="btn btn-light btn-sm me-2">Download</a>
+                                                                    <Button variant="outline-danger" size="sm" onClick={() => handleDeleteResume(r._id)}><FaTrash /></Button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </Table>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </Card.Body>
                         </Card>
                     </Col>

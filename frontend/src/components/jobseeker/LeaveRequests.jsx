@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form, Spinner, Alert, Badge } from 'react-bootstrap';
+import { Container, Card, Form, Button, Badge, Spinner, Alert, Row, Col } from 'react-bootstrap';
 import { FaCalendarAlt, FaPlus, FaEye, FaPaperPlane, FaClock } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const LeaveRequests = () => {
+    const { user } = useAuth();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [leaves, setLeaves] = useState([]);
     const [showForm, setShowForm] = useState(false);
@@ -103,10 +108,11 @@ const LeaveRequests = () => {
 
     return (
         <Container className="py-5">
+            <BackButton to="/jobseeker/dashboard" />
             <Row className="mb-4">
                 <Col>
-                    <h2 className="fw-bold mb-1">Leave Requests</h2>
-                    <p className="text-muted">Submit and track your leave requests</p>
+                    <h2 className="fw-bold mb-1">{t('leave.title')}</h2>
+                    <p className="text-muted">{t('leave.subtitle')}</p>
                 </Col>
                 <Col xs="auto">
                     <Button 
@@ -115,7 +121,7 @@ const LeaveRequests = () => {
                         className="d-flex align-items-center gap-2"
                     >
                         {showForm ? <FaEye /> : <FaPlus />}
-                        {showForm ? 'View Requests' : 'New Request'}
+                        {showForm ? t('leave.view_requests') : t('leave.new_request')}
                     </Button>
                 </Col>
             </Row>
@@ -128,16 +134,18 @@ const LeaveRequests = () => {
 
             {showForm ? (
                 <Card className="mb-4 shadow-sm">
+                    <h2 className="fw-bold mb-4">
+                        <FaCalendarAlt className="me-2 text-primary" /> {t('leave.title')}
+                    </h2>
                     <Card.Header className="bg-white fw-bold">
-                        <FaCalendarAlt className="me-2" />
-                        Submit Leave Request
+                        {t('leave.new_request')}
                     </Card.Header>
                     <Card.Body>
                         <Form onSubmit={handleSubmit}>
                             <Row>
                                 <Col md={6}>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Leave Type *</Form.Label>
+                                        <Form.Label>{t('leave.leave_type')} *</Form.Label>
                                         <Form.Select
                                             value={formData.leaveType}
                                             onChange={(e) => setFormData({...formData, leaveType: e.target.value})}

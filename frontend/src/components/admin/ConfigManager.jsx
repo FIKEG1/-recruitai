@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Table, Badge, Spinner, Alert, Tabs, Tab, Modal } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const ConfigManager = () => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [config, setConfig] = useState(null);
     const [activeTab, setActiveTab] = useState('organization');
@@ -260,7 +263,8 @@ const ConfigManager = () => {
 
     return (
         <Container className="py-4">
-            <h2 className="fw-bold mb-4">⚙️ Configuration Manager</h2>
+            <BackButton to="/admin/dashboard" />
+            <h2 className="fw-bold mb-4">⚙️ {t('config.title')}</h2>
             
             {error && <Alert variant="danger">{error}</Alert>}
 

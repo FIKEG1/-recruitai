@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Table, Badge, Spinner, Alert, Button, Form }
 import { FaCalendar, FaClock, FaUserCheck, FaUserTimes, FaFilter } from 'react-icons/fa';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const EmployerAttendance = () => {
     const [loading, setLoading] = useState(true);
@@ -93,6 +94,7 @@ const EmployerAttendance = () => {
 
     return (
         <Container className="py-5">
+            <BackButton to="/employer/jobs" />
             <Row className="mb-4">
                 <Col>
                     <h2 className="fw-bold mb-1">Attendance Management</h2>

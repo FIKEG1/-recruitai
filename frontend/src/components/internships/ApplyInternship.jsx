@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const ApplyInternship = () => {
     const { id } = useParams();
@@ -145,13 +146,7 @@ const ApplyInternship = () => {
     return (
         <section className="apply-section py-4">
             <Container>
-                <Button 
-                    variant="link" 
-                    className="text-decoration-none mb-3 d-inline-flex align-items-center gap-2"
-                    onClick={() => navigate(-1)}
-                >
-                    <FaArrowLeft /> {t('common.back')}
-                </Button>
+                <BackButton to="/internships" />
 
                 <Row>
                     <Col lg={8} className="mx-auto">

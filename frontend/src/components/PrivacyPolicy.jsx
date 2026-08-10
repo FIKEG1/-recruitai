@@ -28,7 +28,7 @@ const PrivacyPolicy = () => {
                             {/* Introduction */}
                             <div className="mb-4">
                                 <p className="lead">
-                                    At <strong>RecruitAI</strong>, we are committed to protecting your privacy and 
+                                    At <strong>KETARI</strong>, we are committed to protecting your privacy and 
                                     ensuring the security of your personal information. This Privacy Policy explains 
                                     how we collect, use, and safeguard your data.
                                 </p>
@@ -181,7 +181,7 @@ const PrivacyPolicy = () => {
                                         📍 Hawassa, Sidama Region
                                     </p>
                                     <p className="mb-0 text-muted">
-                                        📧 Email: <a href="mailto:privacy@recruitai.com" className="text-primary">privacy@recruitai.com</a>
+                                        📧 Email: <a href="mailto:privacy@ketari.et" className="text-primary">privacy@ketari.et</a>
                                     </p>
                                 </div>
                             </div>
@@ -190,7 +190,7 @@ const PrivacyPolicy = () => {
                             <hr />
                             <div className="text-center">
                                 <p className="text-muted small">
-                                    By using RecruitAI, you agree to this Privacy Policy.
+                                    By using KETARI, you agree to this Privacy Policy.
                                 </p>
                                 <div className="d-flex justify-content-center gap-3 mt-2">
                                     <Link to="/" className="text-decoration-none text-muted small">Home</Link>
@@ -198,7 +198,7 @@ const PrivacyPolicy = () => {
                                     <Link to="/contact" className="text-decoration-none text-muted small">Contact</Link>
                                 </div>
                                 <p className="text-muted small mt-3">
-                                    © {new Date().getFullYear()} RecruitAI - Sidama Innovation and Technology Agency
+                                    © {new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency
                                 </p>
                             </div>
                         </Card.Body>

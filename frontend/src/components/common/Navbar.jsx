@@ -1,40 +1,57 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, Button, Dropdown, Badge } from 'react-bootstrap';
 import { 
     FaUser, 
     FaBriefcase, 
     FaSignOutAlt, 
     FaUserPlus, 
-    FaSignInAlt, 
-    FaHome, 
     FaBuilding, 
     FaUserCog,
     FaUsers,
     FaGraduationCap,
     FaMoon,
     FaSun,
-    FaChartBar,      // NEW
-    FaCog,           // NEW
-    FaCalendar,      // NEW
-    FaClock,         // NEW
-    FaBook,          // NEW
-    FaFlag,          // NEW
-    FaExchangeAlt,   // NEW
-    FaUserCheck,     // NEW - for attendance
-    FaExclamationTriangle,  // NEW - for complaints
-    FaCalendarAlt    // NEW - for leave management
+    FaChartBar,
+    FaCog,
+    FaCalendar,
+    FaClock,
+    FaBook,
+    FaFlag,
+    FaExchangeAlt,
+    FaBars,
+    FaInfoCircle,
+    FaEnvelope
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTheme } from '../../context/ThemeContext';
+import { getImageUrl } from '../../services/api';
+import './Navbar.css';
 
 const CustomNavbar = () => {
     const { user, logout, isAuthenticated, isJobSeeker, isEmployer, isAdmin } = useAuth();
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    const [scrolled, setScrolled] = useState(false);
+
+    // Handle scroll effect
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 20) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -61,382 +78,257 @@ const CustomNavbar = () => {
         return iconMap[role] || <FaUser size={14} />;
     };
 
+    const isActive = (path) => {
+        if (path === '/' && location.pathname !== '/') return false;
+        return location.pathname.startsWith(path);
+    };
+
     return (
-        <>
-            <Navbar 
-                expand="lg" 
-                className="custom-navbar" 
-                sticky="top" 
-            >
-                <Container>
-                    <Navbar.Brand 
-                        as={Link} 
-                        to="/" 
-                        className="brand" 
-                        style={{ 
-                            fontSize: '1.5rem', 
-                            fontWeight: 700, 
-                            textDecoration: 'none',
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}
-                    >
-                        <span style={{
-                            fontSize: '1.5rem',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            padding: '6px 10px',
-                            borderRadius: '10px',
-                            color: 'var(--surface)',
-                            display: 'inline-block',
-                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
-                        }}>
-                            Ketari
-                        </span>
-                    </Navbar.Brand>
-                    
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                    
-                    <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="mx-auto align-items-center">
-                            <Nav.Link 
-                                as={Link} 
-                                to="/"
-                                className="nav-link-custom" 
-                                style={{ 
-                                    color: 'var(--muted)', 
-                                    fontWeight: 500, 
-                                    padding: '8px 16px', 
+        <Navbar 
+            expand="lg" 
+            className={`custom-navbar ${scrolled ? 'scrolled' : ''}`}
+            sticky="top" 
+            style={{ background: 'var(--header-bg)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
+        >
+            <Container>
+                <Navbar.Brand 
+                    as={Link} 
+                    to="/" 
+                    className="brand d-flex align-items-center gap-2 me-4" 
+                    style={{ fontSize: '1.4rem', fontWeight: 800, textDecoration: 'none', letterSpacing: '-0.5px' }}
+                >
+                    <div style={{ 
+                        width: '36px', height: '36px', 
+                        background: 'var(--primary-color)', 
+                        borderRadius: '8px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'white', fontSize: '1.2rem', boxShadow: 'var(--shadow-sm)'
+                    }}>
+                        <FaBriefcase size={18} />
+                    </div>
+                    <span style={{ color: 'var(--text-primary)' }}>KETARI</span>
+                </Navbar.Brand>
+                
+                <Navbar.Toggle aria-controls="basic-navbar-nav" className="navbar-toggler-custom shadow-none">
+                    <FaBars size={24} color="var(--text-primary)" />
+                </Navbar.Toggle>
+                
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="me-auto align-items-lg-center">
+                        <Nav.Link 
+                            as={Link} 
+                            to="/jobs" 
+                            className={`nav-link-custom ${isActive('/jobs') ? 'active' : ''}`}
+                        >
+                            {t('nav.jobs')}
+                        </Nav.Link>
+
+                        <Nav.Link 
+                            as={Link} 
+                            to="/candidates" 
+                            className={`nav-link-custom ${isActive('/candidates') ? 'active' : ''}`}
+                        >
+                            {t('nav.find_talent')}
+                        </Nav.Link>
+
+                        <Nav.Link 
+                            as={Link} 
+                            to="/internships" 
+                            className={`nav-link-custom ${isActive('/internships') ? 'active' : ''}`}
+                        >
+                            {t('nav.internships')}
+                        </Nav.Link>
+
+                        <Nav.Link 
+                            as={Link} 
+                            to="/about" 
+                            className={`nav-link-custom ${isActive('/about') ? 'active' : ''}`}
+                        >
+                            {t('nav.about')}
+                        </Nav.Link>
+
+                        <Nav.Link 
+                            as={Link} 
+                            to="/contact" 
+                            className={`nav-link-custom ${isActive('/contact') ? 'active' : ''}`}
+                        >
+                            {t('nav.contact')}
+                        </Nav.Link>
+                    </Nav>
+
+                    <Nav className="ms-auto align-items-lg-center">
+                        <LanguageSwitcher />
+
+                        <div className="ms-2 d-flex align-items-center">
+                            <Button 
+                                variant="outline-secondary" 
+                                onClick={toggleTheme}
+                                title={theme === 'light' ? t('nav.dark_mode') || 'Toggle theme' : t('nav.light_mode') || 'Toggle theme'}
+                                style={{
                                     borderRadius: '8px',
-                                    transition: 'all 0.3s ease'
+                                    padding: '6px 10px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginLeft: '8px',
+                                    borderColor: 'var(--border-color)',
+                                    color: 'var(--text-primary)',
+                                    background: 'transparent'
                                 }}
                             >
-                                <FaHome className="me-1" /> {t('nav.home')}
-                            </Nav.Link>
-                            
-                            <Nav.Link 
-                                as={Link} 
-                                to="/jobs" 
-                                className="nav-link-custom" 
-                                style={{ 
-                                    color: 'var(--muted)', 
-                                    fontWeight: 500, 
-                                    padding: '8px 16px', 
-                                    borderRadius: '8px',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                <FaBriefcase className="me-1" /> {t('nav.jobs')}
-                            </Nav.Link>
+                                {theme === 'light' ? <FaMoon size={16} /> : <FaSun size={16} />}
+                            </Button>
+                        </div>
 
-                            {/* Internships Link */}
-                            <Nav.Link 
-                                as={Link} 
-                                to="/internships" 
-                                className="nav-link-custom" 
-                                style={{ 
-                                    color: 'var(--muted)', 
-                                    fontWeight: 500, 
-                                    padding: '8px 16px', 
-                                    borderRadius: '8px',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                <FaGraduationCap className="me-1" /> {t('nav.internships')}
-                            </Nav.Link>
-
-                            {/* Language Switcher - Merged with main nav */}
-                            <div className="ms-2">
-                                <LanguageSwitcher />
-                            </div>
-                        </Nav>
-
-                        {/* Right Side Items */}
-                        <Nav className="align-items-center">
-                            {/* Theme Toggle */}
-                            <div className="d-flex align-items-center">
+                        {!isAuthenticated ? (
+                            <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 ms-lg-3 mt-3 mt-lg-0">
                                 <Button 
-                                    variant="outline-secondary" 
-                                    onClick={toggleTheme}
-                                    title={theme === 'light' ? t('nav.dark_mode') || 'Toggle theme' : t('nav.light_mode') || 'Toggle theme'}
-                                    style={{
-                                        borderRadius: '8px',
-                                        padding: '6px 10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        borderColor: 'var(--muted)',
-                                        color: 'var(--text-primary)'
-                                    }}
+                                    as={Link} 
+                                    to="/login" 
+                                    className="auth-btn-login px-4 py-2"
                                 >
-                                    {theme === 'light' ? <FaMoon /> : <FaSun />}
+                                    {t('nav.login')}
+                                </Button>
+                                
+                                <Button 
+                                    as={Link} 
+                                    to="/register" 
+                                    className="auth-btn-signup px-4 py-2"
+                                >
+                                    {t('nav.register')}
                                 </Button>
                             </div>
-
-                            {!isAuthenticated ? (
-                                <>
-                                    <Nav.Link 
-                                        as={Link} 
-                                        to="/login" 
-                                        className="nav-link-custom ms-2"
-                                        style={{ 
-                                            color: 'var(--muted)', 
-                                            fontWeight: 500, 
-                                            padding: '8px 16px', 
-                                            borderRadius: '8px',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        <FaSignInAlt className="me-1" /> {t('nav.login')}
-                                    </Nav.Link>
+                        ) : (
+                            <Dropdown align="end" className="ms-lg-3 mt-3 mt-lg-0 d-block">
+                                <Dropdown.Toggle 
+                                    variant="light" 
+                                    className="user-dropdown-toggle d-flex align-items-center w-100" 
+                                    style={{ 
+                                        background: 'transparent', 
+                                        padding: '6px 12px', 
+                                        borderRadius: '12px'
+                                    }}
+                                >
+                                    {/* User Avatar */}
+                                    <div style={{ 
+                                        width: '32px', 
+                                        height: '32px', 
+                                        borderRadius: '50%', 
+                                        background: 'var(--gradient)', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        color: 'white', 
+                                        fontWeight: 600,
+                                        fontSize: '0.9rem',
+                                        overflow: 'hidden'
+                                    }}>
+                                        {user?.profile?.profilePhoto ? (
+                                            <img 
+                                                src={getImageUrl(user.profile.profilePhoto)} 
+                                                alt={user?.name || 'User'} 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.parentElement.innerText = user?.name?.charAt(0)?.toUpperCase() || 'U';
+                                                }}
+                                            />
+                                        ) : (
+                                            user?.name?.charAt(0)?.toUpperCase() || 'U'
+                                        )}
+                                    </div>
                                     
-                                    <Button 
-                                        as={Link} 
-                                        to="/register" 
-                                        className="btn-primary-gradient ms-2" 
-                                        style={{ 
-                                            background: 'linear-gradient(135deg, #2c3e8f 0%, #1a237e 100%)',
-                                            border: 'none', 
-                                            color: 'var(--surface)', 
-                                            padding: '8px 20px', 
-                                            borderRadius: '8px', 
-                                            fontWeight: 600,
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        <FaUserPlus className="me-1" /> {t('nav.register')}
-                                    </Button>
-                                </>
-                            ) : (
-                                <Dropdown align="end">
-                                    <Dropdown.Toggle 
-                                        variant="light" 
-                                        className="d-flex align-items-center" 
-                                        style={{ 
-                                            background: 'transparent', 
-                                            border: 'none', 
-                                            padding: '4px 8px', 
-                                            borderRadius: '10px',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        {/* User Avatar */}
-                                        <div style={{ 
-                                            width: '36px', 
-                                            height: '36px', 
-                                            borderRadius: '50%', 
-                                            background: 'var(--gradient)', 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center', 
-                                            color: 'var(--surface)', 
-                                            fontWeight: 600,
-                                            fontSize: '0.9rem'
-                                        }}>
-                                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                        </div>
-                                        
-                                        {/* User Name */}
-                                        <span className="ms-2 d-none d-md-inline" style={{ fontWeight: 500 }}>
+                                    {/* User Name & Role container */}
+                                    <div className="ms-2 d-flex flex-column align-items-start d-none d-md-flex">
+                                        <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: '1.2' }}>
                                             {user?.name}
                                         </span>
-                                    </Dropdown.Toggle>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+                                            {getRoleDisplay(user?.role)}
+                                        </span>
+                                    </div>
+                                </Dropdown.Toggle>
+                                
+                                <Dropdown.Menu style={{ 
+                                    border: '1px solid var(--border-color)', 
+                                    borderRadius: '12px', 
+                                    boxShadow: 'var(--shadow-lg)', 
+                                    padding: '8px', 
+                                    minWidth: '220px',
+                                    background: 'var(--surface)'
+                                }}>
+                                    {isJobSeeker && (
+                                        <>
+                                            <Dropdown.Item as={Link} to="/jobseeker/dashboard" className="dropdown-item-custom">
+                                                <FaChartBar className="me-2" /> {t('nav.dashboard')}
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/jobseeker/profile" className="dropdown-item-custom">
+                                                <FaUserCog className="me-2" /> {t('nav.profile')}
+                                            </Dropdown.Item>
+                                            <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
+                                        </>
+                                    )}
                                     
-                                    <Dropdown.Menu style={{ 
-                                        border: 'none', 
-                                        borderRadius: '12px', 
-                                        boxShadow: '0 10px 40px rgba(0,0,0,0.12)', 
-                                        padding: '8px', 
-                                        minWidth: '200px' 
-                                    }}>
-                                        {isJobSeeker && (
-                                            <>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/jobseeker/dashboard"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaUser className="me-2" /> {t('nav.dashboard')}
-                                                </Dropdown.Item>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/jobseeker/profile"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaUserCog className="me-2" /> {t('nav.profile')}
-                                                </Dropdown.Item>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/jobseeker/attendance"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaUserCheck className="me-2" /> Attendance
-                                                </Dropdown.Item>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/jobseeker/leave"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaCalendar className="me-2" /> Leave Requests
-                                                </Dropdown.Item>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/jobseeker/complaints"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaExclamationTriangle className="me-2" /> Complaints
-                                                </Dropdown.Item>
-                                                <Dropdown.Divider />
-                                            </>
-                                        )}
-                                        
-                                        {isEmployer && (
-                                            <>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/employer/jobs"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaBriefcase className="me-2" /> {t('nav.dashboard')}
-                                                </Dropdown.Item>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/employer/post-job"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaUserPlus className="me-2" /> {t('nav.post_job')}
-                                                </Dropdown.Item>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/employer/profile"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaBuilding className="me-2" /> Company Profile
-                                                </Dropdown.Item>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/employer/attendance"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaUserCheck className="me-2" /> Attendance
-                                                </Dropdown.Item>
-                                                <Dropdown.Divider />
-                                            </>
-                                        )}
-                                        
-                                        {/* ============================================
-                                            ADMIN DROPDOWN - WITH HRM LINKS
-                                        ============================================ */}
-                                        {isAdmin && (
-                                            <>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/dashboard"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaChartBar className="me-2" /> Dashboard
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/attendance"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaUserCheck className="me-2" /> Job Seeker Attendance
-                                                </Dropdown.Item>
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/leaves"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaCalendarAlt className="me-2" /> Leave Management
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Divider />
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/config"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaCog className="me-2" /> Configuration
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/employees"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaUsers className="me-2" /> Employees
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/leaves"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaCalendar className="me-2" /> Leave Management
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/attendance"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaClock className="me-2" /> Attendance
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/training"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaBook className="me-2" /> Training
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/complaints"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaFlag className="me-2" /> Complaints
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/delegations"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaExchangeAlt className="me-2" /> Delegations
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Divider />
-                                                
-                                                <Dropdown.Item 
-                                                    as={Link} 
-                                                    to="/admin/users"
-                                                    className="dropdown-item-custom"
-                                                >
-                                                    <FaUsers className="me-2" /> Manage Users
-                                                </Dropdown.Item>
-                                                
-                                                <Dropdown.Divider />
-                                            </>
-                                        )}
-                                        
-                                        <Dropdown.Item 
-                                            onClick={handleLogout} 
-                                            className="text-danger dropdown-item-custom"
-                                        >
-                                            <FaSignOutAlt className="me-2" /> {t('nav.logout')}
-                                        </Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            )}
-                        </Nav>
-                    </Navbar.Collapse>
-                </Container>
-            </Navbar>
-        </>
+                                    {isEmployer && (
+                                        <>
+                                            <Dropdown.Item as={Link} to="/employer/jobs" className="dropdown-item-custom">
+                                                <FaBriefcase className="me-2" /> {t('nav.dashboard')}
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/employer/post-job" className="dropdown-item-custom">
+                                                <FaUserPlus className="me-2" /> {t('nav.post_job')}
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/employer/profile" className="dropdown-item-custom">
+                                                <FaBuilding className="me-2" /> Company Profile
+                                            </Dropdown.Item>
+                                            <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
+                                        </>
+                                    )}
+                                    
+                                    {isAdmin && (
+                                        <>
+                                            <Dropdown.Item as={Link} to="/admin/dashboard" className="dropdown-item-custom">
+                                                <FaChartBar className="me-2" /> Dashboard
+                                            </Dropdown.Item>
+                                            <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
+                                            <Dropdown.Item as={Link} to="/admin/config" className="dropdown-item-custom">
+                                                <FaCog className="me-2" /> Configuration
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/admin/employees" className="dropdown-item-custom">
+                                                <FaUsers className="me-2" /> Employees
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/admin/leaves" className="dropdown-item-custom">
+                                                <FaCalendar className="me-2" /> Leave Management
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/admin/attendance" className="dropdown-item-custom">
+                                                <FaClock className="me-2" /> Attendance
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/admin/training" className="dropdown-item-custom">
+                                                <FaBook className="me-2" /> Training
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/admin/complaints" className="dropdown-item-custom">
+                                                <FaFlag className="me-2" /> Complaints
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/admin/delegations" className="dropdown-item-custom">
+                                                <FaExchangeAlt className="me-2" /> Delegations
+                                            </Dropdown.Item>
+                                            <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
+                                            <Dropdown.Item as={Link} to="/admin/users" className="dropdown-item-custom">
+                                                <FaUsers className="me-2" /> Manage Users
+                                            </Dropdown.Item>
+                                            <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
+                                        </>
+                                    )}
+                                    
+                                    <Dropdown.Item onClick={handleLogout} className="text-danger dropdown-item-custom">
+                                        <FaSignOutAlt className="me-2" /> {t('nav.logout')}
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        )}
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
     );
 };
 

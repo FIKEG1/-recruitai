@@ -29,13 +29,9 @@ const AIChat = () => {
 
     useEffect(() => {
         const userName = user?.name || 'there';
-        const welcomeMessage = language === 'am'
-            ? (userType === 'employer' 
-                ? `ሰላም ${userName}! 👋 እኔ የአሰሪዎች አይ ረዳት ነኝ። እንዲህ ልረዳዎት ልትል:\n📋 የስራ ልጥፍ\n🔍 እጩዎችን መረጋገጥ\n🗣️ የቃለ መጠይቅ ጥያቄዎች\n💼 የቅጥር ስትራቴጂዎች\n\nምን ልጠይቁ?`
-                : `ሰላም ${userName}! 👋 እኔ የስራ ፈላጊዎች አይ ረዳት ነኝ። እንዲህ ልረዳዎት ልትል:\n🔍 ስራ ፍለጋ\n📝 የረጅም ጊዜ መግለጫ መጻፍ\n🎯 የቃለ መጠይቅ አሰራር\n💡 የስራ ምክር\n\nምን ልጠይቁ?`)
-            : (userType === 'employer' 
-                ? `Hello ${userName}! 👋 I'm your RecruitAI Employer Assistant. I can help you with:\n📋 Job postings\n🔍 Candidate screening\n🗣️ Interview questions\n💼 Hiring strategies\n\nWhat would you like to know?`
-                : `Hello ${userName}! 👋 I'm your RecruitAI Career Assistant. I can help you with:\n🔍 Job searching\n📝 Resume writing\n🎯 Interview preparation\n💡 Career advice\n\nWhat would you like to know?`);
+        const welcomeMessage = userType === 'employer' 
+            ? `Hello ${userName}! 👋 I'm your KETARI Employer Assistant. I can help you with:\n📋 Job postings\n🔍 Candidate screening\n🗣️ Interview questions\n💼 Hiring strategies\n\nWhat would you like to know?`
+            : `Hello ${userName}! 👋 I'm your KETARI Career Assistant. I can help you with:\n🔍 Job searching\n📝 Resume writing\n🎯 Interview preparation\n💡 Career advice\n\nWhat would you like to know?`;
         
         setMessages([
             { 
@@ -98,7 +94,7 @@ const AIChat = () => {
                 language: language // Send current language to AI
             };
 
-            const response = await fetch('http://localhost:5002/api/chat', {
+            const response = await fetch('http://localhost:5001/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -142,7 +138,7 @@ const AIChat = () => {
 
     const resetChat = async () => {
         try {
-            await fetch('http://localhost:5002/api/chat/reset', {
+            await fetch('http://localhost:5001/api/chat/reset', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: userId })
@@ -526,7 +522,7 @@ const AIChat = () => {
                             </Form.Group>
                             <div style={{ fontSize: '0.6rem', textAlign: 'center', color: 'var(--muted)', marginTop: '4px' }}>
                                 {conversationCount > 0 && `${conversationCount} messages · `}
-                                Powered by RecruitAI
+                                Powered by KETARI
                             </div>
                         </Card.Footer>
                     </>

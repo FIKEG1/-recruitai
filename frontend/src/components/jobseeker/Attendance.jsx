@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Spinner, Alert } from 'react-bootstrap';
-import { FaClock, FaSignOutAlt, FaSignInAlt, FaCalendar, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { Container, Card, Button, Badge, Spinner, Alert, Row, Col } from 'react-bootstrap';
+import { FaClock, FaCheckCircle, FaSignOutAlt } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import BackButton from '../common/BackButton';
 
 const Attendance = () => {
+    const { user } = useAuth();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [attendance, setAttendance] = useState([]);
     const [stats, setStats] = useState(null);
@@ -89,9 +94,9 @@ const Attendance = () => {
     const getStatusBadge = (status) => {
         const statusConfig = {
             present: { bg: 'success', icon: <FaCheckCircle />, text: 'Present' },
-            absent: { bg: 'danger', icon: <FaTimesCircle />, text: 'Absent' },
+            absent: { bg: 'danger', icon: <FaSignOutAlt />, text: 'Absent' },
             late: { bg: 'warning', icon: <FaClock />, text: 'Late' },
-            leave: { bg: 'info', icon: <FaCalendar />, text: 'Leave' },
+            leave: { bg: 'info', icon: <FaClock />, text: 'Leave' },
             half_day: { bg: 'secondary', icon: <FaClock />, text: 'Half Day' }
         };
         const config = statusConfig[status] || { bg: 'secondary', icon: null, text: status };
@@ -115,9 +120,10 @@ const Attendance = () => {
 
     return (
         <Container className="py-5">
+            <BackButton to="/jobseeker/dashboard" />
             <Row className="mb-4">
                 <Col>
-                    <h2 className="fw-bold mb-1">Attendance Management</h2>
+                    <h2 className="fw-bold mb-1">{t('attendance.title')}</h2>
                     <p className="text-muted">Track your daily attendance and working hours</p>
                 </Col>
             </Row>
@@ -140,7 +146,7 @@ const Attendance = () => {
                                     <div>
                                         <small className="text-muted">Check-in</small>
                                         <div className="fw-bold text-success">
-                                            <FaSignInAlt className="me-1" /> {formatTime(todayStatus.record.checkIn?.time)}
+                                            <FaSignOutAlt className="me-1" /> {formatTime(todayStatus.record.checkIn?.time)}
                                         </div>
                                     </div>
                                     <div>
@@ -167,7 +173,7 @@ const Attendance = () => {
                                     disabled={checkingIn}
                                     className="d-flex align-items-center gap-2"
                                 >
-                                    {checkingIn ? <Spinner size="sm" /> : <FaSignInAlt />}
+                                    {checkingIn ? <Spinner size="sm" /> : <FaSignOutAlt />}
                                     Check In
                                 </Button>
                             ) : !todayStatus?.checkedOut ? (
@@ -235,9 +241,9 @@ const Attendance = () => {
                 </Card.Header>
                 <Card.Body className="p-0">
                     {attendance.length === 0 ? (
-                        <div className="text-center p-4">
-                            <p className="text-muted">No attendance records found</p>
-                        </div>
+                        <h2 className="fw-bold mb-4">
+                            <FaClock className="me-2 text-primary" /> {t('attendance.title')}
+                        </h2>
                     ) : (
                         <div className="table-responsive">
                             <table className="table table-hover mb-0">

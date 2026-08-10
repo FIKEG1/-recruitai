@@ -17,8 +17,10 @@ exports.register = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            const firstErrorMsg = errors.array().map(e => e.msg).join(', ');
             return res.status(400).json({
                 success: false,
+                message: firstErrorMsg || 'Invalid input data',
                 errors: errors.array()
             });
         }
@@ -60,10 +62,10 @@ exports.register = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error(error);
+        console.error('Registration Error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server Error'
+            message: error.message || 'Server Error'
         });
     }
 };
@@ -78,9 +80,10 @@ exports.login = async (req, res) => {
         
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            console.log('Validation errors:', errors.array());
+            const firstErrorMsg = errors.array().map(e => e.msg).join(', ');
             return res.status(400).json({
                 success: false,
+                message: firstErrorMsg || 'Invalid input data',
                 errors: errors.array()
             });
         }
@@ -134,10 +137,10 @@ exports.login = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error(error);
+        console.error('Login Error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server Error'
+            message: error.message || 'Server Error'
         });
     }
 };
