@@ -22,6 +22,7 @@ import PostJob from './components/employer/PostJob';
 import Applications from './components/employer/Applications';
 import EmployerProfile from './components/employer/EmployerProfile';
 import CandidateList from './components/employer/CandidateList';
+import EmployerAttendance from './components/employer/EmployerAttendance';
 import AdminDashboard from './components/admin/AdminDashboard';
 import ManageUsers from './components/admin/ManageUsers';
 import JobSeekerAttendance from './components/admin/JobSeekerAttendance';

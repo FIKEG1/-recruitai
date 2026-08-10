@@ -444,7 +444,6 @@ const Profile = () => {
                                         id="photo-upload" 
                                         type="file" 
                                         accept="image/*" 
-                                        capture="user"
                                         onChange={handlePhotoUpload} 
                                         style={{ display: 'none' }} 
                                         disabled={uploadingPhoto}

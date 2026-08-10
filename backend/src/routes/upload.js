@@ -69,10 +69,11 @@ router.post('/profile-photo', protect, upload.single('photo'), async (req, res) 
         const photoPath = `uploads/profiles/${req.file.filename}`;
         console.log('New photo path to save:', photoPath);
         
-        user.profile = { 
-            ...user.profile, 
-            profilePhoto: photoPath 
-        };
+        if (!user.profile) {
+            user.profile = {};
+        }
+        user.profile.profilePhoto = photoPath;
+        user.markModified('profile');
         await user.save();
         console.log('User updated with new photo');
 
