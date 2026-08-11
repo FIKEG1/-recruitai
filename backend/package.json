@@ -1,11 +1,12 @@
-﻿{
+{
   "name": "recruitment-platform-backend",
   "version": "1.0.0",
   "description": "Intelligent Job Matching and Recruitment Automation Platform Backend",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "seed:admin": "node scripts/createAdmin.js"
   },
   "dependencies": {
     "express": "^4.18.2",

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaUserPlus, FaBuilding } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaUserPlus, FaBuilding, FaUserShield } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -185,6 +185,22 @@ const Register = () => {
                                                         label={
                                                             <span>
                                                                 <FaBuilding className="me-2" /> {t('auth.employer')}
+                                                            </span>
+                                                        }
+                                                        className="role-radio"
+                                                    />
+                                                </div>
+                                                <div className="role-option">
+                                                    <Form.Check
+                                                        type="radio"
+                                                        name="role"
+                                                        value="admin"
+                                                        id="role-admin"
+                                                        checked={formData.role === 'admin'}
+                                                        onChange={handleChange}
+                                                        label={
+                                                            <span>
+                                                                <FaUserShield className="me-2" /> {t('auth.admin') || 'Admin'}
                                                             </span>
                                                         }
                                                         className="role-radio"
