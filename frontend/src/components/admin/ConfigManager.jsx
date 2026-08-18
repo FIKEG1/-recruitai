@@ -302,14 +302,6 @@ const ConfigManager = () => {
                                 'Skills'
                             )}
                         </Tab>
-                        <Tab eventKey="leaveTypes" title="Leave Types">
-                            {renderList(
-                                config?.leaveTypes,
-                                'leaveTypes',
-                                ['name', 'daysPerYear', 'paid'],
-                                'Leave Types'
-                            )}
-                        </Tab>
                         <Tab eventKey="jobTitles" title="Job Titles">
                             {renderList(
                                 config?.jobTitles,
@@ -326,22 +318,6 @@ const ConfigManager = () => {
                                 'Languages'
                             )}
                         </Tab>
-                        <Tab eventKey="licenses" title="Licenses">
-                            {renderList(
-                                config?.licenses,
-                                'licenses',
-                                ['name', 'type', 'validityPeriod'],
-                                'Licenses'
-                            )}
-                        </Tab>
-                        <Tab eventKey="religions" title="Religions">
-                            {renderList(
-                                config?.religions,
-                                'religions',
-                                ['name', 'description'],
-                                'Religions'
-                            )}
-                        </Tab>
                         <Tab eventKey="employmentStatus" title="Employment Status">
                             {renderList(
                                 config?.employmentStatus,
@@ -356,70 +332,6 @@ const ConfigManager = () => {
                                 'educationLevels',
                                 ['name', 'level', 'description'],
                                 'Education Levels'
-                            )}
-                        </Tab>
-                        <Tab eventKey="maritalStatus" title="Marital Status">
-                            {renderList(
-                                config?.maritalStatus,
-                                'maritalStatus',
-                                ['name', 'description'],
-                                'Marital Status'
-                            )}
-                        </Tab>
-                        <Tab eventKey="trainingTypes" title="Training Types">
-                            {renderList(
-                                config?.trainingTypes,
-                                'trainingTypes',
-                                ['name', 'category', 'duration'],
-                                'Training Types'
-                            )}
-                        </Tab>
-                        <Tab eventKey="terminationReasons" title="Termination Reasons">
-                            {renderList(
-                                config?.terminationReasons,
-                                'terminationReasons',
-                                ['name', 'category', 'description'],
-                                'Termination Reasons'
-                            )}
-                        </Tab>
-                        <Tab eventKey="deductionTypes" title="Deduction Types">
-                            {renderList(
-                                config?.deductionTypes,
-                                'deductionTypes',
-                                ['name', 'type', 'amount'],
-                                'Deduction Types'
-                            )}
-                        </Tab>
-                        <Tab eventKey="nations" title="Nations">
-                            {renderList(
-                                config?.nations,
-                                'nations',
-                                ['name', 'code', 'nationality'],
-                                'Nations'
-                            )}
-                        </Tab>
-                        <Tab eventKey="titles" title="Titles">
-                            {renderList(
-                                config?.titles,
-                                'titles',
-                                ['name', 'abbreviation', 'gender'],
-                                'Titles'
-                            )}
-                        </Tab>
-                        <Tab eventKey="bloodTypes" title="Blood Types">
-                            {renderList(
-                                config?.bloodTypes,
-                                'bloodTypes',
-                                ['name', 'rhesusFactor'],
-                                'Blood Types'
-                            )}
-                        </Tab>
-                        <Tab eventKey="partners" title="Partners">
-                            {renderList(
-                                config?.partners,
-                                'partners',
-                                ['name', 'type', 'contactPerson'],
-                                'Partners'
                             )}
                         </Tab>
                         <Tab eventKey="positionRanks" title="Position Ranks">

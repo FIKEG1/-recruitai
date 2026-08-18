@@ -1,221 +1,174 @@
 const Attendance = require('../models/Attendance');
 const Employee = require('../models/Employee');
 
+/**
+ * Attendance (spec §17).
+ *
+ * Deliberately kept at project scope: records, self check-in/out and reporting.
+ * The service boundary is designed so an external time-attendance device or HR
+ * system can post records through the same API without schema changes.
+ *
+ * Attendance applies to EMPLOYEES of an organization. An earlier version tracked
+ * candidate "job seeker" attendance, which does not model anything real -
+ * candidates are applicants, not staff who clock in.
+ */
+
+const startOfToday = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+};
+
+/** Resolve (or create) the employee record backing the signed-in user. */
+const resolveEmployeeForUser = async (user) => {
+    let employee = await Employee.findOne({ user: user.id });
+    if (employee) return employee;
+
+    if (!user.employer) return null;
+
+    const count = await Employee.countDocuments({ employer: user.employer });
+    const [firstName, ...rest] = (user.name || 'Employee').split(' ');
+
+    return Employee.create({
+        user: user.id,
+        employer: user.employer,
+        employeeId: `EMP${String(count + 1).padStart(4, '0')}`,
+        personalInfo: { firstName: firstName || 'Employee', lastName: rest.join(' ') || '-' },
+        contactInfo: { email: user.email || '' },
+        employmentInfo: { employmentStatus: 'active', hireDate: new Date() }
+    });
+};
+
+const summarise = (records) => ({
+    present: records.filter(a => a.status === 'present').length,
+    absent: records.filter(a => a.status === 'absent').length,
+    late: records.filter(a => a.status === 'late').length,
+    leave: records.filter(a => a.status === 'leave' || a.status === 'holiday').length,
+    total: records.length
+});
+
 // @desc    Check in
 // @route   POST /api/attendance/check-in
-// @access  Private
+// @access  Private (organization members)
 exports.checkIn = async (req, res) => {
     try {
-        console.log('=== Check In Debug ===');
-        console.log('User ID:', req.user.id);
-        console.log('User Role:', req.user.role);
-        
-        const employee = await Employee.findOne({ user: req.user.id });
-        console.log('Employee found:', employee ? 'Yes' : 'No');
-        
+        const employee = await resolveEmployeeForUser(req.user);
         if (!employee) {
-            console.log('Creating employee record for user');
-            // Create employee record if it doesn't exist
-            const newEmployee = await Employee.create({
-                user: req.user.id,
-                employeeId: `EMP${Date.now()}`,
-                personalInfo: {
-                    firstName: req.user.name?.split(' ')[0] || 'User',
-                    lastName: req.user.name?.split(' ').slice(1).join(' ') || 'Name'
-                },
-                employmentInfo: {
-                    employmentStatus: 'active',
-                    hireDate: new Date()
-                }
+            return res.status(403).json({
+                success: false,
+                message: 'Your account is not linked to an organization'
             });
-            console.log('Employee record created:', newEmployee._id);
         }
-        
-        const employeeRecord = employee || await Employee.findOne({ user: req.user.id });
-        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
+
         const existing = await Attendance.findOne({
-            employee: employeeRecord._id,
-            date: { $gte: today }
+            employee: employee._id,
+            date: { $gte: startOfToday() }
         });
-        
-        if (existing && existing.checkIn.time) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Already checked in today' 
-            });
+
+        if (existing && existing.checkIn && existing.checkIn.time) {
+            return res.status(400).json({ success: false, message: 'Already checked in today' });
         }
-        
-        const attendance = await Attendance.create({
-            employee: employeeRecord._id,
-            date: new Date(),
-            checkIn: {
-                time: new Date(),
-                method: req.body.method || 'web',
-                location: req.body.location
-            },
-            status: 'present'
+
+        const record = existing || new Attendance({
+            employee: employee._id,
+            employer: employee.employer,
+            date: new Date()
         });
-        
-        res.status(200).json({ 
-            success: true, 
-            data: attendance,
-            message: '✅ Checked in successfully!'
-        });
+
+        record.employer = employee.employer;
+        record.checkIn = {
+            time: new Date(),
+            method: req.body.method || 'web',
+            location: req.body.location
+        };
+        record.status = 'present';
+        await record.save();
+
+        res.status(200).json({ success: true, data: record, message: 'Checked in successfully' });
     } catch (error) {
         console.error('Check In Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server Error' 
-        });
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
 // @desc    Check out
 // @route   POST /api/attendance/check-out
-// @access  Private
+// @access  Private (organization members)
 exports.checkOut = async (req, res) => {
     try {
-        console.log('=== Check Out Debug ===');
-        console.log('User ID:', req.user.id);
-        
         const employee = await Employee.findOne({ user: req.user.id });
-        console.log('Employee found:', employee ? 'Yes' : 'No');
-        
         if (!employee) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Employee not found. Please check in first.' 
+            return res.status(404).json({
+                success: false,
+                message: 'No employee record found. Please check in first.'
             });
         }
-        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
+
         const attendance = await Attendance.findOne({
             employee: employee._id,
-            date: { $gte: today }
+            date: { $gte: startOfToday() }
         });
-        
-        if (!attendance) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'No check-in found for today' 
-            });
+
+        if (!attendance || !attendance.checkIn?.time) {
+            return res.status(404).json({ success: false, message: 'No check-in found for today' });
         }
-        
-        if (attendance.checkOut.time) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Already checked out' 
-            });
+
+        if (attendance.checkOut && attendance.checkOut.time) {
+            return res.status(400).json({ success: false, message: 'Already checked out' });
         }
-        
+
         attendance.checkOut = {
             time: new Date(),
             method: req.body.method || 'web',
             location: req.body.location
         };
-        
-        // Calculate hours worked
-        const start = new Date(attendance.checkIn.time);
-        const end = new Date(attendance.checkOut.time);
-        const diff = (end - start) / (1000 * 60 * 60);
-        attendance.hoursWorked = Math.round(diff * 10) / 10;
-        
+
+        const hours = (new Date(attendance.checkOut.time) - new Date(attendance.checkIn.time)) / (1000 * 60 * 60);
+        attendance.hoursWorked = Math.round(hours * 10) / 10;
         await attendance.save();
-        
-        res.status(200).json({ 
-            success: true, 
-            data: attendance,
-            message: '✅ Checked out successfully!'
-        });
+
+        res.status(200).json({ success: true, data: attendance, message: 'Checked out successfully' });
     } catch (error) {
         console.error('Check Out Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server Error' 
-        });
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
-// ============================================
-// NEW: GET MY ATTENDANCE (FOR JOB SEEKERS)
-// ============================================
-// @desc    Get my attendance (for job seekers/employees)
+// @desc    The signed-in user's own attendance
 // @route   GET /api/attendance/me
 // @access  Private
 exports.getMyAttendance = async (req, res) => {
     try {
-        console.log('=== Get My Attendance Debug ===');
-        console.log('User ID:', req.user.id);
-        console.log('User Role:', req.user.role);
-        
         const employee = await Employee.findOne({ user: req.user.id });
-        console.log('Employee found:', employee ? 'Yes' : 'No');
-        
+
         if (!employee) {
-            console.log('No employee record found, returning empty data');
             return res.status(200).json({
                 success: true,
                 data: [],
-                stats: {
-                    present: 0,
-                    absent: 0,
-                    late: 0,
-                    leave: 0,
-                    total: 0
-                },
-                today: {
-                    checkedIn: false,
-                    checkedOut: false,
-                    status: 'not_started',
-                    record: null
-                }
+                stats: { present: 0, absent: 0, late: 0, leave: 0, total: 0 },
+                today: { checkedIn: false, checkedOut: false, status: 'not_started', record: null }
             });
         }
 
         const { startDate, endDate } = req.query;
         const query = { employee: employee._id };
-        
         if (startDate && endDate) {
-            query.date = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            };
+            query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
         }
 
-        const attendances = await Attendance.find(query)
-            .sort({ date: -1 });
+        const attendances = await Attendance.find(query).sort({ date: -1 });
 
-        console.log('Attendance records found:', attendances.length);
-
-        // Calculate stats
-        const stats = {
-            present: attendances.filter(a => a.status === 'present').length,
-            absent: attendances.filter(a => a.status === 'absent').length,
-            late: attendances.filter(a => a.status === 'late').length,
-            leave: attendances.filter(a => a.status === 'leave' || a.status === 'holiday').length,
-            total: attendances.length
-        };
-
-        // Get today's status
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = startOfToday();
         const todayRecord = attendances.find(a => {
             const date = new Date(a.date);
             date.setHours(0, 0, 0, 0);
             return date.getTime() === today.getTime();
         });
 
-        console.log('Today record:', todayRecord ? 'Found' : 'Not found');
-
         res.status(200).json({
             success: true,
             data: attendances,
-            stats: stats,
+            stats: summarise(attendances),
             today: {
                 checkedIn: !!todayRecord?.checkIn?.time,
                 checkedOut: !!todayRecord?.checkOut?.time,
@@ -225,231 +178,105 @@ exports.getMyAttendance = async (req, res) => {
         });
     } catch (error) {
         console.error('Get My Attendance Error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server Error'
-        });
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
-// @desc    Get attendance report (admin only)
+// @desc    Organization attendance report
 // @route   GET /api/attendance/report
-// @access  Private (Admin)
+// @access  Private (attendance:view)
 exports.getAttendanceReport = async (req, res) => {
     try {
         const { startDate, endDate, employeeId } = req.query;
-        
-        const query = {};
+
+        const query = { employer: req.employerId };
         if (employeeId) query.employee = employeeId;
         if (startDate && endDate) {
-            query.date = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            };
+            query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
         }
-        
-        const attendances = await Attendance.find(query)
-            .populate('employee', 'employeeId')
-            .populate('employee.user', 'name')
-            .populate('employee.personalInfo', 'firstName lastName');
-        
-        // Calculate stats
-        const stats = {
-            present: attendances.filter(a => a.status === 'present').length,
-            absent: attendances.filter(a => a.status === 'absent').length,
-            late: attendances.filter(a => a.status === 'late').length,
-            leave: attendances.filter(a => a.status === 'leave' || a.status === 'holiday').length,
-            total: attendances.length
-        };
-        
-        res.status(200).json({ 
-            success: true, 
-            data: attendances,
-            stats: stats
-        });
-    } catch (error) {
-        console.error('Get Attendance Report Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server Error' 
-        });
-    }
-};
 
-// @desc    Get all job seekers with attendance status (admin only)
-// @route   GET /api/attendance/job-seekers
-// @access  Private (Admin)
-exports.getJobSeekerAttendance = async (req, res) => {
-    try {
-        console.log('=== Get Job Seeker Attendance ===');
-        
-        const User = require('../models/User');
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        // Get all job seekers
-        const jobSeekers = await User.find({ role: 'jobseeker' })
-            .select('name email profile createdAt')
-            .sort({ createdAt: -1 });
-        
-        console.log('Job seekers found:', jobSeekers.length);
-        
-        // Get attendance for each job seeker
-        const jobSeekersWithAttendance = await Promise.all(
-            jobSeekers.map(async (jobSeeker) => {
-                const employee = await Employee.findOne({ user: jobSeeker._id });
-                
-                if (!employee) {
-                    return {
-                        _id: jobSeeker._id,
-                        name: jobSeeker.name,
-                        email: jobSeeker.email,
-                        hasEmployeeRecord: false,
-                        todayStatus: {
-                            checkedIn: false,
-                            checkedOut: false,
-                            status: 'not_started'
-                        },
-                        stats: {
-                            present: 0,
-                            absent: 0,
-                            late: 0,
-                            leave: 0,
-                            total: 0
-                        }
-                    };
-                }
-                
-                // Get today's attendance
-                const todayAttendance = await Attendance.findOne({
-                    employee: employee._id,
-                    date: { $gte: today }
-                });
-                
-                // Get all attendance for stats
-                const allAttendance = await Attendance.find({ employee: employee._id });
-                
-                return {
-                    _id: jobSeeker._id,
-                    name: jobSeeker.name,
-                    email: jobSeeker.email,
-                    employeeId: employee.employeeId,
-                    hasEmployeeRecord: true,
-                    todayStatus: {
-                        checkedIn: !!todayAttendance?.checkIn?.time,
-                        checkedOut: !!todayAttendance?.checkOut?.time,
-                        status: todayAttendance?.status || 'not_started',
-                        checkInTime: todayAttendance?.checkIn?.time || null,
-                        checkOutTime: todayAttendance?.checkOut?.time || null
-                    },
-                    stats: {
-                        present: allAttendance.filter(a => a.status === 'present').length,
-                        absent: allAttendance.filter(a => a.status === 'absent').length,
-                        late: allAttendance.filter(a => a.status === 'late').length,
-                        leave: allAttendance.filter(a => a.status === 'leave' || a.status === 'holiday').length,
-                        total: allAttendance.length
-                    }
-                };
-            })
-        );
-        
-        // Calculate overall stats
-        const overallStats = {
-            totalJobSeekers: jobSeekers.length,
-            withEmployeeRecords: jobSeekersWithAttendance.filter(js => js.hasEmployeeRecord).length,
-            checkedInToday: jobSeekersWithAttendance.filter(js => js.todayStatus.checkedIn).length,
-            checkedOutToday: jobSeekersWithAttendance.filter(js => js.todayStatus.checkedOut).length,
-            totalPresent: jobSeekersWithAttendance.reduce((sum, js) => sum + js.stats.present, 0),
-            totalAbsent: jobSeekersWithAttendance.reduce((sum, js) => sum + js.stats.absent, 0),
-            totalLate: jobSeekersWithAttendance.reduce((sum, js) => sum + js.stats.late, 0)
-        };
-        
-        console.log('Overall stats:', overallStats);
-        
-        res.status(200).json({
-            success: true,
-            data: jobSeekersWithAttendance,
-            stats: overallStats
-        });
-    } catch (error) {
-        console.error('Get Job Seeker Attendance Error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server Error'
-        });
-    }
-};
-
-// @desc    Get attendance for employer view
-// @route   GET /api/attendance/employer
-// @access  Private (Employer)
-exports.getEmployerAttendance = async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        
-        console.log('=== Employer Attendance Debug ===');
-        console.log('User ID:', req.user.id);
-        console.log('User Role:', req.user.role);
-        console.log('Filters:', { startDate, endDate });
-        
-        const query = {};
-        if (startDate && endDate) {
-            query.date = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            };
-        }
-        
         const attendances = await Attendance.find(query)
-            .populate('employee', 'employeeId')
-            .populate('employee.user', 'name email')
-            .populate('employee.personalInfo', 'firstName lastName')
+            .populate('employee', 'employeeId personalInfo')
             .sort({ date: -1 });
-        
-        console.log('Total attendance records found:', attendances.length);
-        
-        // Calculate stats
-        const stats = {
-            present: attendances.filter(a => a.status === 'present').length,
-            absent: attendances.filter(a => a.status === 'absent').length,
-            late: attendances.filter(a => a.status === 'late').length,
-            leave: attendances.filter(a => a.status === 'leave' || a.status === 'holiday').length,
-            total: attendances.length
-        };
-        
-        // Get today's attendance count
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayAttendances = attendances.filter(a => {
+
+        const today = startOfToday();
+        const todayRecords = attendances.filter(a => {
             const date = new Date(a.date);
             date.setHours(0, 0, 0, 0);
             return date.getTime() === today.getTime();
         });
-        
-        console.log('Stats:', stats);
-        console.log('Today stats:', {
-            total: todayAttendances.length,
-            present: todayAttendances.filter(a => a.status === 'present').length,
-            absent: todayAttendances.filter(a => a.status === 'absent').length,
-            late: todayAttendances.filter(a => a.status === 'late').length
-        });
-        
-        res.status(200).json({ 
-            success: true, 
+
+        res.status(200).json({
+            success: true,
             data: attendances,
-            stats: stats,
-            today: {
-                total: todayAttendances.length,
-                present: todayAttendances.filter(a => a.status === 'present').length,
-                absent: todayAttendances.filter(a => a.status === 'absent').length,
-                late: todayAttendances.filter(a => a.status === 'late').length
-            }
+            stats: summarise(attendances),
+            today: summarise(todayRecords)
         });
     } catch (error) {
-        console.error('Get Employer Attendance Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server Error' 
+        console.error('Get Attendance Report Error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Record attendance on behalf of an employee
+// @route   POST /api/attendance/record
+// @access  Private (HR Expert)
+//
+// This is also the integration point for an external time-attendance device:
+// posting the same payload from a device or in-house system needs no changes.
+exports.recordAttendance = async (req, res) => {
+    try {
+        const { employeeId, date, status, checkIn, checkOut, note } = req.body;
+
+        if (!employeeId || !date || !status) {
+            return res.status(400).json({
+                success: false,
+                message: 'Employee, date and status are required'
+            });
+        }
+
+        const employee = await Employee.findById(employeeId);
+        const sameOrg = employee && employee.employer
+            && employee.employer.toString() === req.employerId.toString();
+
+        if (!sameOrg) {
+            return res.status(403).json({
+                success: false,
+                message: 'This employee belongs to another organization'
+            });
+        }
+
+        const day = new Date(date);
+        day.setHours(0, 0, 0, 0);
+        const nextDay = new Date(day);
+        nextDay.setDate(nextDay.getDate() + 1);
+
+        // One record per employee per day; re-posting updates it.
+        let record = await Attendance.findOne({
+            employee: employee._id,
+            date: { $gte: day, $lt: nextDay }
         });
+
+        if (!record) {
+            record = new Attendance({ employee: employee._id, date: new Date(date) });
+        }
+
+        record.employer = employee.employer;
+        record.status = status;
+        if (checkIn) record.checkIn = checkIn;
+        if (checkOut) record.checkOut = checkOut;
+        if (note !== undefined) record.note = note;
+
+        if (record.checkIn?.time && record.checkOut?.time) {
+            const hours = (new Date(record.checkOut.time) - new Date(record.checkIn.time)) / (1000 * 60 * 60);
+            record.hoursWorked = Math.round(hours * 10) / 10;
+        }
+
+        await record.save();
+
+        res.status(200).json({ success: true, data: record });
+    } catch (error) {
+        console.error('Record Attendance Error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

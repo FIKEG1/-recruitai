@@ -55,7 +55,7 @@ const TermsOfService = () => {
                             <ul>
                                 <li>Employment decisions made using our platform</li>
                                 <li>Data loss or service interruptions</li>
-                                <li>Actions of third-party employers or job seekers</li>
+                                <li>Actions of third-party hr_experts or job seekers</li>
                             </ul>
 
                             <h5 className="fw-bold mt-4">7. Termination</h5>

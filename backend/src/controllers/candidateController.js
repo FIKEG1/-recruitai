@@ -1,13 +1,24 @@
 const User = require('../models/User');
 
-// @desc    Get all candidates (Jobseekers)
+// Fields safe to expose to authorised HR users when browsing the talent pool.
+// Deliberately excludes saved jobs, reset tokens and other private account data.
+const CANDIDATE_FIELDS = [
+    'name', 'email', 'createdAt',
+    'profile.title', 'profile.bio', 'profile.location', 'profile.phone',
+    'profile.skills', 'profile.languages', 'profile.certifications',
+    'profile.education', 'profile.workExperience',
+    'profile.availabilityStatus', 'profile.profilePhoto', 'profile.rating'
+].join(' ');
+
+// @desc    Search the candidate pool
 // @route   GET /api/candidates
-// @access  Public (or Private to employers)
+// @access  Private (authorised HR users)
 exports.getCandidates = async (req, res) => {
     try {
         const { search, location, skills, minRating, page = 1, limit = 12 } = req.query;
-        
-        let query = { role: 'jobseeker' };
+
+        // Only active candidate accounts are discoverable.
+        let query = { role: 'candidate', status: 'active' };
 
         if (search) {
             query.$or = [
@@ -31,7 +42,7 @@ exports.getCandidates = async (req, res) => {
         }
 
         const candidates = await User.find(query)
-            .select('-password')
+            .select(CANDIDATE_FIELDS)
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit);

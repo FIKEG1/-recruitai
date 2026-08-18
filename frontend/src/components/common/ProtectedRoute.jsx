@@ -1,9 +1,33 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+/** Landing page for each role, used when a user reaches a route they may not open. */
+export const roleHomePath = (role) => {
+    switch (role) {
+        case 'admin': return '/admin';
+        case 'employer': return '/employer/dashboard';
+        case 'hr_manager': return '/hr-manager/dashboard';
+        case 'hr_expert': return '/hr-expert/dashboard';
+        case 'employee': return '/employee/dashboard';
+        case 'candidate': return '/candidate/dashboard';
+        default: return '/';
+    }
+};
+
+/**
+ * Route guard.
+ *
+ * Roles are matched exactly. An earlier version expanded `hr_expert` into
+ * `['hr_expert', 'hr_manager']`, which silently granted HR Managers access to
+ * HR Expert-only screens and broke the required separation of duties.
+ *
+ * This is a convenience layer only - the backend independently enforces the
+ * same rules, so hiding a route is never the sole protection.
+ */
+const ProtectedRoute = ({ children, allowedRoles, requiredCapability }) => {
     const { user, loading } = useAuth();
+    const location = useLocation();
 
     if (loading) {
         return (
@@ -16,11 +40,18 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     }
 
     if (!user) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        return <Navigate to="/" replace />;
+        return <Navigate to={roleHomePath(user.role)} replace />;
+    }
+
+    if (requiredCapability) {
+        const capabilities = user.capabilities || [];
+        if (!capabilities.includes(requiredCapability)) {
+            return <Navigate to={roleHomePath(user.role)} replace />;
+        }
     }
 
     return children;

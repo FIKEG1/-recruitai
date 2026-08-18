@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaLock, FaArrowRight } from 'react-icons/fa';
+import { FaEnvelope, FaArrowRight } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { roleHomePath } from '../common/ProtectedRoute';
+import PasswordInput from '../common/PasswordInput';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -30,14 +32,10 @@ const Login = () => {
         setLoading(false);
 
         if (result.success) {
-            const user = result.user;
-            if (user.role === 'admin') {
-                navigate('/admin/dashboard');
-            } else if (user.role === 'employer') {
-                navigate('/employer/jobs');
-            } else {
-                navigate('/jobseeker/dashboard');
-            }
+            // Every role lands on its own workspace. Using the shared helper keeps
+            // this in step with the route guards, so adding a role never leaves a
+            // user stranded on the public home page.
+            navigate(roleHomePath(result.user.role));
         } else {
             setError(result.message || t('auth.login_error'));
         }
@@ -85,20 +83,14 @@ const Login = () => {
 
                                     <Form.Group className="mb-3">
                                         <Form.Label className="fw-semibold">{t('auth.password')}</Form.Label>
-                                        <div className="input-group-custom">
-                                            <span className="input-icon">
-                                                <FaLock />
-                                            </span>
-                                            <Form.Control
-                                                type="password"
-                                                name="password"
-                                                placeholder={t('auth.password_placeholder')}
-                                                value={formData.password}
-                                                onChange={handleChange}
-                                                className="form-control-custom"
-                                                required
-                                            />
-                                        </div>
+                                        <PasswordInput
+                                            name="password"
+                                            placeholder={t('auth.password_placeholder')}
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            autoComplete="current-password"
+                                            required
+                                        />
                                     </Form.Group>
 
                                     <div className="d-flex justify-content-between align-items-center mb-3">

@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 
 const TrainingSchema = new mongoose.Schema({
+    // Owning organization - the tenant boundary for all training records.
+    employer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employer',
+        default: null,
+        index: true
+    },
     title: {
         type: String,
         required: true
@@ -57,8 +64,35 @@ const TrainingSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ['draft', 'open', 'in_progress', 'completed', 'cancelled'],
-        default: 'draft'
+        // Full lifecycle: proposed -> approved -> open -> in_progress -> completed
+        // ('draft' is retained so programmes created before this change stay valid.)
+        enum: ['draft', 'proposed', 'approved', 'rejected', 'open', 'in_progress', 'completed', 'cancelled'],
+        default: 'proposed'
+    },
+    // HR Expert who proposed the programme
+    proposedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    // HR Manager who authorised it
+    approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    approvedAt: {
+        type: Date,
+        default: null
+    },
+    decisionReason: {
+        type: String,
+        default: ''
+    },
+    // Skills this programme is intended to build, used for training-need matching.
+    targetSkills: {
+        type: [String],
+        default: []
     },
     createdAt: {
         type: Date,

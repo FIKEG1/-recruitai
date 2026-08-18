@@ -1,94 +1,141 @@
 const Complaint = require('../models/Complaint');
 const Employee = require('../models/Employee');
 
-// @desc    Create complaint
+/**
+ * Complaint and feedback management (spec §18).
+ *
+ * Covers both workplace grievances raised by staff and recruitment-process
+ * feedback raised by candidates.
+ *
+ * Workflow:
+ *   submitted -> under_review -> investigating -> responded -> resolved
+ *
+ * Candidates have no employee record, so the complainant is tracked on the user
+ * account. A previous version tried to fabricate an Employee here and crashed
+ * with a validation error because the required employee number was missing.
+ */
+
+const RECRUITMENT_CATEGORIES = ['recruitment', 'interview', 'technical'];
+
+/** Load a complaint and confirm the caller may act on it. */
+const findScopedComplaint = async (complaintId, req) => {
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) return { error: { code: 404, message: 'Complaint not found' } };
+
+    const employerId = req.employerId ? req.employerId.toString() : null;
+    const recordEmployerId = complaint.employer ? complaint.employer.toString() : null;
+
+    if (!recordEmployerId || recordEmployerId !== employerId) {
+        return { error: { code: 403, message: 'This complaint belongs to another organization' } };
+    }
+
+    return { complaint };
+};
+
+// @desc    Submit a complaint or feedback
 // @route   POST /api/complaints
-// @access  Private
+// @access  Private (any authenticated user)
 exports.createComplaint = async (req, res) => {
     try {
-        console.log('=== Create Complaint Debug ===');
-        console.log('User ID:', req.user.id);
-        console.log('Request body:', req.body);
-        
-        let employee = await Employee.findOne({ user: req.user.id });
-        
-        if (!employee) {
-            console.log('Employee not found, creating new employee record');
-            employee = await Employee.create({
-                user: req.user.id,
-                personalInfo: {
-                    firstName: req.user.name || 'Unknown',
-                    lastName: ''
-                },
-                employmentInfo: {
-                    employmentStatus: 'active',
-                    hireDate: new Date()
-                }
+        const { title, description, priority } = req.body;
+        const type = req.body.category || req.body.type;
+
+        if (!title || !description || !type) {
+            return res.status(400).json({
+                success: false,
+                message: 'Title, type and description are required'
             });
-            console.log('Employee record created:', employee._id);
         }
-        
-        // Map frontend field names to backend schema
-        const complaintData = {
-            employee: employee._id,
-            title: req.body.title,
-            type: req.body.category || req.body.type, // frontend sends 'category', backend expects 'type'
-            description: req.body.description,
-            priority: req.body.priority || 'medium',
+
+        // Staff complaints link to an employee record; candidate feedback does not.
+        const employee = await Employee.findOne({ user: req.user.id });
+
+        const isCandidate = req.user.role === 'candidate';
+        const category = isCandidate
+            ? (RECRUITMENT_CATEGORIES.includes(req.body.complaintCategory)
+                ? req.body.complaintCategory
+                : 'recruitment')
+            : 'employee';
+
+        const complaint = await Complaint.create({
+            raisedBy: req.user.id,
+            employee: employee ? employee._id : null,
+            // Candidate feedback may not belong to a specific organization.
+            employer: employee ? employee.employer : (req.user.employer || null),
+            category,
+            title,
+            type,
+            description,
+            priority: priority || 'medium',
+            status: 'submitted',
             history: [{
-                action: 'created',
+                action: 'submitted',
                 note: 'Complaint submitted',
                 user: req.user.id
             }]
-        };
-        
-        console.log('Complaint data:', complaintData);
-        
-        const complaint = await Complaint.create(complaintData);
-        console.log('Complaint created:', complaint._id);
+        });
 
         res.status(201).json({ success: true, data: complaint });
     } catch (error) {
         console.error('Create Complaint Error:', error);
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation Error',
+                errors: Object.values(error.errors).map(e => e.message)
+            });
+        }
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
-// @desc    Get all complaints
+// @desc    The organization's complaints
 // @route   GET /api/complaints
-// @access  Private (Admin)
+// @access  Private (complaint:view)
 exports.getComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find()
-            .populate('employee', 'employeeId')
-            .populate('employee.user', 'name')
-            .populate('assignedTo', 'name')
-            .populate('history.user', 'name');
+        const query = { employer: req.employerId };
+        if (req.query.status) query.status = req.query.status;
+        if (req.query.category) query.category = req.query.category;
 
-        res.status(200).json({ success: true, data: complaints });
+        const complaints = await Complaint.find(query)
+            .populate('raisedBy', 'name email role')
+            .populate('employee', 'employeeId personalInfo')
+            .populate('assignedTo', 'name')
+            .populate('history.user', 'name')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({ success: true, count: complaints.length, data: complaints });
     } catch (error) {
-        console.error(error);
+        console.error('Get Complaints Error:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
-// @desc    Get employee complaints
+// @desc    Complaints without an owning organization (platform-level feedback)
+// @route   GET /api/complaints/unassigned
+// @access  Private (System Administrator)
+exports.getUnassignedComplaints = async (req, res) => {
+    try {
+        const complaints = await Complaint.find({ employer: null })
+            .populate('raisedBy', 'name email role')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({ success: true, count: complaints.length, data: complaints });
+    } catch (error) {
+        console.error('Get Unassigned Complaints Error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    The signed-in user's own complaints
 // @route   GET /api/complaints/me
 // @access  Private
 exports.getMyComplaints = async (req, res) => {
     try {
-        console.log('=== Get My Complaints Debug ===');
-        console.log('User ID:', req.user.id);
-        
-        const employee = await Employee.findOne({ user: req.user.id });
-        if (!employee) {
-            console.log('Employee not found, returning empty array');
-            return res.status(200).json({ success: true, data: [] });
-        }
+        const complaints = await Complaint.find({ raisedBy: req.user.id })
+            .sort({ createdAt: -1 });
 
-        const complaints = await Complaint.find({ employee: employee._id });
-        console.log('Found complaints:', complaints.length);
-        
         res.status(200).json({ success: true, data: complaints });
     } catch (error) {
         console.error('Get My Complaints Error:', error);
@@ -98,18 +145,40 @@ exports.getMyComplaints = async (req, res) => {
 
 // @desc    Update complaint status
 // @route   PUT /api/complaints/:id/status
-// @access  Private (Admin)
+// @access  Private (complaint:handle)
 exports.updateComplaintStatus = async (req, res) => {
     try {
         const { status, resolution, assignedTo } = req.body;
-        const complaint = await Complaint.findById(req.params.id);
+        const allowed = ['under_review', 'investigating', 'responded', 'resolved', 'rejected'];
 
-        if (!complaint) {
-            return res.status(404).json({ success: false, message: 'Complaint not found' });
+        if (!allowed.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: `Status must be one of: ${allowed.join(', ')}`
+            });
+        }
+
+        const { complaint, error } = await findScopedComplaint(req.params.id, req);
+        if (error) {
+            return res.status(error.code).json({ success: false, message: error.message });
+        }
+
+        // Nobody adjudicates their own complaint.
+        if (complaint.raisedBy && complaint.raisedBy.toString() === req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'You cannot handle a complaint you raised yourself'
+            });
         }
 
         complaint.status = status;
-        if (status === 'resolved' && resolution) {
+        if (status === 'resolved') {
+            if (!resolution) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'A resolution note is required when resolving a complaint'
+                });
+            }
             complaint.resolution = resolution;
             complaint.resolvedDate = new Date();
         }
@@ -117,7 +186,7 @@ exports.updateComplaintStatus = async (req, res) => {
 
         complaint.history.push({
             action: status,
-            note: `Status updated to ${status}${resolution ? ': ' + resolution : ''}`,
+            note: resolution || `Status updated to ${status}`,
             user: req.user.id
         });
 
@@ -125,7 +194,7 @@ exports.updateComplaintStatus = async (req, res) => {
 
         res.status(200).json({ success: true, data: complaint });
     } catch (error) {
-        console.error(error);
+        console.error('Update Complaint Error:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

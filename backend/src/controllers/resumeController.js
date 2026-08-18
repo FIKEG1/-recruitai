@@ -1,6 +1,9 @@
 const Resume = require('../models/Resume');
 const path = require('path');
 const fs = require('fs');
+const pdf = require('pdf-parse');
+const mammoth = require('mammoth');
+const axios = require('axios');
 
 // @desc    Upload resume
 // @route   POST /api/resumes
@@ -22,7 +25,7 @@ exports.uploadResume = async (req, res) => {
             });
         }
 
-        const parsedData = {
+        let parsedData = {
             name: req.body.name || '',
             email: '',
             phone: '',
@@ -32,6 +35,35 @@ exports.uploadResume = async (req, res) => {
             certifications: [],
             languages: []
         };
+
+        // Extract text and call Python AI service
+        try {
+            let text = '';
+            if (req.file.mimetype === 'application/pdf') {
+                const dataBuffer = fs.readFileSync(req.file.path);
+                const data = await pdf(dataBuffer);
+                text = data.text;
+            } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                const result = await mammoth.extractRawText({path: req.file.path});
+                text = result.value;
+            }
+
+            if (text) {
+                // Call Python AI Service
+                const aiResponse = await axios.post('http://localhost:5001/api/parse-resume', { text });
+                if (aiResponse.data && aiResponse.data.success && aiResponse.data.data) {
+                    const aiData = aiResponse.data.data;
+                    parsedData.name = aiData.name || parsedData.name;
+                    parsedData.email = aiData.email || '';
+                    parsedData.skills = aiData.skills || [];
+                    parsedData.education = aiData.education || [];
+                    parsedData.workExperience = aiData.work_experience || [];
+                }
+            }
+        } catch (aiError) {
+            console.error('AI Parsing Error:', aiError.message);
+            // Non-fatal error, we still save the resume
+        }
 
         const resume = await Resume.create({
             user: req.user.id,

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { toast } from 'react-toastify';
 
@@ -14,31 +14,66 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [organization, setOrganization] = useState(null);
+    const [token, setToken] = useState(() => localStorage.getItem('token'));
+    // Only a stored token means there is a session to restore. Starting at
+    // `false` for anonymous visitors stops the route guard from flashing a
+    // spinner before it redirects to the login page.
+    const [loading, setLoading] = useState(() => !!localStorage.getItem('token'));
+
+    // The token whose profile is already in state. Signing in or registering
+    // fills user/organization straight from the auth response, so this stops the
+    // effect below from firing a second /auth/me request and swapping the user
+    // object again - that swap was what dropped every dashboard back into its
+    // own loading state right after a successful login.
+    const hydratedToken = useRef(null);
 
     useEffect(() => {
-        if (token) {
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            loadUser();
-        } else {
+        if (!token) {
+            hydratedToken.current = null;
+            delete api.defaults.headers.common['Authorization'];
             setLoading(false);
+            return;
         }
+
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        if (hydratedToken.current === token) return;
+
+        setLoading(true);
+        loadUser(token);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
-    const loadUser = async () => {
+    const loadUser = async (activeToken) => {
         try {
             const response = await api.get('/auth/me');
+            hydratedToken.current = activeToken || localStorage.getItem('token');
             setUser(response.data.user);
+            setOrganization(response.data.organization || null);
         } catch (error) {
             console.error('Error loading user:', error);
+            hydratedToken.current = null;
             localStorage.removeItem('token');
             setToken(null);
+            setUser(null);
+            setOrganization(null);
             delete api.defaults.headers.common['Authorization'];
             // Don't show toast error on initial load - user might just not be logged in
         } finally {
             setLoading(false);
         }
+    };
+
+    /** Adopt a session from a login/register response, with no extra round trip. */
+    const applySession = (newToken, authUser, org) => {
+        localStorage.setItem('token', newToken);
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        hydratedToken.current = newToken;
+        setUser(authUser);
+        setOrganization(org || null);
+        setLoading(false);
+        setToken(newToken);
     };
 
     const login = async (email, password) => {
@@ -52,11 +87,9 @@ export const AuthProvider = ({ children }) => {
             console.log('Login response:', response.data);
             
             const { token, user } = response.data;
-            localStorage.setItem('token', token);
-            setToken(token);
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            setUser(user);
-            toast.success('Login successful!');
+            applySession(token, user, response.data.organization);
+            // No success toast: the redirect to the role's dashboard already
+            // confirms the sign-in.
             return { success: true, user };
         } catch (error) {
             let message = 'Login failed. Please try again.';
@@ -76,11 +109,9 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post('/auth/register', userData);
             const { token, user } = response.data;
-            localStorage.setItem('token', token);
-            setToken(token);
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            setUser(user);
-            toast.success('Registration successful!');
+            applySession(token, user, response.data.organization);
+            // No success toast: the redirect to the new account's dashboard
+            // already confirms the sign-up.
             return { success: true, user };
         } catch (error) {
             let message = 'Registration failed. Please try again.';
@@ -98,10 +129,13 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
-        setToken(null);
+        hydratedToken.current = null;
+        setLoading(false);
         setUser(null);
+        setOrganization(null);
+        setToken(null);
         delete api.defaults.headers.common['Authorization'];
-        toast.info('Logged out successfully');
+        // No toast: returning to the public/login view already confirms sign-out.
     };
 
     const updateProfile = async (data) => {
@@ -119,6 +153,7 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         user,
+        organization,
         loading,
         login,
         register,
@@ -126,9 +161,13 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         reloadUser: loadUser,
         isAuthenticated: !!user,
-        isJobSeeker: user?.role === 'jobseeker',
+        isCandidate: user?.role === 'candidate',
+        isHRExpert: user?.role === 'hr_expert',
+        isHRManager: user?.role === 'hr_manager',
         isEmployer: user?.role === 'employer',
-        isAdmin: user?.role === 'admin'
+        isAdmin: user?.role === 'admin',
+        // Capability check mirroring the backend permission matrix.
+        can: (capability) => (user?.capabilities || []).includes(capability)
     };
 
     return (

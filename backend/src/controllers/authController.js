@@ -1,7 +1,9 @@
 const User = require('../models/User');
+const Employer = require('../models/Employer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { validationResult } = require('express-validator');
+const { capabilitiesFor } = require('../config/permissions');
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -10,6 +12,36 @@ const generateToken = (id) => {
     });
 };
 
+/**
+ * Shape the authenticated user payload consistently across auth responses.
+ *
+ * Login, register and /auth/me all return this exact shape so the client never
+ * has to re-fetch the profile just to get a complete user object. Both `id` and
+ * `_id` are exposed because call sites in the UI use either spelling.
+ */
+const buildAuthPayload = (user) => ({
+    id: user._id,
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: user.status || 'active',
+    employer: user.employer || null,
+    department: user.department || '',
+    jobTitle: user.jobTitle || '',
+    profile: user.profile,
+    company: user.company,
+    capabilities: capabilitiesFor(user)
+});
+
+/** The organization a user belongs to, using one projection everywhere. */
+const loadOrganization = async (user) => {
+    if (!user.employer) return null;
+    return Employer.findById(user.employer).select('name logo industry status slug');
+};
+
+// @desc    Register user
+// @route   POST /api/auth/register
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
@@ -26,25 +58,50 @@ exports.register = async (req, res) => {
         }
 
         const { name, email, password, role, profile, company } = req.body;
+        const normalizedEmail = email ? email.trim().toLowerCase() : '';
 
-        // Check if user exists
-        const userExists = await User.findOne({ email });
+        // Check if user exists (case-insensitive)
+        const userExists = await User.findOne({ 
+            email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } 
+        });
+
         if (userExists) {
             return res.status(400).json({
                 success: false,
-                message: 'User already exists'
+                message: 'A user with this email address already exists'
             });
         }
+
+        // Force role to candidate for public signups, unless they explicitly choose employer
+        const assignedRole = (role === 'employer') ? 'employer' : 'candidate';
 
         // Create user
         const user = await User.create({
             name,
-            email,
+            email: normalizedEmail,
             password,
-            role: role || 'jobseeker',
+            role: assignedRole,
+            status: 'active',
             profile: profile || {},
             company: company || {}
         });
+
+        // An employer signup creates the organization it will own. HR Experts and
+        // HR Managers are later added as members of this organization by the employer.
+        if (assignedRole === 'employer') {
+            const organization = await Employer.create({
+                name: (company && company.name) ? company.name : `${name}'s Organization`,
+                description: (company && company.description) || '',
+                website: (company && company.website) || '',
+                contact: { email: normalizedEmail, contactPerson: name },
+                address: { city: (company && company.location) || '' },
+                owner: user._id,
+                status: 'pending'
+            });
+
+            user.employer = organization._id;
+            await user.save({ validateBeforeSave: false });
+        }
 
         // Generate token
         const token = generateToken(user._id);
@@ -52,20 +109,14 @@ exports.register = async (req, res) => {
         res.status(201).json({
             success: true,
             token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profile: user.profile,
-                company: user.company
-            }
+            user: buildAuthPayload(user),
+            organization: await loadOrganization(user)
         });
     } catch (error) {
         console.error('Registration Error:', error);
         res.status(500).json({
             success: false,
-            message: error.message || 'Server Error'
+            message: error.message || 'Server Error during registration'
         });
     }
 };
@@ -75,9 +126,6 @@ exports.register = async (req, res) => {
 // @access  Public
 exports.login = async (req, res) => {
     try {
-        console.log('=== Login Debug ===');
-        console.log('Email:', req.body.email);
-        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const firstErrorMsg = errors.array().map(e => e.msg).join(', ');
@@ -89,35 +137,43 @@ exports.login = async (req, res) => {
         }
 
         const { email, password } = req.body;
-
-        // Normalize email to lowercase
-        const normalizedEmail = email.toLowerCase().trim();
-        
-        // Check for user
-        const user = await User.findOne({ email: normalizedEmail }).select('+password');
-        console.log('User found:', user ? 'Yes' : 'No');
-        
-        if (!user) {
-            console.log('User not found in database');
-            return res.status(401).json({
+        if (!email || !password) {
+            return res.status(400).json({
                 success: false,
-                message: 'Invalid credentials'
+                message: 'Please provide email and password'
             });
         }
 
-        console.log('User ID:', user._id);
-        console.log('User email:', user.email);
-        console.log('User role:', user.role);
+        // Normalize email to lowercase
+        const normalizedEmail = email.trim().toLowerCase();
+        
+        // Case-insensitive lookup for user
+        const user = await User.findOne({ 
+            email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } 
+        }).select('+password');
+        
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password'
+            });
+        }
+
+        // Check account status
+        if (user.status === 'inactive') {
+            return res.status(401).json({
+                success: false,
+                message: 'Your account has been deactivated. Please contact the System Administrator.'
+            });
+        }
 
         // Check password
         const isMatch = await user.matchPassword(password);
-        console.log('Password match:', isMatch ? 'Yes' : 'No');
         
         if (!isMatch) {
-            console.log('Password does not match');
             return res.status(401).json({
                 success: false,
-                message: 'Invalid credentials'
+                message: 'Invalid email or password'
             });
         }
 
@@ -127,20 +183,14 @@ exports.login = async (req, res) => {
         res.status(200).json({
             success: true,
             token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profile: user.profile,
-                company: user.company
-            }
+            user: buildAuthPayload(user),
+            organization: await loadOrganization(user)
         });
     } catch (error) {
         console.error('Login Error:', error);
         res.status(500).json({
             success: false,
-            message: error.message || 'Server Error'
+            message: error.message || 'Server Error during login'
         });
     }
 };
@@ -151,9 +201,11 @@ exports.login = async (req, res) => {
 exports.getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
+
         res.status(200).json({
             success: true,
-            user
+            user: buildAuthPayload(user),
+            organization: await loadOrganization(user)
         });
     } catch (error) {
         console.error(error);
@@ -188,7 +240,7 @@ exports.updateProfile = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            user
+            user: buildAuthPayload(user)
         });
     } catch (error) {
         console.error(error);

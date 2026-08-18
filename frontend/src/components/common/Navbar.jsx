@@ -9,7 +9,6 @@ import {
     FaBuilding, 
     FaUserCog,
     FaUsers,
-    FaGraduationCap,
     FaMoon,
     FaSun,
     FaChartBar,
@@ -26,12 +25,13 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import NotificationMenu from './NotificationMenu';
 import { useTheme } from '../../context/ThemeContext';
 import { getImageUrl } from '../../services/api';
 import './Navbar.css';
 
 const CustomNavbar = () => {
-    const { user, logout, isAuthenticated, isJobSeeker, isEmployer, isAdmin } = useAuth();
+    const { user, logout, isAuthenticated, isCandidate, isHRExpert, isHRManager, isAdmin } = useAuth();
     const { t } = useLanguage();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
@@ -61,8 +61,9 @@ const CustomNavbar = () => {
     // Get role display name with translation
     const getRoleDisplay = (role) => {
         const roleMap = {
-            jobseeker: t('auth.job_seeker'),
-            employer: t('auth.employer'),
+            candidate: 'Candidate',
+            hr_expert: 'HR Expert',
+            hr_manager: 'HR Manager',
             admin: t('auth.admin')
         };
         return roleMap[role] || role;
@@ -71,8 +72,9 @@ const CustomNavbar = () => {
     // Get role icon
     const getRoleIcon = (role) => {
         const iconMap = {
-            jobseeker: <FaUser size={14} />,
-            employer: <FaBuilding size={14} />,
+            candidate: <FaUser size={14} />,
+            hr_expert: <FaBuilding size={14} />,
+            hr_manager: <FaUserCog size={14} />,
             admin: <FaUserCog size={14} />
         };
         return iconMap[role] || <FaUser size={14} />;
@@ -106,7 +108,7 @@ const CustomNavbar = () => {
                     }}>
                         <FaBriefcase size={18} />
                     </div>
-                    <span style={{ color: 'var(--text-primary)' }}>KETARI</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 800 }}>KETARI</span>
                 </Navbar.Brand>
                 
                 <Navbar.Toggle aria-controls="basic-navbar-nav" className="navbar-toggler-custom shadow-none">
@@ -123,21 +125,15 @@ const CustomNavbar = () => {
                             {t('nav.jobs')}
                         </Nav.Link>
 
-                        <Nav.Link 
-                            as={Link} 
-                            to="/candidates" 
-                            className={`nav-link-custom ${isActive('/candidates') ? 'active' : ''}`}
-                        >
-                            {t('nav.find_talent')}
-                        </Nav.Link>
-
-                        <Nav.Link 
-                            as={Link} 
-                            to="/internships" 
-                            className={`nav-link-custom ${isActive('/internships') ? 'active' : ''}`}
-                        >
-                            {t('nav.internships')}
-                        </Nav.Link>
+                        {(user?.role === 'hr_expert' || user?.role === 'hr_manager') && (
+                            <Nav.Link
+                                as={Link}
+                                to={user.role === 'hr_manager' ? '/hr-manager/candidates' : '/hr-expert/candidates'}
+                                className="nav-link-custom"
+                            >
+                                {t('nav.find_talent')}
+                            </Nav.Link>
+                        )}
 
                         <Nav.Link 
                             as={Link} 
@@ -199,7 +195,9 @@ const CustomNavbar = () => {
                                 </Button>
                             </div>
                         ) : (
-                            <Dropdown align="end" className="ms-lg-3 mt-3 mt-lg-0 d-block">
+                            <div className="d-flex align-items-center mt-3 mt-lg-0">
+                                <NotificationMenu />
+                                <Dropdown align="end" className="ms-2 d-block">
                                 <Dropdown.Toggle 
                                     variant="light" 
                                     className="user-dropdown-toggle d-flex align-items-center w-100" 
@@ -257,29 +255,33 @@ const CustomNavbar = () => {
                                     minWidth: '220px',
                                     background: 'var(--surface)'
                                 }}>
-                                    {isJobSeeker && (
+                                    {isCandidate && (
                                         <>
-                                            <Dropdown.Item as={Link} to="/jobseeker/dashboard" className="dropdown-item-custom">
+                                            <Dropdown.Item as={Link} to="/candidate/dashboard" className="dropdown-item-custom">
                                                 <FaChartBar className="me-2" /> {t('nav.dashboard')}
                                             </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/jobseeker/profile" className="dropdown-item-custom">
+                                            <Dropdown.Item as={Link} to="/candidate/profile" className="dropdown-item-custom">
                                                 <FaUserCog className="me-2" /> {t('nav.profile')}
                                             </Dropdown.Item>
                                             <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
                                         </>
                                     )}
                                     
-                                    {isEmployer && (
+                                    {(isHRExpert || isHRManager) && (
                                         <>
-                                            <Dropdown.Item as={Link} to="/employer/jobs" className="dropdown-item-custom">
-                                                <FaBriefcase className="me-2" /> {t('nav.dashboard')}
+                                            <Dropdown.Item as={Link} to={isHRExpert ? "/hr-expert/dashboard" : "/hr-manager/dashboard"} className="dropdown-item-custom">
+                                                <FaBriefcase className="me-2" /> Dashboard
                                             </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/employer/post-job" className="dropdown-item-custom">
-                                                <FaUserPlus className="me-2" /> {t('nav.post_job')}
-                                            </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/employer/profile" className="dropdown-item-custom">
-                                                <FaBuilding className="me-2" /> Company Profile
-                                            </Dropdown.Item>
+                                            {isHRExpert && (
+                                                <Dropdown.Item as={Link} to="/hr-expert/job-creator" className="dropdown-item-custom">
+                                                    <FaUserPlus className="me-2" /> Create Vacancy
+                                                </Dropdown.Item>
+                                            )}
+                                            {isHRExpert && (
+                                                <Dropdown.Item as={Link} to="/hr-expert/dashboard" className="dropdown-item-custom">
+                                                    <FaBuilding className="me-2" /> Company Profile
+                                                </Dropdown.Item>
+                                            )}
                                             <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
                                         </>
                                     )}
@@ -287,33 +289,16 @@ const CustomNavbar = () => {
                                     {isAdmin && (
                                         <>
                                             <Dropdown.Item as={Link} to="/admin/dashboard" className="dropdown-item-custom">
-                                                <FaChartBar className="me-2" /> Dashboard
+                                                <FaChartBar className="me-2" /> Admin Dashboard
                                             </Dropdown.Item>
-                                            <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
                                             <Dropdown.Item as={Link} to="/admin/config" className="dropdown-item-custom">
-                                                <FaCog className="me-2" /> Configuration
+                                                <FaCog className="me-2" /> Recruitment Config
                                             </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/admin/employees" className="dropdown-item-custom">
-                                                <FaUsers className="me-2" /> Employees
-                                            </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/admin/leaves" className="dropdown-item-custom">
-                                                <FaCalendar className="me-2" /> Leave Management
-                                            </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/admin/attendance" className="dropdown-item-custom">
-                                                <FaClock className="me-2" /> Attendance
-                                            </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/admin/training" className="dropdown-item-custom">
-                                                <FaBook className="me-2" /> Training
-                                            </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/admin/complaints" className="dropdown-item-custom">
-                                                <FaFlag className="me-2" /> Complaints
-                                            </Dropdown.Item>
-                                            <Dropdown.Item as={Link} to="/admin/delegations" className="dropdown-item-custom">
-                                                <FaExchangeAlt className="me-2" /> Delegations
-                                            </Dropdown.Item>
-                                            <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
                                             <Dropdown.Item as={Link} to="/admin/users" className="dropdown-item-custom">
-                                                <FaUsers className="me-2" /> Manage Users
+                                                <FaUsers className="me-2" /> User Management
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/hr-manager/dashboard" className="dropdown-item-custom">
+                                                <FaBriefcase className="me-2" /> Pending Approvals
                                             </Dropdown.Item>
                                             <Dropdown.Divider style={{ borderColor: 'var(--border-color)' }} />
                                         </>
@@ -324,6 +309,7 @@ const CustomNavbar = () => {
                                     </Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
+                            </div>
                         )}
                     </Nav>
                 </Navbar.Collapse>

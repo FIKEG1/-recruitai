@@ -5,11 +5,12 @@ const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { UPLOAD_PATHS, toPublicPath, toAbsolutePath } = require('../config/paths');
 
 // Configure multer for photo upload
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        const dir = path.join(__dirname, '../../uploads/profiles');
+        const dir = UPLOAD_PATHS.profiles;
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
@@ -48,34 +49,26 @@ router.post('/profile-photo', protect, upload.single('photo'), async (req, res) 
             });
         }
 
-        console.log('=== Photo Upload Debug ===');
-        console.log('File uploaded:', req.file);
-        console.log('File path:', req.file.path);
-        console.log('File filename:', req.file.filename);
-
         const user = await User.findById(req.user.id);
-        
-        // Delete old photo if exists
+
+        // Delete the previous photo so old files do not accumulate on disk.
         if (user.profile?.profilePhoto) {
-            const oldPath = path.join(__dirname, '../../', user.profile.profilePhoto);
-            console.log('Old photo path to delete:', oldPath);
-            if (fs.existsSync(oldPath)) {
+            const oldPath = toAbsolutePath(user.profile.profilePhoto);
+            if (oldPath && fs.existsSync(oldPath)) {
                 fs.unlinkSync(oldPath);
-                console.log('Old photo deleted');
             }
         }
 
-        // Update user with new photo path relative to uploads folder
-        const photoPath = `uploads/profiles/${req.file.filename}`;
-        console.log('New photo path to save:', photoPath);
-        
+        // Store the web path (uploads/profiles/<file>) that matches the route
+        // Express serves static files from.
+        const photoPath = toPublicPath(req.file.path);
+
         if (!user.profile) {
             user.profile = {};
         }
         user.profile.profilePhoto = photoPath;
         user.markModified('profile');
         await user.save();
-        console.log('User updated with new photo');
 
         res.status(200).json({
             success: true,
@@ -109,11 +102,12 @@ router.delete('/profile-photo', protect, async (req, res) => {
         const user = await User.findById(req.user.id);
         
         if (user.profile?.profilePhoto) {
-            const photoPath = path.join(__dirname, '../../', user.profile.profilePhoto);
-            if (fs.existsSync(photoPath)) {
+            const photoPath = toAbsolutePath(user.profile.profilePhoto);
+            if (photoPath && fs.existsSync(photoPath)) {
                 fs.unlinkSync(photoPath);
             }
             user.profile.profilePhoto = null;
+            user.markModified('profile');
             await user.save();
         }
 

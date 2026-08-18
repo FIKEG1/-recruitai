@@ -1,8 +1,47 @@
-﻿const Application = require('../models/Application');
+const Application = require('../models/Application');
 const Job = require('../models/Job');
 const Resume = require('../models/Resume');
 const { validationResult } = require('express-validator');
-const { calculateMatchScore } = require('../services/matchingService');
+const { calculateMatchScore, calculateMatchDetails } = require('../services/matchingService');
+const { createEmployeeFromApplication } = require('../services/onboardingService');
+const auditService = require('../services/auditService');
+const notificationService = require('../services/notificationService');
+
+// Statuses in which a vacancy still accepts applications.
+const OPEN_STATUSES = ['published', 'approved', 'open'];
+
+// Statuses an HR Expert may set while processing (operational work).
+const PROCESSING_STATUSES = [
+    'under_review', 'ai_analyzed', 'shortlisted',
+    'interview_scheduled', 'interviewed', 'rejected'
+];
+
+// Statuses that represent an authorised final decision (HR Manager only).
+const DECISION_STATUSES = ['selected', 'offered', 'hired'];
+
+/**
+ * Verify the caller's organization owns the application, and return it.
+ * Prevents cross-employer access to candidate applications.
+ */
+const loadScopedApplication = async (applicationId, req, populate = '') => {
+    const query = Application.findById(applicationId).populate('job', 'hr_expert employer title');
+    const application = populate ? await query.populate(populate) : await query;
+
+    if (!application) {
+        return { error: { code: 404, message: 'Application not found' } };
+    }
+
+    const employerId = req.employerId ? req.employerId.toString() : null;
+    const applicationEmployerId = application.employer
+        ? application.employer.toString()
+        : (application.job && application.job.employer ? application.job.employer.toString() : null);
+
+    if (!applicationEmployerId || applicationEmployerId !== employerId) {
+        return { error: { code: 403, message: 'This application belongs to another organization' } };
+    }
+
+    return { application };
+};
 
 // @desc    Apply for a job
 // @route   POST /api/applications
@@ -11,8 +50,12 @@ exports.applyJob = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            // Include `message` as well as `errors`: the client surfaces
+            // `data.message`, so validation failures used to reach the candidate
+            // as a generic "failed to submit" with no reason attached.
             return res.status(400).json({
                 success: false,
+                message: errors.array().map(e => e.msg).join(', '),
                 errors: errors.array()
             });
         }
@@ -28,10 +71,17 @@ exports.applyJob = async (req, res) => {
             });
         }
 
-        if (job.status !== 'open') {
+        if (!OPEN_STATUSES.includes(job.status)) {
             return res.status(400).json({
                 success: false,
                 message: 'This job is no longer accepting applications'
+            });
+        }
+
+        if (job.applicationDeadline && new Date(job.applicationDeadline) < new Date()) {
+            return res.status(400).json({
+                success: false,
+                message: 'The application deadline for this vacancy has passed'
             });
         }
 
@@ -57,25 +107,36 @@ exports.applyJob = async (req, res) => {
             });
         }
 
-        // Calculate match score
-        const matchScore = await calculateMatchScore(job, resume.parsedData);
+        // Calculate match score and structured breakdown
+        const candidateProfile = req.user.profile || (resume ? resume.parsedData : {});
+        const { score: matchScore, details: matchDetails } = calculateMatchDetails(job, candidateProfile);
 
         // Create application
         const application = await Application.create({
             job: jobId,
             applicant: req.user.id,
+            employer: job.employer,
             resume: resumeId,
             coverLetter,
             matchScore,
+            matchDetails,
+            status: 'applied',
             statusHistory: [{
-                status: 'pending',
-                note: 'Application submitted'
+                status: 'applied',
+                changedBy: req.user.id,
+                note: 'Application submitted successfully'
             }]
         });
 
-        // Add application to job
-        job.applications.push(application._id);
-        await job.save();
+        // Link the application to the vacancy with an atomic update. job.save()
+        // re-validated the entire vacancy document, so one legacy field (such as
+        // a retired employmentType) made every application to that vacancy fail
+        // with a 500 - after the Application row had already been created,
+        // leaving it orphaned and blocking the candidate from retrying.
+        await Job.updateOne(
+            { _id: job._id },
+            { $addToSet: { applications: application._id } }
+        );
 
         res.status(201).json({
             success: true,
@@ -90,9 +151,9 @@ exports.applyJob = async (req, res) => {
     }
 };
 
-// @desc    Get all applications for a job (Employer)
+// @desc    Get all applications for a job
 // @route   GET /api/applications/job/:jobId
-// @access  Private (Employer)
+// @access  Private (organization members)
 exports.getJobApplications = async (req, res) => {
     try {
         const job = await Job.findById(req.params.jobId);
@@ -103,21 +164,29 @@ exports.getJobApplications = async (req, res) => {
             });
         }
 
-        // Check ownership
-        if (job.employer.toString() !== req.user.id && req.user.role !== 'admin') {
+        const employerId = req.employerId ? req.employerId.toString() : null;
+        const jobEmployerId = job.employer ? job.employer.toString() : null;
+
+        if (!jobEmployerId || jobEmployerId !== employerId) {
             return res.status(403).json({
                 success: false,
-                message: 'Not authorized to view these applications'
+                message: 'This vacancy belongs to another organization'
             });
         }
 
-        const applications = await Application.find({ job: req.params.jobId })
+        const query = { job: req.params.jobId };
+        if (req.query.status) query.status = req.query.status;
+
+        const applications = await Application.find(query)
             .populate('applicant', 'name email profile')
             .populate('resume')
+            .populate('shortlistedBy', 'name')
+            .populate('decision.decidedBy', 'name')
             .sort({ matchScore: -1, createdAt: -1 });
 
         res.status(200).json({
             success: true,
+            count: applications.length,
             applications
         });
     } catch (error) {
@@ -151,35 +220,49 @@ exports.getMyApplications = async (req, res) => {
     }
 };
 
-// @desc    Update application status
+// @desc    Update application status (HR Expert processing)
 // @route   PUT /api/applications/:id/status
-// @access  Private (Employer)
+// @access  Private (HR Expert)
 exports.updateApplicationStatus = async (req, res) => {
     try {
         const { status, note } = req.body;
-        const application = await Application.findById(req.params.id)
-            .populate('job', 'employer');
+        const { application, error } = await loadScopedApplication(req.params.id, req);
 
-        if (!application) {
-            return res.status(404).json({
-                success: false,
-                message: 'Application not found'
-            });
+        if (error) {
+            return res.status(error.code).json({ success: false, message: error.message });
         }
 
-        // Check if user is the employer
-        if (application.job.employer.toString() !== req.user.id && req.user.role !== 'admin') {
+        // Final hiring outcomes are reserved for the HR Manager decision endpoint,
+        // so the user who processes an application never also approves it.
+        if (DECISION_STATUSES.includes(status)) {
             return res.status(403).json({
                 success: false,
-                message: 'Not authorized to update this application'
+                message: 'Final recruitment decisions must be made by an HR Manager'
             });
         }
 
-        // Update status
+        if (!PROCESSING_STATUSES.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: `Status must be one of: ${PROCESSING_STATUSES.join(', ')}`
+            });
+        }
+
         application.status = status;
+
+        if (status === 'shortlisted') {
+            application.shortlistedBy = req.user.id;
+            application.shortlistedAt = new Date();
+        }
+        if (status === 'under_review' && !application.screenedBy) {
+            application.screenedBy = req.user.id;
+            application.screenedAt = new Date();
+        }
+
         application.statusHistory.push({
             status,
             date: new Date(),
+            changedBy: req.user.id,
             note: note || `Status updated to ${status}`
         });
 
@@ -198,36 +281,167 @@ exports.updateApplicationStatus = async (req, res) => {
     }
 };
 
-// @desc    Schedule interview
-// @route   PUT /api/applications/:id/schedule-interview
-// @access  Private (Employer)
-exports.scheduleInterview = async (req, res) => {
+// @desc    Record an authorised final recruitment decision
+// @route   PUT /api/applications/:id/decision
+// @access  Private (HR Manager)
+exports.decideApplication = async (req, res) => {
     try {
-        const { interviewDate, interviewLocation, note } = req.body;
-        const application = await Application.findById(req.params.id)
-            .populate('job', 'employer');
+        const { outcome, status, reason } = req.body;
 
-        if (!application) {
-            return res.status(404).json({
+        if (!['approved', 'rejected'].includes(outcome)) {
+            return res.status(400).json({
                 success: false,
-                message: 'Application not found'
+                message: 'Outcome must be either approved or rejected'
             });
         }
 
-        // Check if user is the employer
-        if (application.job.employer.toString() !== req.user.id && req.user.role !== 'admin') {
+        const { application, error } = await loadScopedApplication(req.params.id, req);
+        if (error) {
+            return res.status(error.code).json({ success: false, message: error.message });
+        }
+
+        // A manager must not decide on a candidate they personally shortlisted.
+        if (application.shortlistedBy && application.shortlistedBy.toString() === req.user.id) {
             return res.status(403).json({
                 success: false,
-                message: 'Not authorized to schedule interview for this application'
+                message: 'You cannot make the final decision on a candidate you shortlisted yourself'
             });
+        }
+
+        let finalStatus;
+        if (outcome === 'rejected') {
+            finalStatus = 'rejected';
+        } else {
+            finalStatus = DECISION_STATUSES.includes(status) ? status : 'selected';
+        }
+
+        const previousStatus = application.status;
+
+        application.status = finalStatus;
+        application.decision = {
+            outcome,
+            decidedBy: req.user.id,
+            decidedAt: new Date(),
+            reason: reason || ''
+        };
+        application.statusHistory.push({
+            status: finalStatus,
+            date: new Date(),
+            changedBy: req.user.id,
+            note: reason || `Final decision: ${outcome}`
+        });
+
+        await application.save();
+
+        // Approving a hire is what connects recruitment to employee management:
+        // create the Employee profile now so onboarding can begin. A failure
+        // here must not lose the recorded decision, so it is reported alongside
+        // the saved application rather than thrown away.
+        let onboarding = null;
+        if (outcome === 'approved' && finalStatus === 'hired') {
+            try {
+                const { employee, created } = await createEmployeeFromApplication(application, req);
+                onboarding = {
+                    employeeId: employee.employeeId,
+                    employee: employee._id,
+                    status: employee.onboarding.status,
+                    created
+                };
+            } catch (onboardingError) {
+                console.error('Employee onboarding failed:', onboardingError);
+                onboarding = { error: onboardingError.message };
+            }
+        }
+
+        await auditService.record(req, {
+            action: 'application.decision',
+            entity: 'Application',
+            entityId: application._id,
+            details: `Recruitment decision recorded${reason ? `: ${reason}` : ''}`,
+            from: previousStatus,
+            to: finalStatus
+        });
+
+        await notificationService.notify({
+            user: application.applicant,
+            employer: application.employer,
+            type: 'hiring_decision',
+            title: outcome === 'approved' ? 'Application successful' : 'Application unsuccessful',
+            message: outcome === 'approved'
+                ? `Congratulations - your application was approved (${finalStatus}).`
+                : `Your application was not successful.${reason ? ` Reason: ${reason}` : ''}`,
+            link: '/candidate/dashboard'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Recruitment decision recorded (${finalStatus})`,
+            application,
+            onboarding
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Withdraw own application
+// @route   PUT /api/applications/:id/withdraw
+// @access  Private (Candidate)
+exports.withdrawApplication = async (req, res) => {
+    try {
+        const application = await Application.findById(req.params.id);
+
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        if (application.applicant.toString() !== req.user.id) {
+            return res.status(403).json({ success: false, message: 'You can only withdraw your own application' });
+        }
+
+        if (['hired', 'withdrawn'].includes(application.status)) {
+            return res.status(400).json({
+                success: false,
+                message: `This application can no longer be withdrawn (status: ${application.status})`
+            });
+        }
+
+        application.status = 'withdrawn';
+        application.statusHistory.push({
+            status: 'withdrawn',
+            date: new Date(),
+            changedBy: req.user.id,
+            note: req.body.reason || 'Withdrawn by candidate'
+        });
+        await application.save();
+
+        res.status(200).json({ success: true, message: 'Application withdrawn', application });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Schedule interview
+// @route   PUT /api/applications/:id/schedule-interview
+// @access  Private (HR Expert)
+exports.scheduleInterview = async (req, res) => {
+    try {
+        const { interviewDate, interviewLocation, note } = req.body;
+        const { application, error } = await loadScopedApplication(req.params.id, req);
+
+        if (error) {
+            return res.status(error.code).json({ success: false, message: error.message });
         }
 
         application.interviewDate = interviewDate;
         application.interviewLocation = interviewLocation;
-        application.status = 'interviewed';
+        application.status = 'interview_scheduled';
         application.statusHistory.push({
-            status: 'interviewed',
+            status: 'interview_scheduled',
             date: new Date(),
+            changedBy: req.user.id,
             note: note || 'Interview scheduled'
         });
 

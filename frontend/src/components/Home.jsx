@@ -60,7 +60,7 @@ const Home = () => {
             <section className="hero-section">
                 <Container>
                     <Row className="align-items-center">
-                        <Col lg={6} className="mb-5 mb-lg-0">
+                        <Col lg={6} className="mb-5 mb-lg-0 animate-fade-in-up">
                             <div className="hero-content pe-lg-4">
                                 <div className="hero-badge">
                                     <FaRobot className="me-2" /> {t('home.hero_badge')}
@@ -82,7 +82,7 @@ const Home = () => {
                                     </div>
                                 )}
                                 <div className="hero-buttons d-flex flex-wrap gap-2">
-                                    <Button as={Link} to="/employer/post-job" variant={isAuthenticated ? "primary" : "secondary"} size="md" className="shadow-sm">
+                                    <Button as={Link} to="/hr-expert/job-creator" variant={isAuthenticated ? "primary" : "secondary"} size="md" className="shadow-sm">
                                         {t('home.post_job')}
                                     </Button>
                                     <Button as={Link} to="/jobs" variant="light" size="md" className="shadow-sm border">
@@ -96,7 +96,7 @@ const Home = () => {
                                 </div>
                             </div>
                         </Col>
-                        <Col lg={6}>
+                        <Col lg={6} className="animate-scale-in" style={{ animationDelay: '0.2s' }}>
                             <div className="hero-visual">
                                 <Card className="floating-job-card card-1 shadow-sm">
                                     <Card.Body>
@@ -135,44 +135,44 @@ const Home = () => {
             {/* How It Works - Dual Path */}
             <section className="how-it-works-section py-5">
                 <Container className="py-4">
-                    <div className="text-center mb-5">
+                    <div className="text-center mb-5 animate-fade-in-up">
                         <h2 className="fw-bold">{t('home.how_it_works')}</h2>
                         <p className="text-muted">{t('home.one_platform')}</p>
                     </div>
                     <Row className="g-4">
-                        <Col md={6}>
-                            <Card className="workflow-card employer-card h-100 border-0">
+                        <Col md={6} className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                            <Card className="workflow-card hr_expert-card h-100 border-0 card-hover">
                                 <Card.Body className="p-5">
-                                    <h3 className="fw-bold mb-4 text-primary">{t('home.for_employers')}</h3>
+                                    <h3 className="fw-bold mb-4 text-primary">{t('home.for_hr_experts')}</h3>
                                     
                                     <div className="workflow-step">
                                         <div className="step-num bg-white text-primary fw-bold shadow-sm">1</div>
                                         <div>
-                                            <h5 className="fw-bold">{t('home.step1_employer')}</h5>
-                                            <p className="text-muted mb-0">{t('home.step1_employer_desc')}</p>
+                                            <h5 className="fw-bold">{t('home.step1_hr_expert')}</h5>
+                                            <p className="text-muted mb-0">{t('home.step1_hr_expert_desc')}</p>
                                         </div>
                                     </div>
                                     
                                     <div className="workflow-step">
                                         <div className="step-num bg-white text-primary fw-bold shadow-sm">2</div>
                                         <div>
-                                            <h5 className="fw-bold">{t('home.step2_employer')}</h5>
-                                            <p className="text-muted mb-0">{t('home.step2_employer_desc')}</p>
+                                            <h5 className="fw-bold">{t('home.step2_hr_expert')}</h5>
+                                            <p className="text-muted mb-0">{t('home.step2_hr_expert_desc')}</p>
                                         </div>
                                     </div>
                                     
                                     <div className="workflow-step">
                                         <div className="step-num bg-white text-primary fw-bold shadow-sm">3</div>
                                         <div>
-                                            <h5 className="fw-bold">{t('home.step3_employer')}</h5>
-                                            <p className="text-muted mb-0">{t('home.step3_employer_desc')}</p>
+                                            <h5 className="fw-bold">{t('home.step3_hr_expert')}</h5>
+                                            <p className="text-muted mb-0">{t('home.step3_hr_expert_desc')}</p>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col md={6}>
-                            <Card className="workflow-card talent-card h-100 border-0">
+                        <Col md={6} className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                            <Card className="workflow-card talent-card h-100 border-0 card-hover">
                                 <Card.Body className="p-5">
                                     <h3 className="fw-bold mb-4 text-secondary">{t('home.for_candidates')}</h3>
                                     
@@ -209,7 +209,7 @@ const Home = () => {
             {/* Popular Services Grid */}
             <section className="popular-services-section py-5">
                 <Container className="py-4">
-                    <div className="text-center mb-5">
+                    <div className="text-center mb-5 animate-fade-in-up">
                         <Badge bg="light" text="dark" className="px-3 py-2 border mb-3 rounded-pill">
                             <span className="text-warning me-1">🔥</span> {t('home.in_demand')}
                         </Badge>
@@ -219,8 +219,8 @@ const Home = () => {
                     
                     <Row className="g-3 justify-content-center">
                         {popularServices.map((service, idx) => (
-                            <Col xs={6} md={3} lg={3} key={idx}>
-                                <Card className="service-card text-center h-100 border shadow-sm">
+                            <Col xs={6} md={3} lg={3} key={idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 0.05}s` }}>
+                                <Card className="service-card text-center h-100 border shadow-sm card-hover">
                                     <Card.Body className="d-flex flex-column align-items-center justify-content-center p-4">
                                         <div className="service-icon mb-3">
                                             {service.icon}
@@ -234,38 +234,38 @@ const Home = () => {
                 </Container>
             </section>
 
-            {/* Featured Candidates (Mock Data representing recent candidates/jobs) */}
+            {/* How the AI recruitment workflow runs.
+                A "Featured Candidates" block used to sit here filled with invented
+                profiles ("Developer 1", 5.0 stars, ETB 150/hr). Candidate profiles
+                are private and must never be shown publicly, so it was replaced with
+                a factual description of the platform workflow. */}
             <section className="recent-jobs-section bg-light py-5">
                 <Container className="py-4">
-                    <div className="d-flex justify-content-between align-items-center mb-5">
-                        <h2 className="fw-bold mb-0">{t('home.featured_candidates')}</h2>
-                        <Button as={Link} to="/candidates" variant="link" className="text-decoration-none fw-bold text-primary">
-                            {t('home.view_all')}
-                        </Button>
+                    <div className="text-center mb-5 animate-fade-in-up">
+                        <h2 className="fw-bold mb-2">How AI supports every hire</h2>
+                        <p className="text-muted mb-0">
+                            The AI analyses, matches and ranks candidates. Authorised HR users make every decision.
+                        </p>
                     </div>
                     <Row className="g-4">
-                        {[1, 2, 3, 4].map((item, index) => (
-                            <Col md={3} key={index}>
-                                <Card className="featured-candidate-card h-100 border-0 shadow-sm">
+                        {[
+                            { step: 'CV Analysis', detail: 'Skills, education and experience are extracted from each CV.' },
+                            { step: 'Job Matching', detail: 'Candidates are scored against the vacancy requirements.' },
+                            { step: 'Explainable Ranking', detail: 'Every score shows matching skills and skill gaps.' },
+                            { step: 'HR Decision', detail: 'HR Experts shortlist and HR Managers approve the hire.' }
+                        ].map((item, index) => (
+                            <Col md={3} key={item.step} className="animate-fade-in-up"
+                                 style={{ animationDelay: `${index * 0.1}s` }}>
+                                <Card className="h-100 border-0 shadow-sm card-hover">
                                     <Card.Body className="d-flex flex-column">
                                         <div className="d-flex align-items-center mb-3">
-                                            <div className="avatar-placeholder bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style={{width: 50, height: 50}}>
-                                                JD
+                                            <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3"
+                                                 style={{ width: 40, height: 40 }}>
+                                                {index + 1}
                                             </div>
-                                            <div>
-                                                <h6 className="fw-bold mb-0">Developer {index+1}</h6>
-                                                <small className="text-muted">⭐⭐⭐⭐⭐ 5.0</small>
-                                            </div>
+                                            <h6 className="fw-bold mb-0">{item.step}</h6>
                                         </div>
-                                        <h6 className="fw-bold mt-2">Full Stack Developer</h6>
-                                        <p className="text-muted small mb-3"><FaCheckCircle className="me-1"/> Addis Ababa</p>
-                                        
-                                        <div className="mt-auto pt-3 d-flex justify-content-between align-items-center">
-                                            <span className="fw-bold text-success fs-5">ETB 150<small className="text-muted fs-6">/hr</small></span>
-                                            <Button variant="primary" size="sm" className="rounded-pill px-3">
-                                                View Profile
-                                            </Button>
-                                        </div>
+                                        <p className="text-muted small mb-0">{item.detail}</p>
                                     </Card.Body>
                                 </Card>
                             </Col>

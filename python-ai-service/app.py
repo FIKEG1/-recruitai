@@ -1,4 +1,4 @@
-﻿from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import re
 
@@ -67,26 +67,43 @@ def extract_experience(text):
 
 @app.route('/api/match-score', methods=['POST'])
 def calculate_match_score():
-    data = request.json
+    data = request.json or {}
     job = data.get('job', {})
     candidate = data.get('candidate', {})
     
-    # Simple match score calculation
-    job_skills = job.get('requirements', {}).get('skills', [])
-    candidate_skills = candidate.get('skills', [])
+    job_skills = [s.lower().strip() for s in job.get('requirements', {}).get('skills', [])]
+    candidate_skills = [s.lower().strip() for s in candidate.get('skills', [])]
     
-    if job_skills and candidate_skills:
-        matching = len(set([s.lower() for s in job_skills]) & set([s.lower() for s in candidate_skills]))
-        score = int((matching / len(job_skills)) * 100) if job_skills else 0
-    else:
-        score = 50
+    matching_skills = [s for s in job_skills if any(c in s or s in c for c in candidate_skills)] if job_skills else []
+    missing_skills = [s for s in job_skills if s not in matching_skills] if job_skills else []
+    
+    skills_score = int((len(matching_skills) / len(job_skills)) * 100) if job_skills else 100
+    
+    job_edu = job.get('requirements', {}).get('education', '').lower()
+    cand_edu = [str(e).lower() for e in candidate.get('education', [])]
+    edu_score = 100 if not job_edu or any(job_edu in e for e in cand_edu) else 60
+    
+    job_exp = job.get('requirements', {}).get('experience', '').lower()
+    cand_exp = candidate.get('workExperience', [])
+    exp_score = 100 if not job_exp else (85 if cand_exp else 50)
+    
+    job_loc = job.get('location', '').lower()
+    cand_loc = candidate.get('location', '').lower()
+    loc_score = 100 if not job_loc or not cand_loc or job_loc in cand_loc or cand_loc in job_loc else 70
+    
+    total_score = int((skills_score * 0.40) + (edu_score * 0.25) + (exp_score * 0.25) + (loc_score * 0.10))
+    total_score = min(max(total_score, 0), 100)
     
     return jsonify({
         'success': True, 
-        'score': min(score, 100),
+        'score': total_score,
         'details': {
-            'skills_match': score,
-            'message': 'Match score calculated'
+            'skillsScore': skills_score,
+            'educationScore': edu_score,
+            'experienceScore': exp_score,
+            'locationScore': loc_score,
+            'matchingSkills': matching_skills,
+            'missingSkills': missing_skills
         }
     })
 

@@ -11,6 +11,6 @@ router.get('/summary', protect, authorize('admin'), getSummaryReport);
 // @route   GET /api/reports/job/:jobId
 // @desc    Get job-specific report
 // @access  Private (Admin/Employer)
-router.get('/job/:jobId', protect, authorize('admin', 'employer'), getJobReport);
+router.get('/job/:jobId', protect, authorize('admin', 'hr_expert'), getJobReport);
 
 module.exports = router;

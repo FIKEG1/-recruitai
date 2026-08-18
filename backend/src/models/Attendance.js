@@ -6,6 +6,13 @@ const AttendanceSchema = new mongoose.Schema({
         ref: 'Employee',
         required: true
     },
+    // Owning organization - the tenant boundary for attendance records.
+    employer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employer',
+        default: null,
+        index: true
+    },
     date: {
         type: Date,
         required: true

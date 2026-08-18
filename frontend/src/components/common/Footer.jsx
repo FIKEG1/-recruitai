@@ -107,9 +107,8 @@ const Footer = () => {
                         <ul className="footer-links">
                             <li><Link to="/">{t('nav.home')}</Link></li>
                             <li><Link to="/jobs">{t('nav.jobs')}</Link></li>
-                            <li><Link to="/internships">{t('footer.internships') || 'Internships'}</Link></li>
                             <li><Link to="/about">{t('footer.about')}</Link></li>
-                            <li><Link to="/jobseeker/complaints"><FaComments className="me-2 text-primary-light" />{t('footer.complaints')}</Link></li>
+                            <li><Link to="/candidate/complaints"><FaComments className="me-2 text-primary-light" />{t('footer.complaints')}</Link></li>
                         </ul>
                     </Col>
 
@@ -128,8 +127,8 @@ const Footer = () => {
                                 </Link>
                             </li>
                             <li><Link to="/contact"><FaQuestionCircle className="me-2 text-accent" /> {t('footer.contact')}</Link></li>
-                            <li><Link to="/jobseeker/dashboard">{t('footer.for_job_seekers')}</Link></li>
-                            <li><Link to="/employer/jobs">{t('footer.for_employers')}</Link></li>
+                            <li><Link to="/candidate/dashboard">{t('footer.for_job_seekers')}</Link></li>
+                            <li><Link to="/hr-expert/vacancies">{t('footer.for_hr_experts')}</Link></li>
                         </ul>
                     </Col>
 

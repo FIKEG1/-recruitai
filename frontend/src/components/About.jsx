@@ -9,7 +9,7 @@ const About = () => {
                 <div className="text-center mb-5 fade-in">
                     <h1 className="fw-bold display-4 text-dark mb-3">About KETARI</h1>
                     <p className="lead text-muted mx-auto" style={{ maxWidth: '700px' }}>
-                        Connecting top talent with leading employers across Ethiopia. 
+                        Connecting top talent with leading hr_experts across Ethiopia. 
                         We are building the future of recruitment with smart, accessible, and seamless hiring solutions.
                     </p>
                 </div>

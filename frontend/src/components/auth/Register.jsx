@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaUserPlus, FaBuilding, FaUserShield } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaUserPlus, FaBuilding } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import PasswordInput from '../common/PasswordInput';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ const Register = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'jobseeker'
+        role: 'candidate'
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -43,10 +44,14 @@ const Register = () => {
             const user = result.user;
             if (user.role === 'admin') {
                 navigate('/admin/dashboard');
+            } else if (user.role === 'hr_expert') {
+                navigate('/hr-expert/dashboard');
+            } else if (user.role === 'hr_manager') {
+                navigate('/hr-manager/dashboard');
             } else if (user.role === 'employer') {
-                navigate('/employer/jobs');
+                navigate('/employer/dashboard');
             } else {
-                navigate('/jobseeker/dashboard');
+                navigate('/candidate/dashboard');
             }
         } else {
             setError(result.message);
@@ -118,93 +123,69 @@ const Register = () => {
                                     <Row>
                                         <Col md={6} className="mb-3">
                                             <Form.Label className="fw-semibold">{t('auth.password')}</Form.Label>
-                                            <div className="input-group-custom">
-                                                <span className="input-icon">
-                                                    <FaLock />
-                                                </span>
-                                                <Form.Control
-                                                    type="password"
-                                                    name="password"
-                                                    placeholder={t('auth.password_placeholder')}
-                                                    value={formData.password}
-                                                    onChange={handleChange}
-                                                    className="form-control-custom"
-                                                    required
-                                                    minLength="6"
-                                                />
-                                            </div>
+                                            <PasswordInput
+                                                name="password"
+                                                placeholder={t('auth.password_placeholder')}
+                                                value={formData.password}
+                                                onChange={handleChange}
+                                                autoComplete="new-password"
+                                                required
+                                                minLength={6}
+                                            />
                                         </Col>
                                         <Col md={6} className="mb-3">
                                             <Form.Label className="fw-semibold">{t('auth.confirm_password')}</Form.Label>
-                                            <div className="input-group-custom">
-                                                <span className="input-icon">
-                                                    <FaLock />
-                                                </span>
-                                                <Form.Control
-                                                    type="password"
-                                                    name="confirmPassword"
-                                                    placeholder={t('auth.confirm_password')}
-                                                    value={formData.confirmPassword}
-                                                    onChange={handleChange}
-                                                    className="form-control-custom"
-                                                    required
-                                                    minLength="6"
-                                                />
-                                            </div>
+                                            <PasswordInput
+                                                name="confirmPassword"
+                                                placeholder={t('auth.confirm_password')}
+                                                value={formData.confirmPassword}
+                                                onChange={handleChange}
+                                                autoComplete="new-password"
+                                                required
+                                                minLength={6}
+                                            />
                                         </Col>
                                     </Row>
 
                                     <Row>
-                                        <Col md={12} className="mb-3">
-                                            <Form.Label className="fw-semibold">{t('auth.role')}</Form.Label>
-                                            <div className="role-selector">
-                                                <div className="role-option">
-                                                    <Form.Check
-                                                        type="radio"
-                                                        name="role"
-                                                        value="jobseeker"
-                                                        id="role-jobseeker"
-                                                        checked={formData.role === 'jobseeker'}
-                                                        onChange={handleChange}
-                                                        label={
-                                                            <span>
-                                                                <FaUser className="me-2" /> {t('auth.job_seeker')}
-                                                            </span>
-                                                        }
-                                                        className="role-radio"
-                                                    />
+                                        <Col md={12} className="mb-4">
+                                            <Form.Label className="fw-semibold text-center d-block w-100 mb-3">Are you looking for a job or hiring?</Form.Label>
+                                            <div className="d-flex gap-3 justify-content-center">
+                                                <div 
+                                                    className={`role-toggle-card ${formData.role === 'candidate' ? 'active' : ''}`}
+                                                    onClick={() => setFormData({ ...formData, role: 'candidate' })}
+                                                    style={{
+                                                        padding: '1rem',
+                                                        border: `2px solid ${formData.role === 'candidate' ? '#4F46E5' : '#E2E8F0'}`,
+                                                        borderRadius: '12px',
+                                                        cursor: 'pointer',
+                                                        flex: 1,
+                                                        textAlign: 'center',
+                                                        background: formData.role === 'candidate' ? '#EEF2FF' : '#fff',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                >
+                                                    <FaUser size={24} color={formData.role === 'candidate' ? '#4F46E5' : '#64748B'} className="mb-2" />
+                                                    <h6 className={`mb-0 ${formData.role === 'candidate' ? 'text-primary fw-bold' : 'text-muted'}`}>I'm a Candidate</h6>
+                                                    <small className="text-muted d-block mt-1">Looking for work</small>
                                                 </div>
-                                                <div className="role-option">
-                                                    <Form.Check
-                                                        type="radio"
-                                                        name="role"
-                                                        value="employer"
-                                                        id="role-employer"
-                                                        checked={formData.role === 'employer'}
-                                                        onChange={handleChange}
-                                                        label={
-                                                            <span>
-                                                                <FaBuilding className="me-2" /> {t('auth.employer')}
-                                                            </span>
-                                                        }
-                                                        className="role-radio"
-                                                    />
-                                                </div>
-                                                <div className="role-option">
-                                                    <Form.Check
-                                                        type="radio"
-                                                        name="role"
-                                                        value="admin"
-                                                        id="role-admin"
-                                                        checked={formData.role === 'admin'}
-                                                        onChange={handleChange}
-                                                        label={
-                                                            <span>
-                                                                <FaUserShield className="me-2" /> {t('auth.admin') || 'Admin'}
-                                                            </span>
-                                                        }
-                                                        className="role-radio"
-                                                    />
+                                                <div 
+                                                    className={`role-toggle-card ${formData.role === 'employer' ? 'active' : ''}`}
+                                                    onClick={() => setFormData({ ...formData, role: 'employer' })}
+                                                    style={{
+                                                        padding: '1rem',
+                                                        border: `2px solid ${formData.role === 'employer' ? '#4F46E5' : '#E2E8F0'}`,
+                                                        borderRadius: '12px',
+                                                        cursor: 'pointer',
+                                                        flex: 1,
+                                                        textAlign: 'center',
+                                                        background: formData.role === 'employer' ? '#EEF2FF' : '#fff',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                >
+                                                    <FaBuilding size={24} color={formData.role === 'employer' ? '#4F46E5' : '#64748B'} className="mb-2" />
+                                                    <h6 className={`mb-0 ${formData.role === 'employer' ? 'text-primary fw-bold' : 'text-muted'}`}>I'm an Employer</h6>
+                                                    <small className="text-muted d-block mt-1">Hiring talent</small>
                                                 </div>
                                             </div>
                                         </Col>

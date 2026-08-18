@@ -19,9 +19,11 @@ const resumeRoutes = require('./routes/resumes');
 const reportRoutes = require('./routes/reports');
 const uploadRoutes = require('./routes/upload');
 const adminRoutes = require('./routes/admin');
-const internshipRoutes = require('./routes/internships');
 const candidateRoutes = require('./routes/candidates');
+const interviewRoutes = require('./routes/interviews');
 const publicRoutes = require('./routes/public');
+const notificationRoutes = require('./routes/notifications');
+const employerRoutes = require('./routes/employers');
 
 // ============================================
 // NEW HRM MODULE ROUTES
@@ -33,6 +35,7 @@ const attendanceRoutes = require('./routes/attendance');
 const trainingRoutes = require('./routes/training');
 const complaintRoutes = require('./routes/complaints');
 const delegationRoutes = require('./routes/delegations');
+const requestRoutes = require('./routes/requests');
 
 const app = express();
 
@@ -62,9 +65,11 @@ app.use('/api', limiter);
 // ============================================
 // STATIC FILES FOR UPLOADS
 // ============================================
-const uploadsPath = path.join(__dirname, '../../uploads');
-console.log('📁 Serving static files from:', uploadsPath);
-app.use('/uploads', express.static(uploadsPath));
+// Resolved from the shared paths module so the folder Express serves is always
+// the same folder multer writes to.
+const { UPLOADS_ROOT, ensureUploadDirectories } = require('./config/paths');
+console.log('📁 Serving static files from:', UPLOADS_ROOT);
+app.use('/uploads', express.static(UPLOADS_ROOT));
 
 // ============================================
 // API ROUTES
@@ -77,9 +82,11 @@ app.use('/api/resumes', resumeRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/internships', internshipRoutes);
 app.use('/api/candidates', candidateRoutes);
+app.use('/api/interviews', interviewRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/employers', employerRoutes);     // Employer / Organization Module
 
 // ============================================
 // HRM MODULE ROUTES
@@ -91,6 +98,7 @@ app.use('/api/attendance', attendanceRoutes);   // Attendance Module
 app.use('/api/training', trainingRoutes);       // Training Module
 app.use('/api/complaints', complaintRoutes);    // Complaint Module
 app.use('/api/delegations', delegationRoutes);  // Delegation Module
+app.use('/api/requests', requestRoutes);        // Employee Request Module
 
 // ============================================
 // HEALTH CHECK
@@ -100,7 +108,7 @@ app.get('/api/health', (req, res) => {
         status: 'OK', 
         message: 'Server is running',
         modules: {
-            core: ['auth', 'jobs', 'applications', 'resumes', 'reports', 'upload', 'admin', 'internships'],
+            core: ['auth', 'jobs', 'applications', 'resumes', 'reports', 'upload', 'admin'],
             hrm: ['config', 'employees', 'leaves', 'attendance', 'training', 'complaints', 'delegations']
         }
     });
@@ -110,6 +118,22 @@ app.get('/api/health', (req, res) => {
 // ERROR HANDLING
 // ============================================
 app.use((err, req, res, next) => {
+    // A malformed ObjectId in a URL or body is bad client input, not a server
+    // fault - report it as 400 instead of a misleading 500.
+    if (err.name === 'CastError') {
+        return res.status(400).json({
+            success: false,
+            message: `Invalid ${err.path || 'identifier'} provided`
+        });
+    }
+
+    if (err.name === 'ValidationError') {
+        return res.status(400).json({
+            success: false,
+            message: Object.values(err.errors || {}).map(e => e.message).join(', ') || 'Validation failed'
+        });
+    }
+
     console.error('❌ Error:', err.stack);
     res.status(500).json({
         success: false,
@@ -118,26 +142,9 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================
-// CREATE UPLOADS DIRECTORY
+// CREATE UPLOADS DIRECTORIES
 // ============================================
-const fs = require('fs');
-const uploadDir = path.join(__dirname, '../../uploads');
-const profileDir = path.join(__dirname, '../../uploads/profiles');
-const resumeDir = path.join(__dirname, '../../uploads/resumes');
-const documentDir = path.join(__dirname, '../../uploads/documents');
-
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-if (!fs.existsSync(profileDir)) {
-    fs.mkdirSync(profileDir, { recursive: true });
-}
-if (!fs.existsSync(resumeDir)) {
-    fs.mkdirSync(resumeDir, { recursive: true });
-}
-if (!fs.existsSync(documentDir)) {
-    fs.mkdirSync(documentDir, { recursive: true });
-}
+ensureUploadDirectories();
 
 // ============================================
 // START SERVER
@@ -146,7 +153,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`\n🚀 Server running on port ${PORT}`);
     console.log(`📡 API URL: http://localhost:${PORT}/api`);
-    console.log(`📁 Uploads directory: ${uploadDir}`);
+    console.log(`📁 Uploads directory: ${UPLOADS_ROOT}`);
     
     console.log(`\n📋 Core Modules:`);
     console.log(`   ✅ Authentication: /api/auth`);
@@ -156,7 +163,6 @@ app.listen(PORT, () => {
     console.log(`   ✅ Reports: /api/reports`);
     console.log(`   ✅ Upload: /api/upload`);
     console.log(`   ✅ Admin: /api/admin`);
-    console.log(`   ✅ Internships: /api/internships`);
     
     console.log(`\n📋 HRM Modules:`);
     console.log(`   ✅ Configuration: /api/config`);

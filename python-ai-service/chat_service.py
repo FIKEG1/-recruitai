@@ -64,18 +64,16 @@ PLATFORM FEATURES:
    - View interview invitations and schedule
    - Manage leave requests and attendance (for employees)
    - Submit complaints and feedback
-   - Access internship programs for students and graduates
 
 2. For Employers:
    - Post job vacancies with detailed requirements (skills, education, experience)
-   - Set salary ranges, employment types (Full-Time, Part-Time, Contract, Internship)
+   - Set salary ranges, employment types (Full-Time, Part-Time, Contract)
    - Review applications from candidates
    - View AI match scores for each candidate (0-100%)
    - Shortlist candidates for interviews
    - Schedule interviews and manage interview process
    - Generate recruitment reports and analytics
    - Manage employee attendance and leave requests
-   - Post internship programs for students
 
 3. AI Matching System:
    - Compares candidate skills with job requirements
@@ -83,14 +81,7 @@ PLATFORM FEATURES:
    - Considers: Skills (40%), Education (25%), Experience (25%), Location (10%)
    - Recommends best candidates for jobs
    - Suggests best jobs for candidates
-   - Uses advanced algorithms for intelligent matching)
-
-5. Internship Programs:
-   - Various internship types: Paid, Unpaid, Stipend, Credit
-   - Duration options: 3 Months, 6 Months, 9 Months, 12 Months, Flexible
-   - Academic requirements: field of study, minimum GPA, year of study
-   - Benefits: mentorship, real project experience, potential full-time offers
-   - Target audience: students and recent graduates
+   - Uses advanced algorithms for intelligent matching
 
 6. Language Support:
    - Full English and Amharic language support
@@ -102,10 +93,9 @@ PLATFORM URLS:
 - Login: http://localhost:3000/login
 - Register: http://localhost:3000/register
 - Browse Jobs: http://localhost:3000/jobs
-- Browse Internships: http://localhost:3000/internships
-- Post Job: http://localhost:3000/employer/post-job
-- Job Seeker Dashboard: http://localhost:3000/jobseeker/dashboard
-- Employer Dashboard: http://localhost:3000/employer/jobs
+- Post Job: http://localhost:3000/hr-expert/post-job
+- Job Seeker Dashboard: http://localhost:3000/candidate/dashboard
+- Employer Dashboard: http://localhost:3000/hr-expert/jobs
 - Admin Dashboard: http://localhost:3000/admin/dashboard
 
 USER TYPES:
@@ -117,7 +107,6 @@ COMMON QUESTIONS ANSWERED:
 - How to create account: Go to /register, choose role, fill details
 - How to apply for job: Browse jobs, click apply, select resume, submit
 - How AI matching works: System compares your profile with job requirements
-- Internship eligibility: Must be student/recent graduate with required GPA
 - Password reset: Use forgot password link on login page
 - Profile completion: Add skills, education, experience for better matching
 - Application tracking: Check dashboard for real-time status updates
@@ -139,8 +128,7 @@ Help job seekers with:
 8. Career advice and skill development
 9. Ethiopian job market insights and opportunities
 10. Professional development tips and guidance
-11. Internship programs and eligibility requirements
-12. Leave management and attendance tracking
+11. Leave management and attendance tracking
 13. Submitting complaints and feedback
 
 RESPONSE GUIDELINES:
@@ -155,12 +143,12 @@ RESPONSE GUIDELINES:
 - Address both English and Amharic queries appropriately
 """
 
-EMPLOYER_SYSTEM = f"""You are KETARI Assistant, a recruitment advisor for employers using the KETARI platform.
+EMPLOYER_SYSTEM = f"""You are KETARI Assistant, a recruitment advisor for hr_experts using the KETARI platform.
 
 {PLATFORM_INFO}
 
 YOUR ROLE:
-Help employers with:
+Help hr_experts with:
 1. Writing effective job descriptions that attract qualified candidates
 2. Posting jobs on the platform with optimal requirements
 3. Reviewing and screening candidates efficiently
@@ -172,14 +160,13 @@ Help employers with:
 9. Hiring in the Ethiopian market context
 10. Employer branding and company culture
 11. Managing employee attendance and leave requests
-12. Posting internship programs for students
-13. Generating recruitment reports and analytics
+12. Generating recruitment reports and analytics
 
 RESPONSE GUIDELINES:
 - Be professional, strategic, and data-driven
 - Provide practical, actionable advice
-- Guide employers to the right platform features with specific URLs
-- Ask follow-up questions to understand employer needs better
+- Guide hr_experts to the right platform features with specific URLs
+- Ask follow-up questions to understand hr_expert needs better
 - Keep responses comprehensive but concise (2-4 paragraphs)
 - Explain technical concepts simply
 - Provide step-by-step instructions when needed
@@ -403,7 +390,7 @@ def get_ai_response_local(message, user_context=None):
 - 📋 ሁኔታ "በመጠባበቅ ላይ" ይደርጋል
 
 📱 **መመልክትዎን ለማከታተር:**
-- ወደ ዳሽቦርድ: http://localhost:3000/jobseeker/dashboard
+- ወደ ዳሽቦርድ: http://localhost:3000/candidate/dashboard
 
 💡 **ለስኬል መመልክት ምክሮች:**
 - መገለጫዎን ለእያኛው ስራ ይሙሉ
@@ -424,8 +411,8 @@ def get_ai_response_local(message, user_context=None):
     if any(phrase in message_lower for phrase in ['who am i', 'do you know me', 'who is', 'know me', 'my name']):
         if is_authenticated and user_name:
             role_display = {
-                'jobseeker': 'Job Seeker',
-                'employer': 'Employer',
+                'candidate': 'Job Seeker',
+                'hr_expert': 'Employer',
                 'admin': 'Admin'
             }.get(user_role, user_role)
             
@@ -465,7 +452,7 @@ Visit the **Jobs page** at http://localhost:3000/jobs to see all available posit
 🔎 **Step 2: Search and Filter**
 - Use keywords to find specific roles (e.g., "Software Developer", "Data Analyst")
 - Filter by location (e.g., "Hawassa")
-- Filter by employment type (Full-Time, Part-Time, Contract, Internship)
+- Filter by employment type (Full-Time, Part-Time, Contract)
 - Filter by salary range
 
 📋 **Step 3: Review Job Details**
@@ -537,7 +524,7 @@ Once you find a job you like, click **"Apply Now"** and submit your application 
 - 📧 You'll be notified of updates
 
 📱 **Track Your Applications:**
-- Go to Dashboard: http://localhost:3000/jobseeker/dashboard
+- Go to Dashboard: http://localhost:3000/candidate/dashboard
 - See all your applications in one place
 - Check status: Pending → Reviewed → Shortlisted → Interviewed → Offered/Rejected
 
@@ -758,7 +745,7 @@ Go to Dashboard → Recent Applications → Click "View Interview"
     if any(phrase in message_lower for phrase in ['profile', 'update profile', 'edit profile', 'my profile', 'profile settings']):
         return f"""👤 **Complete Profile Management Guide**
 
-📍 **Where to Update:** http://localhost:3000/jobseeker/profile
+📍 **Where to Update:** http://localhost:3000/candidate/profile
 
 📋 **What to Add to Your Profile:**
 
@@ -814,7 +801,7 @@ Go to Dashboard → Recent Applications → Click "View Interview"
 - Upload a professional photo
 
 🔒 **Privacy:**
-- Your profile is visible to employers when you apply
+- Your profile is visible to hr_experts when you apply
 - Only relevant information is shown
 - You control what you share
 
@@ -829,7 +816,7 @@ Go to Dashboard → Recent Applications → Click "View Interview"
     if any(phrase in message_lower for phrase in ['dashboard', 'my applications', 'application status', 'track application', 'status']):
         return f"""📊 **Dashboard & Application Tracking Guide**
 
-📍 **Access Dashboard:** http://localhost:3000/jobseeker/dashboard
+📍 **Access Dashboard:** http://localhost:3000/candidate/dashboard
 
 📋 **What You'll See on Your Dashboard:**
 
@@ -859,7 +846,7 @@ Go to Dashboard → Recent Applications → Click "View Interview"
 **4. Interview Details** 🗓️
 - View interview invitations
 - Date, time, and location
-- Additional notes from employer
+- Additional notes from hr_expert
 
 **5. Quick Actions** ⚡
 - Browse more jobs
@@ -1123,10 +1110,10 @@ Would you like to know about specific SITA job openings? 🚀"""
     # EMPLOYER / POST JOB / HIRE
     # ============================================
     
-    if any(phrase in message_lower for phrase in ['employer', 'post job', 'hire', 'recruit', 'job posting', 'employer dashboard']):
+    if any(phrase in message_lower for phrase in ['hr_expert', 'post job', 'hire', 'recruit', 'job posting', 'hr_expert dashboard']):
         return f"""💼 **Employer Features on KETARI**
 
-📝 **Post a Job:** http://localhost:3000/employer/post-job
+📝 **Post a Job:** http://localhost:3000/hr-expert/post-job
 
 📋 **What Employers Can Do:**
 
@@ -1497,14 +1484,14 @@ Choose one:
 
 💡 **How to Ask:**
 - Be specific about what you need
-- Mention your role (job seeker/employer)
+- Mention your role (job seeker/hr_expert)
 - Include details if possible
 
 🔗 **Quick Links:**
 - Home: http://localhost:3000
 - Jobs: http://localhost:3000/jobs
-- Dashboard: http://localhost:3000/jobseeker/dashboard
-- Profile: http://localhost:3000/jobseeker/profile
+- Dashboard: http://localhost:3000/candidate/dashboard
+- Profile: http://localhost:3000/candidate/profile
 - Register: http://localhost:3000/register
 - Login: http://localhost:3000/login
 
@@ -1560,7 +1547,7 @@ def chat():
     try:
         data = request.json
         message = data.get('message', '')
-        user_type = data.get('user_type', 'jobseeker')
+        user_type = data.get('user_type', 'candidate')
         user_id = data.get('user_id', 'default_user')
         context = data.get('context', {})
         language = context.get('language', 'en')  # Get language from context
@@ -1573,9 +1560,9 @@ def chat():
         
         # Build system prompt based on language
         if language == 'am':
-            system_prompt = JOB_SEEKER_SYSTEM_AM if user_type == 'jobseeker' else EMPLOYER_SYSTEM_AM
+            system_prompt = JOB_SEEKER_SYSTEM_AM if user_type == 'candidate' else EMPLOYER_SYSTEM_AM
         else:
-            system_prompt = JOB_SEEKER_SYSTEM if user_type == 'jobseeker' else EMPLOYER_SYSTEM
+            system_prompt = JOB_SEEKER_SYSTEM if user_type == 'candidate' else EMPLOYER_SYSTEM
         
         # Build messages for AI
         messages = [
@@ -1667,7 +1654,7 @@ def generate_suggestions(message, user_type, user_context=None):
             return responses
     
     # Default suggestions based on user type
-    if user_type == 'jobseeker':
+    if user_type == 'candidate':
         return [
             'How do I find a job?',
             'How to improve my match score?',

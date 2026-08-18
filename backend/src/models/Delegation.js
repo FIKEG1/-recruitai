@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 
 const DelegationSchema = new mongoose.Schema({
+    // Owning organization - responsibilities are only ever delegated within one employer.
+    employer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employer',
+        default: null,
+        index: true
+    },
     delegator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

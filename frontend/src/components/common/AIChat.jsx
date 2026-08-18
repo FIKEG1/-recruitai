@@ -23,13 +23,13 @@ const AIChat = () => {
     const messagesEndRef = useRef(null);
     const chatContainerRef = useRef(null);
 
-    const userType = user?.role || 'jobseeker';
+    const userType = user?.role || 'candidate';
     const userId = user?.id || 'guest';
     const isAuthenticated = !!user;
 
     useEffect(() => {
         const userName = user?.name || 'there';
-        const welcomeMessage = userType === 'employer' 
+        const welcomeMessage = userType === 'hr_expert' 
             ? `Hello ${userName}! 👋 I'm your KETARI Employer Assistant. I can help you with:\n📋 Job postings\n🔍 Candidate screening\n🗣️ Interview questions\n💼 Hiring strategies\n\nWhat would you like to know?`
             : `Hello ${userName}! 👋 I'm your KETARI Career Assistant. I can help you with:\n🔍 Job searching\n📝 Resume writing\n🎯 Interview preparation\n💡 Career advice\n\nWhat would you like to know?`;
         
@@ -42,16 +42,16 @@ const AIChat = () => {
         ]);
         
         setSuggestions([
-            userType === 'employer' 
+            userType === 'hr_expert' 
                 ? (language === 'am' ? 'የስራ መግለጫ እንዴት እመጻፍ?' : 'How to write a job description?')
                 : (language === 'am' ? 'ትክክለኛ ስራ እንዴት እፈልጋ?' : 'How do I find the right job?'),
-            userType === 'employer'
+            userType === 'hr_expert'
                 ? (language === 'am' ? 'ምርጥ የቃለ መጠይቅ ጥያቄዎች' : 'Best interview questions to ask')
                 : (language === 'am' ? 'የረጅም ጊዜ መግለጫዎን ይርዱኝ' : 'Help me improve my resume'),
-            userType === 'employer'
+            userType === 'hr_expert'
                 ? (language === 'am' ? 'እጩዎችን እንዴት እመረጋገጫለሁ?' : 'How to screen candidates effectively?')
                 : (language === 'am' ? 'ምን ክህሎች መማ� RSVP ይጠበቅ?' : 'What skills should I learn?'),
-            userType === 'employer'
+            userType === 'hr_expert'
                 ? 'Hiring best practices'
                 : 'How to prepare for interviews?'
         ]);
@@ -94,7 +94,7 @@ const AIChat = () => {
                 language: language // Send current language to AI
             };
 
-            const response = await fetch('http://localhost:5001/api/chat', {
+            const response = await fetch('http://localhost:5002/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -138,13 +138,13 @@ const AIChat = () => {
 
     const resetChat = async () => {
         try {
-            await fetch('http://localhost:5001/api/chat/reset', {
+            await fetch('http://localhost:5002/api/chat/reset', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: userId })
             });
             
-            const welcomeMessage = userType === 'employer' 
+            const welcomeMessage = userType === 'hr_expert' 
                 ? "Chat reset! 👋 I'm ready to help with your recruitment needs. What would you like to discuss?"
                 : "Chat reset! 👋 I'm ready to help with your career journey. What would you like to know?";
             
@@ -155,16 +155,16 @@ const AIChat = () => {
             }]);
             setConversationCount(0);
             setSuggestions([
-                userType === 'employer' 
+                userType === 'hr_expert' 
                     ? 'How to write a job description?' 
                     : 'How do I find the right job?',
-                userType === 'employer'
+                userType === 'hr_expert'
                     ? 'Best interview questions'
                     : 'Help me improve my resume',
-                userType === 'employer'
+                userType === 'hr_expert'
                     ? 'Candidate screening tips'
                     : 'What skills should I learn?',
-                userType === 'employer'
+                userType === 'hr_expert'
                     ? 'Hiring best practices'
                     : 'How to prepare for interviews?'
             ]);
@@ -188,21 +188,21 @@ const AIChat = () => {
     };
 
     const getRoleIcon = () => {
-        if (userType === 'employer') {
+        if (userType === 'hr_expert') {
             return <FaBriefcase size={18} />;
         }
         return <FaGraduationCap size={18} />;
     };
 
     const getChatTitle = () => {
-        if (userType === 'employer') {
+        if (userType === 'hr_expert') {
             return 'AI Employer Assistant';
         }
         return 'AI Career Assistant';
     };
 
     const getQuickActions = () => {
-        if (userType === 'employer') {
+        if (userType === 'hr_expert') {
             return [
                 { icon: <FaFileAlt />, label: 'Job Post', action: 'How do I write a job description?' },
                 { icon: <FaUser />, label: 'Screening', action: 'How to screen candidates?' },

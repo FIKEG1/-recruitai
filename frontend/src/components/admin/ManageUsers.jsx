@@ -16,7 +16,7 @@ const ManageUsers = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        role: 'jobseeker',
+        role: 'candidate',
         password: ''
     });
 
@@ -90,8 +90,8 @@ const ManageUsers = () => {
 
     const getRoleBadge = (role) => {
         const roleMap = {
-            jobseeker: 'primary',
-            employer: 'success',
+            candidate: 'primary',
+            hr_expert: 'success',
             admin: 'danger'
         };
         return roleMap[role] || 'secondary';
@@ -117,7 +117,7 @@ const ManageUsers = () => {
                     </div>
                     <Button variant="primary-gradient" onClick={() => {
                         setEditingUser(null);
-                        setFormData({ name: '', email: '', role: 'jobseeker', password: '' });
+                        setFormData({ name: '', email: '', role: 'candidate', password: '' });
                         setShowModal(true);
                     }}>
                         <FaUserPlus className="me-2" /> Add User
@@ -209,8 +209,8 @@ const ManageUsers = () => {
                                     value={formData.role}
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                 >
-                                    <option value="jobseeker">Job Seeker</option>
-                                    <option value="employer">Employer</option>
+                                    <option value="candidate">Job Seeker</option>
+                                    <option value="hr_expert">Employer</option>
                                     <option value="admin">Admin</option>
                                 </Form.Select>
                             </Form.Group>

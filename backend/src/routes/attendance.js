@@ -3,53 +3,36 @@ const router = express.Router();
 const {
     checkIn,
     checkOut,
-    getAttendanceReport,
     getMyAttendance,
-    getEmployerAttendance,
-    getJobSeekerAttendance
+    getAttendanceReport,
+    recordAttendance
 } = require('../controllers/attendanceController');
-const { protect, authorize } = require('../middleware/auth');
-
-// ============================================
-// EMPLOYEE / JOB SEEKER ROUTES
-// ============================================
+const { protect, can, withEmployerScope } = require('../middleware/auth');
+const { CAPABILITIES } = require('../config/permissions');
 
 // @route   POST /api/attendance/check-in
-// @desc    Check in
-// @access  Private
-router.post('/check-in', protect, checkIn);
+// @desc    Check in for today
+// @access  Private (organization members)
+router.post('/check-in', protect, can(CAPABILITIES.ATTENDANCE_SELF), checkIn);
 
 // @route   POST /api/attendance/check-out
-// @desc    Check out
-// @access  Private
-router.post('/check-out', protect, checkOut);
+// @desc    Check out for today
+// @access  Private (organization members)
+router.post('/check-out', protect, can(CAPABILITIES.ATTENDANCE_SELF), checkOut);
 
 // @route   GET /api/attendance/me
-// @desc    Get my attendance (for job seekers/employees)
+// @desc    The signed-in user's own attendance
 // @access  Private
 router.get('/me', protect, getMyAttendance);
 
-// ============================================
-// EMPLOYER ROUTES
-// ============================================
-
-// @route   GET /api/attendance/employer
-// @desc    Get attendance for employer view
-// @access  Private (Employer)
-router.get('/employer', protect, authorize('employer'), getEmployerAttendance);
-
-// ============================================
-// ADMIN ROUTES
-// ============================================
+// @route   POST /api/attendance/record
+// @desc    Record attendance for an employee (also the device/system integration point)
+// @access  Private (HR Expert)
+router.post('/record', protect, can(CAPABILITIES.ATTENDANCE_RECORD), withEmployerScope, recordAttendance);
 
 // @route   GET /api/attendance/report
-// @desc    Get attendance report (admin only)
-// @access  Private (Admin)
-router.get('/report', protect, authorize('admin'), getAttendanceReport);
-// @route   GET /api/attendance/job-seekers
-// @desc    Get all job seekers with attendance status (admin only)
-// @access  Private (Admin)
-router.get('/job-seekers', protect, authorize('admin'), getJobSeekerAttendance);
-
+// @desc    Organization attendance report
+// @access  Private (attendance:view)
+router.get('/report', protect, can(CAPABILITIES.ATTENDANCE_VIEW), withEmployerScope, getAttendanceReport);
 
 module.exports = router;

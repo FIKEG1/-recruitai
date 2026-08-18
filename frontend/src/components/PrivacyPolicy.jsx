@@ -119,7 +119,7 @@ const PrivacyPolicy = () => {
                                 <ul>
                                     <li>
                                         <strong>🏢 Employers:</strong> 
-                                        <span className="text-muted"> When you apply for a job, your profile is shared with the employer</span>
+                                        <span className="text-muted"> When you apply for a job, your profile is shared with the hr_expert</span>
                                     </li>
                                     <li>
                                         <strong>🔧 Service Providers:</strong> 

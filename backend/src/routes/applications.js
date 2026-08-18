@@ -1,52 +1,78 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
-const { 
-    applyJob, 
-    getJobApplications, 
-    getMyApplications, 
+const {
+    applyJob,
+    getJobApplications,
+    getMyApplications,
     updateApplicationStatus,
+    decideApplication,
+    withdrawApplication,
     scheduleInterview
 } = require('../controllers/applicationController');
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, can, withEmployerScope } = require('../middleware/auth');
+const { CAPABILITIES } = require('../config/permissions');
 
 // @route   POST /api/applications
 // @desc    Apply for a job
-// @access  Private (Job Seeker)
+// @access  Private (Candidate)
 router.post('/', [
     protect,
-    authorize('jobseeker'),
-    body('jobId').notEmpty().withMessage('Job ID is required'),
-    body('resumeId').notEmpty().withMessage('Resume ID is required')
+    authorize('candidate'),
+    body('jobId')
+        .notEmpty().withMessage('Job ID is required')
+        .bail()
+        .isMongoId().withMessage('Invalid job ID'),
+    body('resumeId')
+        .notEmpty().withMessage('Resume ID is required')
+        .bail()
+        .isMongoId().withMessage('Invalid resume ID')
 ], applyJob);
 
 // @route   GET /api/applications/me
-// @desc    Get user's applications
-// @access  Private (Job Seeker)
-router.get('/me', protect, authorize('jobseeker'), getMyApplications);
+// @desc    Get the candidate's own applications
+// @access  Private (Candidate)
+router.get('/me', protect, authorize('candidate'), getMyApplications);
+
+// @route   PUT /api/applications/:id/withdraw
+// @desc    Withdraw own application
+// @access  Private (Candidate)
+router.put('/:id/withdraw', protect, authorize('candidate'), withdrawApplication);
 
 // @route   GET /api/applications/job/:jobId
-// @desc    Get all applications for a job
-// @access  Private (Employer/Admin)
-router.get('/job/:jobId', protect, authorize('employer', 'admin'), getJobApplications);
+// @desc    Get all applications for a vacancy in the caller's organization
+// @access  Private (organization members)
+router.get('/job/:jobId', protect, can(CAPABILITIES.APPLICATION_VIEW), withEmployerScope, getJobApplications);
 
 // @route   PUT /api/applications/:id/status
-// @desc    Update application status
-// @access  Private (Employer/Admin)
+// @desc    Process an application (screening / shortlisting)
+// @access  Private (HR Expert)
 router.put('/:id/status', [
     protect,
-    authorize('employer', 'admin'),
-    body('status').isIn(['pending', 'reviewed', 'shortlisted', 'interviewed', 'offered', 'rejected'])
-        .withMessage('Invalid status')
+    can(CAPABILITIES.APPLICATION_PROCESS),
+    withEmployerScope,
+    body('status')
+        .isIn(['under_review', 'ai_analyzed', 'shortlisted', 'interview_scheduled', 'interviewed', 'rejected'])
+        .withMessage('Invalid processing status')
 ], updateApplicationStatus);
 
+// @route   PUT /api/applications/:id/decision
+// @desc    Record the authorised final recruitment decision
+// @access  Private (HR Manager)
+router.put('/:id/decision', [
+    protect,
+    can(CAPABILITIES.APPLICATION_DECIDE),
+    withEmployerScope,
+    body('outcome').isIn(['approved', 'rejected']).withMessage('Outcome must be approved or rejected')
+], decideApplication);
+
 // @route   PUT /api/applications/:id/schedule-interview
-// @desc    Schedule interview
-// @access  Private (Employer/Admin)
+// @desc    Schedule an interview
+// @access  Private (HR Expert)
 router.put('/:id/schedule-interview', [
     protect,
-    authorize('employer', 'admin'),
-    body('interviewDate').isDate().withMessage('Interview date is required')
+    can(CAPABILITIES.INTERVIEW_SCHEDULE),
+    withEmployerScope
 ], scheduleInterview);
 
 module.exports = router;

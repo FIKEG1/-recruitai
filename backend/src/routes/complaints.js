@@ -3,29 +3,36 @@ const router = express.Router();
 const {
     createComplaint,
     getComplaints,
+    getUnassignedComplaints,
     getMyComplaints,
     updateComplaintStatus
 } = require('../controllers/complaintController');
-const { protect, authorize } = require('../middleware/auth');
+const { protect, can, withEmployerScope } = require('../middleware/auth');
+const { CAPABILITIES } = require('../config/permissions');
 
 // @route   POST /api/complaints
-// @desc    Create complaint
-// @access  Private
-router.post('/', protect, createComplaint);
-
-// @route   GET /api/complaints
-// @desc    Get all complaints
-// @access  Private (Admin)
-router.get('/', protect, authorize('admin'), getComplaints);
+// @desc    Submit a complaint or recruitment feedback
+// @access  Private (any authenticated user)
+router.post('/', protect, can(CAPABILITIES.COMPLAINT_RAISE), createComplaint);
 
 // @route   GET /api/complaints/me
-// @desc    Get employee complaints
+// @desc    The signed-in user's own complaints
 // @access  Private
 router.get('/me', protect, getMyComplaints);
 
+// @route   GET /api/complaints/unassigned
+// @desc    Platform-level feedback with no owning organization
+// @access  Private (System Administrator)
+router.get('/unassigned', protect, can(CAPABILITIES.PLATFORM_AUDIT), getUnassignedComplaints);
+
+// @route   GET /api/complaints
+// @desc    The organization's complaints
+// @access  Private (complaint:view)
+router.get('/', protect, can(CAPABILITIES.COMPLAINT_VIEW), withEmployerScope, getComplaints);
+
 // @route   PUT /api/complaints/:id/status
-// @desc    Update complaint status
-// @access  Private (Admin)
-router.put('/:id/status', protect, authorize('admin'), updateComplaintStatus);
+// @desc    Move a complaint through its workflow
+// @access  Private (complaint:handle)
+router.put('/:id/status', protect, can(CAPABILITIES.COMPLAINT_HANDLE), withEmployerScope, updateComplaintStatus);
 
 module.exports = router;

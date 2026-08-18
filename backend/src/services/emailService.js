@@ -48,7 +48,7 @@ exports.sendApplicationConfirmation = async (userEmail, userName, jobTitle, comp
                 <p>Dear <strong>${userName}</strong>,</p>
                 <p>Your application for <strong>${jobTitle}</strong> at <strong>${companyName || 'SITA'}</strong> has been successfully submitted.</p>
                 <p>You will be notified when your application status changes.</p>
-                <p><a href="${process.env.FRONTEND_URL}/jobseeker/dashboard" style="color: #2c3e8f;">Track your applications →</a></p>
+                <p><a href="${process.env.FRONTEND_URL}/candidate/dashboard" style="color: #2c3e8f;">Track your applications →</a></p>
                 <hr style="border: 1px solid #eee;">
                 <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency</p>
             </div>
@@ -75,7 +75,7 @@ exports.sendInterviewInvitation = async (userEmail, userName, jobTitle, companyN
                     ${notes ? `<p><strong>📝 Notes:</strong> ${notes}</p>` : ''}
                 </div>
                 <p>Please confirm your availability by replying to this email.</p>
-                <p><a href="${process.env.FRONTEND_URL}/jobseeker/dashboard" style="color: #2c3e8f;">View application details →</a></p>
+                <p><a href="${process.env.FRONTEND_URL}/candidate/dashboard" style="color: #2c3e8f;">View application details →</a></p>
                 <hr style="border: 1px solid #eee;">
                 <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency</p>
             </div>
@@ -117,8 +117,8 @@ exports.sendStatusUpdate = async (userEmail, userName, jobTitle, status, notes) 
                     <strong>New Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)}
                 </div>
                 <p>${statusMessages[status] || 'Please check your dashboard for details.'}</p>
-                ${notes ? `<p><strong>📝 Note from employer:</strong> ${notes}</p>` : ''}
-                <p><a href="${process.env.FRONTEND_URL}/jobseeker/dashboard" style="color: #2c3e8f;">View application →</a></p>
+                ${notes ? `<p><strong>📝 Note from hr_expert:</strong> ${notes}</p>` : ''}
+                <p><a href="${process.env.FRONTEND_URL}/candidate/dashboard" style="color: #2c3e8f;">View application →</a></p>
                 <hr style="border: 1px solid #eee;">
                 <p style="color: #888; font-size: 12px;">© ${new Date().getFullYear()} KETARI - Sidama Innovation and Technology Agency</p>
             </div>

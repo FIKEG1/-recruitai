@@ -18,8 +18,8 @@ exports.getSummaryReport = async (req, res) => {
         const totalJobs = await Job.countDocuments(query);
         const totalApplications = await Application.countDocuments(query);
         const totalUsers = await User.countDocuments();
-        const totalEmployers = await User.countDocuments({ role: 'employer' });
-        const totalJobSeekers = await User.countDocuments({ role: 'jobseeker' });
+        const totalEmployers = await User.countDocuments({ role: 'hr_expert' });
+        const totalJobSeekers = await User.countDocuments({ role: 'candidate' });
 
         // Status breakdown
         const statusStats = await Application.aggregate([
@@ -141,7 +141,7 @@ exports.getSummaryReport = async (req, res) => {
 exports.getJobReport = async (req, res) => {
     try {
         const job = await Job.findById(req.params.jobId)
-            .populate('employer', 'name email');
+            .populate('hr_expert', 'name email');
 
         if (!job) {
             return res.status(404).json({ success: false, message: 'Job not found' });
@@ -167,7 +167,7 @@ exports.getJobReport = async (req, res) => {
                     title: job.title,
                     department: job.department,
                     location: job.location,
-                    employer: job.employer,
+                    hr_expert: job.hr_expert,
                     createdAt: job.createdAt
                 },
                 statistics: {

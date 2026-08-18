@@ -1,10 +1,33 @@
 const mongoose = require('mongoose');
 
 const ComplaintSchema = new mongoose.Schema({
+    // The account that raised the complaint. Candidates have no Employee record,
+    // so submitter identity is tracked on the User rather than the Employee.
+    raisedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+        index: true
+    },
+    // Set only when the complainant is a member of staff.
     employee: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee',
-        required: true
+        default: null
+    },
+    // Organization the complaint concerns. Null for platform/technical issues
+    // raised by a candidate who is not tied to a specific employer.
+    employer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employer',
+        default: null,
+        index: true
+    },
+    // Separates workplace grievances from recruitment-process feedback.
+    category: {
+        type: String,
+        enum: ['employee', 'recruitment', 'interview', 'technical', 'other'],
+        default: 'other'
     },
     title: {
         type: String,
@@ -12,7 +35,11 @@ const ComplaintSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['harassment', 'discrimination', 'work_environment', 'salary', 'benefits', 'management', 'other'],
+        enum: [
+            'harassment', 'discrimination', 'work_environment', 'salary', 'benefits',
+            'management', 'application_issue', 'interview_concern', 'process_feedback',
+            'technical', 'other'
+        ],
         required: true
     },
     description: {
@@ -21,8 +48,9 @@ const ComplaintSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'investigating', 'resolved', 'rejected'],
-        default: 'pending'
+        // 'pending' is retained so complaints created before this change stay valid.
+        enum: ['pending', 'submitted', 'under_review', 'investigating', 'responded', 'resolved', 'rejected'],
+        default: 'submitted'
     },
     priority: {
         type: String,

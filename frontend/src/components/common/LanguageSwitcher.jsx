@@ -1,54 +1,62 @@
 import React from 'react';
-import { Dropdown } from 'react-bootstrap';
-import { FaGlobe } from 'react-icons/fa';
 import { useLanguage } from '../../context/LanguageContext';
 
+const LANGUAGES = [
+    { code: 'en', short: 'EN', name: 'English' },
+    { code: 'am', short: 'አማ', name: 'አማርኛ' }
+];
+
+/**
+ * Language switcher.
+ *
+ * A compact segmented control rather than a dropdown: with only two languages a
+ * menu costs two clicks and a lot of header space to do one thing. Both options
+ * stay visible and switching is a single tap.
+ */
 const LanguageSwitcher = () => {
-    const { language, setLanguage } = useLanguage();
-
-    const languagesList = [
-        { code: 'en', name: 'English', flag: '🇬🇧' },
-        { code: 'am', name: 'አማርኛ', flag: '🇪🇹' }
-    ];
-
-    const currentLang = languagesList.find(l => l.code === language) || languagesList[0];
-
-    const handleLanguageChange = (langCode) => {
-        setLanguage(langCode);
-    };
+    const { language, setLanguage, loading } = useLanguage();
 
     return (
-        <Dropdown align="end">
-            <Dropdown.Toggle 
-                variant="outline-secondary" 
-                className="d-flex align-items-center gap-2 border-0"
-                style={{ 
-                    padding: '4px 12px',
-                    borderRadius: '8px',
-                    fontWeight: 500
-                }}
-            >
-                <FaGlobe />
-                <span>{currentLang.flag} {currentLang.name}</span>
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-                {languagesList.map((lang) => (
-                    <Dropdown.Item
-                        key={lang.code}
-                        active={language === lang.code}
-                        onClick={() => handleLanguageChange(lang.code)}
-                        className="d-flex align-items-center gap-2"
+        <div
+            role="group"
+            aria-label="Select language"
+            className="d-inline-flex align-items-center"
+            style={{
+                background: 'rgba(148, 163, 184, 0.16)',
+                borderRadius: 999,
+                padding: 3,
+                gap: 2
+            }}
+        >
+            {LANGUAGES.map(item => {
+                const isActive = language === item.code;
+                return (
+                    <button
+                        key={item.code}
+                        type="button"
+                        onClick={() => setLanguage(item.code)}
+                        disabled={loading}
+                        aria-pressed={isActive}
+                        title={item.name}
                         style={{
-                            fontWeight: language === lang.code ? 600 : 400
+                            border: 'none',
+                            borderRadius: 999,
+                            padding: '4px 12px',
+                            fontSize: '0.78rem',
+                            fontWeight: isActive ? 600 : 500,
+                            lineHeight: 1.5,
+                            cursor: loading ? 'wait' : 'pointer',
+                            background: isActive ? '#FFFFFF' : 'transparent',
+                            color: isActive ? '#4F46E5' : '#64748B',
+                            boxShadow: isActive ? '0 1px 2px rgba(15, 23, 42, 0.12)' : 'none',
+                            transition: 'background .15s, color .15s'
                         }}
                     >
-                        <span>{lang.flag}</span>
-                        <span>{lang.name}</span>
-                        {language === lang.code && <span className="ms-auto text-primary">✓</span>}
-                    </Dropdown.Item>
-                ))}
-            </Dropdown.Menu>
-        </Dropdown>
+                        {item.short}
+                    </button>
+                );
+            })}
+        </div>
     );
 };
 

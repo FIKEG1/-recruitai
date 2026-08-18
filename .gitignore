@@ -68,6 +68,10 @@ dist/
 data/
 mongodb/
 dump/
+backend/backups/
+
+# Local scratch scripts (may contain connection strings)
+backend/test-mongo.js
 
 # Operating System files
 Thumbs.db

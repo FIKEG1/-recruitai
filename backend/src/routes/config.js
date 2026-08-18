@@ -3,71 +3,90 @@ const router = express.Router();
 const {
     getConfigurations,
     updateOrganization,
-    addDepartment,
-    addPosition,
-    addLeaveType,
-    addSkill,
-    addJobTitle,
-    addLanguage,
-    addLicense,
-    addReligion,
-    addEmploymentStatus,
-    addEducationLevel,
-    addMaritalStatus,
-    addTrainingType,
-    addTerminationReason,
-    addDeductionType,
-    addNation,
-    addTitle,
-    addBloodType,
-    addPartner,
-    addPositionRank,
+    addConfigEntry,
+    updateConfigEntry,
     deleteConfigItem
 } = require('../controllers/configController');
-const { protect, authorize } = require('../middleware/auth');
+const { protect } = require('../middleware/auth');
+const { userCan, CAPABILITIES } = require('../config/permissions');
+
+/**
+ * Resolve which configuration the caller may edit.
+ *
+ *   System Administrator -> the platform defaults (employer: null)
+ *   Organization members -> their own organization's configuration
+ *
+ * This keeps platform administration and company configuration separate while
+ * sharing one controller, and guarantees an employer can never reach another
+ * organization's lookup data.
+ */
+const resolveConfigScope = (req, res, next) => {
+    if (userCan(req.user, CAPABILITIES.PLATFORM_CONFIG)) {
+        req.employerId = null;
+        return next();
+    }
+
+    if (userCan(req.user, CAPABILITIES.ORG_CONFIG)) {
+        if (!req.user.employer) {
+            return res.status(403).json({
+                success: false,
+                message: 'Your account is not linked to an organization'
+            });
+        }
+        req.employerId = req.user.employer;
+        return next();
+    }
+
+    return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to manage configuration'
+    });
+};
+
+/**
+ * Read access is wider than write access: any organization member needs the
+ * lookup lists to fill in forms, but only configuration owners may change them.
+ */
+const resolveReadScope = (req, res, next) => {
+    if (userCan(req.user, CAPABILITIES.PLATFORM_CONFIG)) {
+        req.employerId = null;
+        return next();
+    }
+
+    if (req.user.employer) {
+        req.employerId = req.user.employer;
+        return next();
+    }
+
+    return res.status(403).json({
+        success: false,
+        message: 'Your account is not linked to an organization'
+    });
+};
 
 // @route   GET /api/config
-// @desc    Get all configurations
-// @access  Private (Admin)
-router.get('/', protect, authorize('admin'), getConfigurations);
+// @desc    Read the applicable configuration
+// @access  Private (organization members / System Administrator)
+router.get('/', protect, resolveReadScope, getConfigurations);
 
 // @route   PUT /api/config/organization
-// @desc    Update organization info
-// @access  Private (Admin)
-router.put('/organization', protect, authorize('admin'), updateOrganization);
+// @desc    Update organization information
+// @access  Private (org:config / platform:config)
+router.put('/organization', protect, resolveConfigScope, updateOrganization);
 
-// Organization Structure
-router.post('/departments', protect, authorize('admin'), addDepartment);
-router.post('/positions', protect, authorize('admin'), addPosition);
-router.post('/position-ranks', protect, authorize('admin'), addPositionRank);
-router.post('/job-titles', protect, authorize('admin'), addJobTitle);
+// @route   POST /api/config/:type
+// @desc    Add an item to a configuration list
+// @access  Private (org:config / platform:config)
+router.post('/:type', protect, resolveConfigScope, addConfigEntry);
 
-// Skills & Qualifications
-router.post('/skills', protect, authorize('admin'), addSkill);
-router.post('/languages', protect, authorize('admin'), addLanguage);
-router.post('/licenses', protect, authorize('admin'), addLicense);
-router.post('/education-levels', protect, authorize('admin'), addEducationLevel);
-
-// Personal Information
-router.post('/religions', protect, authorize('admin'), addReligion);
-router.post('/marital-status', protect, authorize('admin'), addMaritalStatus);
-router.post('/nations', protect, authorize('admin'), addNation);
-router.post('/titles', protect, authorize('admin'), addTitle);
-router.post('/blood-types', protect, authorize('admin'), addBloodType);
-
-// Employment
-router.post('/employment-status', protect, authorize('admin'), addEmploymentStatus);
-router.post('/training-types', protect, authorize('admin'), addTrainingType);
-router.post('/leave-types', protect, authorize('admin'), addLeaveType);
-router.post('/termination-reasons', protect, authorize('admin'), addTerminationReason);
-router.post('/deduction-types', protect, authorize('admin'), addDeductionType);
-
-// Partners
-router.post('/partners', protect, authorize('admin'), addPartner);
+// @route   PUT /api/config/:type/:id
+// @desc    Update a configuration item
+// @access  Private (org:config / platform:config)
+router.put('/:type/:id', protect, resolveConfigScope, updateConfigEntry);
 
 // @route   DELETE /api/config/:type/:id
-// @desc    Delete configuration item
-// @access  Private (Admin)
-router.delete('/:type/:id', protect, authorize('admin'), deleteConfigItem);
+// @desc    Remove a configuration item
+// @access  Private (org:config / platform:config)
+router.delete('/:type/:id', protect, resolveConfigScope, deleteConfigItem);
 
 module.exports = router;

@@ -27,8 +27,41 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['jobseeker', 'employer', 'admin'],
-        default: 'jobseeker'
+        enum: ['candidate', 'employee', 'hr_expert', 'hr_manager', 'admin', 'employer'],
+        default: 'candidate'
+    },
+    status: {
+        type: String,
+        enum: ['active', 'inactive', 'pending'],
+        default: 'active'
+    },
+
+    // ============================================
+    // ORGANIZATION MEMBERSHIP
+    // ============================================
+    // The organization this user belongs to.
+    // - employer  : the account that owns the organization
+    // - hr_expert  / hr_manager : staff members of the organization
+    // - candidate / admin : null (platform-level or independent users)
+    employer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employer',
+        default: null,
+        index: true
+    },
+    department: {
+        type: String,
+        default: ''
+    },
+    jobTitle: {
+        type: String,
+        default: ''
+    },
+    // Optional per-user permission overrides granted by the employer.
+    // Base capabilities always come from the role; these only extend it.
+    permissions: {
+        type: [String],
+        default: []
     },
     profile: {
         phone: {
@@ -167,7 +200,7 @@ const UserSchema = new mongoose.Schema({
 // Encrypt password using bcrypt
 UserSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
-        next();
+        return next();
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
